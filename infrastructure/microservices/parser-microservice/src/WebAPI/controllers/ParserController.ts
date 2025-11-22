@@ -12,11 +12,18 @@ export class ParserController {
 
     private initializeRoutes(): void {
         //dodati rute
-         this.router.get("/parser", this.getAllParser.bind(this));
+         this.router.get("/parser/normalize", this.getNormalizeMessage.bind(this));
     }
 
-    private async getAllParser(req: Request, res: Response): Promise<void>{
-        console.log("RUTA PARSERA");
+    private async getNormalizeMessage(req: Request, res: Response): Promise<void>{
+        try{
+            const rawMessage=req.body.message as string;  //drugi tim mora da nam salje json sa message kako bi mi izvukli poruku
+            console.log('raw message je'+rawMessage);
+            const response=this.parserService.normalizeAndSaveEvent(rawMessage);
+            res.status(201).json(response);
+        }catch(err){
+            res.status(500).json({ message: (err as Error).message });
+        }
     }
 
     public getRouter(): Router {
