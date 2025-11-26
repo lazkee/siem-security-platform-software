@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity("archive_batch")
-export class ArchiveBatch {
+@Entity("storage_log")
+export class StorageLog {
     @PrimaryGeneratedColumn({name: "archive_id"})
     archiveId!: number;
 
