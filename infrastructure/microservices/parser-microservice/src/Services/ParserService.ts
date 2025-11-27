@@ -6,6 +6,7 @@ import axios, { AxiosInstance } from "axios";
 import { Event } from "../Domain/models/Event";
 import { EventType } from "../Domain/enums/EventType";
 import { ParseResult } from "../Domain/types/ParseResult";
+import { AnlysisEngineResponseType } from "../Domain/types/AnalysisEngineResponse";
 
 
 export class ParserService implements IParserService {
@@ -53,7 +54,7 @@ export class ParserService implements IParserService {
     async normalizeAndSaveEvent(eventMessage: string): Promise<EventDTO> {
         let event = await this.normalizeEventWithRegexes(eventMessage);
         console.log(event);
-        return this.toDTO(event);   // TESTING AT THE MOMENT
+        return this.toDTO(event);       // TESTING AT THE MOMENT
 
         /*if (event.id === -1)    // Couldn't normalize with regexes -> send it to LLM
             event = await this.normalizeEventWithLlm(eventMessage);
@@ -72,6 +73,10 @@ export class ParserService implements IParserService {
         let parseResult;
 
         parseResult = this.parseLoginMessage(message);
+        if (parseResult.doesMatch)
+            return parseResult.event!;
+
+        parseResult = this.parsePermissionChangeMessage(message);
         if (parseResult.doesMatch)
             return parseResult.event!;
 
@@ -106,6 +111,43 @@ export class ParserService implements IParserService {
             doesMatch: true,
             event
         };
+    }
+
+    private parsePermissionChangeMessage(message: string): ParseResult {
+        const PERMISSION_CHANGE_REGEX = /\b((permission|role|access|privilege)(s)?\s+(changed?|updated?|granted?|assigned?)|(promoted?|elevated?|upgraded?)\s+to|(admin|privileged?|manager|supervisor)\s+(role|access|rights?)(s?)?\s+(granted?|assigned?))\b/i;
+        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
+
+        if (!PERMISSION_CHANGE_REGEX.test(message))
+            return { doesMatch: false };
+
+        const usernameMatch = USERNAME_REGEX.exec(message);
+        if (!usernameMatch || !usernameMatch[3])
+            return { doesMatch: false };
+
+        const username = usernameMatch[3];
+
+        const normalizedDescription = `User '${username}' permissions or roles changed.`;
+
+        const event = new Event();
+        event.source = '';
+        event.type = EventType.WARNING;
+        event.description = normalizedDescription;
+        event.timestamp = new Date();
+
+        return {
+            doesMatch: true,
+            event
+        };
+    }
+
+    private async normalizeEventWithLlm(message: string): Promise<Event> {
+        const response = await this.analysisEngineClient.post<AnlysisEngineResponseType>("ruta njhova", message);
+
+        if (!response.data.eventData) {
+            throw new Error("Event data in response is NULL");
+        }
+
+        return response.data.eventData;
     }
 
     private toDTO(event: Event): EventDTO {
