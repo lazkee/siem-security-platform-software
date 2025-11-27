@@ -88,6 +88,14 @@ export class ParserService implements IParserService {
         if (parseResult.doesMatch)
             return parseResult.event!;
 
+        parseResult = this.parseBruteForceMessage(message);
+        if (parseResult.doesMatch)
+            return parseResult.event!;
+
+        parseResult = this.parseSqlInjectionMessage(message);
+        if (parseResult.doesMatch)
+            return parseResult.event!;
+
         return new Event();
     }
 
@@ -199,6 +207,58 @@ export class ParserService implements IParserService {
         return {
             doesMatch: true,
             event,
+        };
+    }
+
+    private parseBruteForceMessage(message: string): ParseResult {
+        const BRUTE_FORCE_REGEX = /\b(brute\s*force\s*(attack|attempt|detected)?)\b/i;
+        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
+
+        if (!BRUTE_FORCE_REGEX.test(message))
+            return { doesMatch: false };
+
+        const usernameMatch = USERNAME_REGEX.exec(message);
+        const username = usernameMatch ? usernameMatch[3] : null;
+
+        const description = username
+            ? `Brute force attack detected from or targeting user '${username}'.`
+            : `Brute force attack detected.`;
+
+        const event = new Event();
+        event.source = '';
+        event.type = EventType.WARNING;
+        event.description = description;
+        event.timestamp = new Date();
+
+        return {
+            doesMatch: true,
+            event
+        };
+    }
+
+    private parseSqlInjectionMessage(message: string): ParseResult {
+        const SQLI_REGEX = /\b(sql(\s|-)?injection|sqli|potential\s*sql\s*injection|sql\s*attack|sql\s*exploit)\b/i;
+        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
+
+        if (!SQLI_REGEX.test(message))
+            return { doesMatch: false };
+
+        const usernameMatch = USERNAME_REGEX.exec(message);
+        const username = usernameMatch ? usernameMatch[3] : null;
+
+        const description = username
+            ? `Potential SQL injection attempt detected targeting user '${username}'.`
+            : `Potential SQL injection attempt detected.`;
+
+        const event = new Event();
+        event.source = '';
+        event.type = EventType.WARNING;
+        event.description = description;
+        event.timestamp = new Date();
+
+        return {
+            doesMatch: true,
+            event
         };
     }
 
