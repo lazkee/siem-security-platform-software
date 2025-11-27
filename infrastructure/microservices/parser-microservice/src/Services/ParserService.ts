@@ -15,8 +15,10 @@ export class ParserService implements IParserService {
 
     constructor(private parserEventRepository: Repository<ParserEvent>) {
         console.log(`\x1b[35m[Logger@1.45.4]\x1b[0m Service started`);
+
         const analysisServiceURL = process.env.ANALYSIS_ENGINE_API;
         const eventServiceURL = process.env.EVENT_SERVICE_API;
+
         console.log(`Analysis Engine url: ${analysisServiceURL}`)
         console.log(`Event Service url: ${eventServiceURL}`)
 
@@ -27,7 +29,7 @@ export class ParserService implements IParserService {
         });
 
         this.eventClient = axios.create({
-            baseURL: analysisServiceURL,
+            baseURL: eventServiceURL,
             headers: { "Content-Type": "application/json" },
             timeout: 5000,
         });
@@ -53,10 +55,8 @@ export class ParserService implements IParserService {
 
     async normalizeAndSaveEvent(eventMessage: string): Promise<EventDTO> {
         let event = this.normalizeEventWithRegexes(eventMessage);
-        console.log(event);
-        return this.toDTO(event);       // TESTING AT THE MOMENT
 
-        /*if (event.id === -1)    // Couldn't normalize with regexes -> send it to LLM
+        if (event.id === -1)    // Couldn't normalize with regexes -> send it to LLM
             event = await this.normalizeEventWithLlm(eventMessage);
 
         const eventDTO = (await this.eventClient.post<EventDTO>("ruta neka", event)).data;    // Saving to the Events table (calling event-collector)
@@ -66,7 +66,7 @@ export class ParserService implements IParserService {
         const parserEvent: ParserEvent = { parserId: 0, eventId: eventDTO.id, textBeforeParsing: eventMessage, timestamp: new Date() }
         await this.parserEventRepository.insert(parserEvent);   // Saving to the Parser table
 
-        return eventDTO;*/
+        return eventDTO;
     }
 
     private normalizeEventWithRegexes(message: string): Event {
@@ -96,23 +96,22 @@ export class ParserService implements IParserService {
         if (parseResult.doesMatch)
             return parseResult.event!;
 
-        return new Event();
+        const event = new Event();
+        event.id = -1;
+        return event;
     }
 
     private parseLoginMessage(message: string): ParseResult {
         const SUCCESS_LOGIN_REGEX = /\b(success(ful(ly)?)?|logged\s+in|login\s+ok|authentication\s+successful)\b/i;
         const FAIL_LOGIN_REGEX = /\b(fail(ed)?|unsuccessful|incorrect|invalid|denied|error).*(login|authentication)\b/i;
-        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
 
         if (!SUCCESS_LOGIN_REGEX.test(message) && !FAIL_LOGIN_REGEX.test(message))      // Checks for login event
             return { doesMatch: false };
 
 
-        const usernameMatch = USERNAME_REGEX.exec(message);     // Extracting the username
-        if (!usernameMatch || !usernameMatch[3])
+        const username = this.extractUsernameFromMessage(message);
+        if (username === '')
             return { doesMatch: false };
-
-        const username = usernameMatch[3];
 
         const normalizedDescription = SUCCESS_LOGIN_REGEX.test(message) ?
             `User '${username}' successfully logged in.` : `Unsuccessful login attempt for user '${username}'.`;
@@ -131,16 +130,13 @@ export class ParserService implements IParserService {
 
     private parsePermissionChangeMessage(message: string): ParseResult {
         const PERMISSION_CHANGE_REGEX = /\b((permission|role|access|privilege)(s)?\s+(changed?|updated?|granted?|assigned?)|(promoted?|elevated?|upgraded?)\s+to|(admin|privileged?|manager|supervisor)\s+(role|access|rights?)(s?)?\s+(granted?|assigned?))\b/i;
-        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
 
         if (!PERMISSION_CHANGE_REGEX.test(message))
             return { doesMatch: false };
 
-        const usernameMatch = USERNAME_REGEX.exec(message);
-        if (!usernameMatch || !usernameMatch[3])
+        const username = this.extractUsernameFromMessage(message);
+        if (username === '')
             return { doesMatch: false };
-
-        const username = usernameMatch[3];
 
         const normalizedDescription = `User '${username}' permissions or roles changed.`;
 
@@ -158,16 +154,13 @@ export class ParserService implements IParserService {
 
     private parseDbAccessMessage(message: string): ParseResult {
         const DB_ACCESS_REGEX = /\b(bulk|massive|large|batch)\s+(read|select|insert|update|delete|export|import|operation|query|write)s?\b/i;
-        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
 
         if (!DB_ACCESS_REGEX.test(message))
             return { doesMatch: false };
 
-        const usernameMatch = USERNAME_REGEX.exec(message);
-        if (!usernameMatch || !usernameMatch[3])
+        const username = this.extractUsernameFromMessage(message);
+        if (username === '')
             return { doesMatch: false };
-
-        const username = usernameMatch[3];
 
         const normalizedDescription = `User '${username}' performed a large database access operation.`;
 
@@ -185,16 +178,14 @@ export class ParserService implements IParserService {
 
     private parseRateLimitMessage(message: string): ParseResult {
         const RATE_LIMIT_REGEX = /\b(rate\s+limit(ed)?|quota\s+exceeded|throttled?|429|too\s+many\s+requests)\b/i;
-        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
 
         if (!RATE_LIMIT_REGEX.test(message)) {
             return { doesMatch: false };
         }
 
-        const usernameMatch = USERNAME_REGEX.exec(message);
-        const username = usernameMatch ? usernameMatch[3] : null;   // It's okay to go without username for this event
+        const username = this.extractUsernameFromMessage(message);
 
-        const normalizedDescription = username
+        const normalizedDescription = username !== ''
             ? `User '${username}' exceeded API rate limit.`
             : `API rate limit exceeded.`;
 
@@ -212,15 +203,13 @@ export class ParserService implements IParserService {
 
     private parseBruteForceMessage(message: string): ParseResult {
         const BRUTE_FORCE_REGEX = /\b(brute\s*force\s*(attack|attempt|detected)?)\b/i;
-        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
 
         if (!BRUTE_FORCE_REGEX.test(message))
             return { doesMatch: false };
 
-        const usernameMatch = USERNAME_REGEX.exec(message);
-        const username = usernameMatch ? usernameMatch[3] : null;
+        const username = this.extractUsernameFromMessage(message);
 
-        const description = username
+        const description = username !== ''
             ? `Brute force attack detected from or targeting user '${username}'.`
             : `Brute force attack detected.`;
 
@@ -238,15 +227,13 @@ export class ParserService implements IParserService {
 
     private parseSqlInjectionMessage(message: string): ParseResult {
         const SQLI_REGEX = /\b(sql(\s|-)?injection|sqli|potential\s*sql\s*injection|sql\s*attack|sql\s*exploit)\b/i;
-        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
 
         if (!SQLI_REGEX.test(message))
             return { doesMatch: false };
 
-        const usernameMatch = USERNAME_REGEX.exec(message);
-        const username = usernameMatch ? usernameMatch[3] : null;
+        const username = this.extractUsernameFromMessage(message);
 
-        const description = username
+        const description = username !== ''
             ? `Potential SQL injection attempt detected targeting user '${username}'.`
             : `Potential SQL injection attempt detected.`;
 
@@ -260,6 +247,13 @@ export class ParserService implements IParserService {
             doesMatch: true,
             event
         };
+    }
+
+    private extractUsernameFromMessage(message: string): string {   // Returns username or empty string if username is not found
+        const USERNAME_REGEX = /\b(user(name)?|account)\s*[:=]\s*"?([A-Za-z0-9._-]+)"?/i;
+
+        const usernameMatch = USERNAME_REGEX.exec(message);
+        return usernameMatch && usernameMatch[3] ? usernameMatch[3] : '';
     }
 
     private async normalizeEventWithLlm(message: string): Promise<Event> {
