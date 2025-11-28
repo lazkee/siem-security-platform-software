@@ -1,5 +1,5 @@
 import {Repository} from "typeorm";
-import {ICorrelationService} from "../Domain/services/ICorrelationService";
+import { ICorrelationService } from "../Domain/Services/ICorrelationService";
 import { Correlation } from "../Domain/models/Correlation";
 import { CorrelationEventMap } from "../Domain/models/CorrelationEventMap";
 import axios, { AxiosInstance } from "axios";

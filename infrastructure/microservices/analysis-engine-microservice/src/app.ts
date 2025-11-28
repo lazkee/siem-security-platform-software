@@ -3,8 +3,13 @@ import cors from 'cors';
 import "reflect-metadata";
 import { initialize_database } from './Database/InitializeConnection';
 import dotenv from 'dotenv';
-import { IAnalysisEngineService } from './Domain/services/IAnalysisEngineService';
-import { AnalysisEngineService } from './Services/AnalysisEngineService';
+
+import { ICorrelationService } from './Domain/Services/ICorrelationService';
+import { CorrelationService } from './Services/CorrelationService';
+
+import { ILLMChatAPIService } from './Domain/Services/ILLMChatAPIService';
+import { LLMChatAPIService } from './Services/LLMChatAPIService';
+
 import { Repository } from 'typeorm';
 import { Correlation } from './Domain/models/Correlation';
 import { Db } from './Database/DbConnectionPool';
@@ -35,9 +40,11 @@ const CorrelationRepo: Repository<Correlation> = Db.getRepository(Correlation);
 
 const CorrelationMapRepo: Repository<CorrelationEventMap> = Db.getRepository(CorrelationEventMap);
 
-const analysisEngineService: IAnalysisEngineService = new AnalysisEngineService(CorrelationRepo, CorrelationMapRepo);
+const llmChatAPIService: ILLMChatAPIService = new LLMChatAPIService();
+const correlationService: ICorrelationService = new CorrelationService(CorrelationRepo, CorrelationMapRepo);
 
-const analysisEngineController = new AnalysisEngineController(analysisEngineService);
+
+const analysisEngineController = new AnalysisEngineController(correlationService, llmChatAPIService);
 
 app.use('/api/v1', analysisEngineController.getRouter());
 

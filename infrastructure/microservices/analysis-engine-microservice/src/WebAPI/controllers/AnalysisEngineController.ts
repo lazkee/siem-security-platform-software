@@ -1,12 +1,13 @@
 import { Router, Request, Response } from "express";
-import { IAnalysisEngineService } from "../../Domain/services/IAnalysisEngineService";
+import { ICorrelationService } from "../../Domain/Services/ICorrelationService";
+import { ILLMChatAPIService , ChatMessage} from "../../Domain/Services/ILLMChatAPIService";
 
 
 export class AnalysisEngineController {
 
     private readonly router: Router;
 
-    constructor(private readonly analysisEngineService: IAnalysisEngineService){
+    constructor(private readonly correlationService: ICorrelationService, private readonly llmChatAPIService: ILLMChatAPIService){
         this.router = Router();
         this.initializeRoutes();
     }
@@ -24,7 +25,11 @@ export class AnalysisEngineController {
                 return;
             }
 
-            const processedEvent = await this.analysisEngineService.sendPromptToLlm(rawMessage);
+            const llmPrompt: ChatMessage = {
+                role: "user",
+                content: "TASK: correlation\n\nHere are SIEM events in JSONL format:\n...",
+            };
+            const processedEvent = await this.llmChatAPIService.sendPromptToLLM(llmPrompt);
 
             res.status(200).json({ eventData: processedEvent }); //it needs to be called eventData because ParserService expects it
         } catch (err) {
