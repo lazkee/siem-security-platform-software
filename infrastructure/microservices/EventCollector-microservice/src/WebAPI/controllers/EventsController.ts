@@ -21,6 +21,7 @@ export class EventsController {
         this.router.get("/events/:id", this.getEventById.bind(this));
         this.router.post("/events", this.createEvent.bind(this));
         this.router.delete("/events/:id", this.deleteEvent.bind(this));
+        this.router.delete("/events/old", this.deleteOldEvents.bind(this));
     }
 
     private async healthCheck(req: Request, res: Response): Promise<void> {
@@ -94,6 +95,18 @@ export class EventsController {
             res.status(500).json({ message: (err as Error).message });
         }
     }
+
+    private async deleteOldEvents(req: Request, res: Response): Promise<void> {
+        try {
+            const anyDeleted = await this.eventsService.deleteOldEvents();
+            res.status(200).json({ success: anyDeleted });
+        } catch (err) {
+            const message = (err as Error).message;
+            await this.logger.log(`Error while deleting old events: ${message}`);
+            res.status(500).json({ message });
+        }
+    }
+
 
     public getRouter(): Router {
         return this.router;

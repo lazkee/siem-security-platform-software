@@ -42,19 +42,19 @@ export class EventsService implements IEventsService {
     }
 
      async deleteOldEvents(): Promise<boolean> {
-        const events = await this.getAll();
         const deadline = new Date();
-        deadline.setDate(deadline.getDate() - 3)
+        deadline.setDate(deadline.getDate() - 3);
 
-        var anyDeleted = false;
-        for (const event of events) {
-        if (event.timestamp < deadline) {
-            const deleted = await this.deleteById(event.id);
-            if (deleted) anyDeleted = true;
-        }
+        const result = await this.eventRepository
+            .createQueryBuilder()
+            .delete()
+            .from(Event)
+            .where("timestamp < :deadline", { deadline })
+            .execute();
+
+        return !!result.affected && result.affected > 0;
     }
-        return anyDeleted;
-    }
+
 
     private toDTO(event: Event): EventDTO {
         return {
