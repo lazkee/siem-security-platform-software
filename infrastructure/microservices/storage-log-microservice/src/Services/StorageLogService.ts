@@ -7,6 +7,7 @@ import { IStorageLogService } from "../Domain/services/IStorageLogService";
 import { EventDTO } from "../Domain/DTOs/EventDTO";
 import { CorrelationDTO } from "../Domain/DTOs/CorrelationDTO";
 import { execSync } from "child_process";
+import { getTimeGroup } from "../Utils/TimeGroup";
 
 const ARCHIVE_DIR = process.env.ARCHIVE_PATH || path.join(__dirname, "../../archives");
 const TEMP_DIR = path.join(ARCHIVE_DIR, "tmp");
@@ -20,19 +21,6 @@ export class StorageLogService implements IStorageLogService{
         //radi proveru 
         mkdirSync(ARCHIVE_DIR, {recursive: true});
         mkdirSync(TEMP_DIR, {recursive: true});
-    }
-    
-    private getTimeGroup(timeStamp: Date): string{
-        const d = new Date(timeStamp);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        const hh = String(d.getHours()).padStart(2, "0");
-
-        const quarter = Math.floor(d.getMinutes() / 15) * 15;
-        const qStr = String(quarter).padStart(2, "0");
-
-        return `${yyyy}_${mm}_${dd}_${hh}_${qStr}`;
     }
 
     public async getArchives(): Promise<StorageLog[]>{
@@ -56,7 +44,7 @@ export class StorageLogService implements IStorageLogService{
         const groups: Record<string, string[]> = {};
 
         for(const e of eventsToArchive){
-            const key = this.getTimeGroup(e.timestamp);
+            const key = getTimeGroup(e.timestamp);
             if(!groups[key]) groups[key] = [];
 
             groups[key].push(`EVENT | ID=${e.id} | TYPE=${e.type} | SOURCE=${e.source} | ${e.description} | ${e.timestamp}`);
