@@ -1,5 +1,9 @@
+import { CacheEntryDTO } from "../DTOs/CacheEntryDTO";
 import { CacheEntry } from "../models/CacheEntry";
+import { Event } from "../models/Event";
 
 export interface IQueryRepositoryService {
-    addEntry(entry : CacheEntry) : Promise<void>;
+    addEntry(entry : CacheEntryDTO) : Promise<CacheEntry>;
+    getAllEvents(): Promise<Event[]>
+    getOldEvents(): Promise<Event[]>;
 }

@@ -8,4 +8,6 @@ export interface IQueryService {
     // provera da li postoji dokument sa odredjenim kljucem tj. da li je on vec kesiran
     // sve ostale metode idu u Utils folder
     // npr konvertovanje rezultata pretrage u JSON i obrnuto
+
+    searchEvents(query: string): Promise<any[]>;
 }

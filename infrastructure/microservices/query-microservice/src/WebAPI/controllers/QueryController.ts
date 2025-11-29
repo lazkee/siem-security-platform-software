@@ -14,17 +14,29 @@ export class QueryController {
 
     private initializeRoutes(): void {
         this.router.post("/query/cache", this.addCacheEntry.bind(this));
+        this.router.get("/query/oldEvents", this.getOldEvents.bind(this));
     }
 
     private async addCacheEntry(req: Request, res: Response): Promise<void> {
         try {
-            const entry = req.body as CacheEntry;
+            //const entry = req.body as CacheEntry;
+            const { key, result } = req.body;
             // moze da se doda validacija podataka ovde
-            await this.queryService.addEntry(entry);
+            await this.queryService.addEntry({ key, result });
             res.status(201).json({ message: "Cache entry added successfully." });
         } catch (err) {
             const message = (err as Error).message;
             res.status(500).json({ message: "Error while adding cache entry." });
+        }
+    }
+
+    private async getOldEvents(req: Request, res: Response): Promise<void> {
+        try {
+            const oldEvents = await this.queryService.getOldEvents();
+            res.status(200).json(oldEvents);
+        } catch (err) {
+            const message = (err as Error).message;
+            res.status(500).json({ message: "Error while retrieving old events." });
         }
     }
 
