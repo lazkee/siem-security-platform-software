@@ -6,4 +6,5 @@ export interface IEventsService {
     getAll(): Promise<Event[]>;
     getById(id: number): Promise<Event>;
     deleteById(id: number): Promise<boolean>;
+    deleteOldEvents(): Promise<boolean>;
 }

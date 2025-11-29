@@ -8,6 +8,8 @@ export class EventsService implements IEventsService {
         private readonly eventRepository: Repository<Event>,
     ) {}
 
+   
+
     async createEvent(eventDto: EventDTO): Promise<EventDTO> {
         const timestamp = eventDto.timestamp ? new Date(eventDto.timestamp) : new Date();
 
@@ -37,6 +39,21 @@ export class EventsService implements IEventsService {
     async deleteById(id: number): Promise<boolean> {
         const result = await this.eventRepository.delete({ id });
         return !!result.affected && result.affected > 0;
+    }
+
+     async deleteOldEvents(): Promise<boolean> {
+        const events = await this.getAll();
+        const deadline = new Date();
+        deadline.setDate(deadline.getDate() - 3)
+
+        var anyDeleted = false;
+        for (const event of events) {
+        if (event.timestamp < deadline) {
+            const deleted = await this.deleteById(event.id);
+            if (deleted) anyDeleted = true;
+        }
+    }
+        return anyDeleted;
     }
 
     private toDTO(event: Event): EventDTO {
