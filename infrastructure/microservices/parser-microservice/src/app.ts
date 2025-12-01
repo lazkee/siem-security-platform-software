@@ -12,6 +12,8 @@ import { ParserController } from './WebAPI/controllers/ParserController';
 import { EventValidator } from './Application/validators/EventValidator';
 import { IParserRepositoryService } from './Domain/services/IParserRepositoryService';
 import { ParserRepositoryService } from './Services/ParserRepositoryService';
+import { ILogerService } from './Domain/services/ILogerService';
+import { LogerService } from './Services/LogerService';
 
 dotenv.config({ quiet: true });
 
@@ -40,9 +42,10 @@ const validator = new EventValidator();
 // Services
 const parserService: IParserService = new ParserService(parserEventRepository, validator);
 const parserRepositoryService: IParserRepositoryService = new ParserRepositoryService(parserEventRepository);
+const logger: ILogerService = new LogerService();
 
 // WebAPI routes
-const parserController = new ParserController(parserService, parserRepositoryService);
+const parserController = new ParserController(parserService, parserRepositoryService, logger);
 
 // Registering routes
 app.use('/api/v1', parserController.getRouter());

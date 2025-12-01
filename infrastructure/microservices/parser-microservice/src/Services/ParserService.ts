@@ -12,13 +12,8 @@ export class ParserService implements IParserService {
     private readonly eventClient: AxiosInstance;
 
     constructor(private parserEventRepository: Repository<ParserEvent>, private validator: IEventValidator) {
-        console.log(`\x1b[35m[Logger@1.45.4]\x1b[0m Service started`);
-
         const analysisServiceURL = process.env.ANALYSIS_ENGINE_API;
         const eventServiceURL = process.env.EVENT_SERVICE_API;
-
-        console.log(`Analysis Engine url: ${analysisServiceURL}`)
-        console.log(`Event Service url: ${eventServiceURL}`)
 
         this.analysisEngineClient = axios.create({
             baseURL: analysisServiceURL,
@@ -38,9 +33,8 @@ export class ParserService implements IParserService {
         this.validator.validateInputMessage(eventMessage);
 
         let event = this.normalizeEventWithRegexes(eventMessage);
-        console.log(event);
-        return event;
-        /*if (event.id === -1)    // Couldn't normalize with regexes -> send it to LLM
+
+        if (event.id === -1)    // Couldn't normalize with regexes -> send it to LLM
             event = await this.normalizeEventWithLlm(eventMessage);
 
         event.source = eventSource;
@@ -53,7 +47,7 @@ export class ParserService implements IParserService {
         const parserEvent: ParserEvent = { parserId: 0, eventId: responseEvent.id, textBeforeParsing: eventMessage, timestamp: timeOfEvent }
         await this.parserEventRepository.insert(parserEvent);   // Saving to the Parser table
 
-        return responseEvent;*/
+        return responseEvent;
     }
 
     private normalizeEventWithRegexes(message: string): EventDTO {

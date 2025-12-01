@@ -3,9 +3,7 @@ import { ParserEvent } from "../Domain/models/ParserEvent";
 import { IParserRepositoryService } from "../Domain/services/IParserRepositoryService";
 
 export class ParserRepositoryService implements IParserRepositoryService {
-    constructor(private parserEventRepository: Repository<ParserEvent>) {
-        console.log(`\x1b[35m[Logger@1.45.4]\x1b[0m Service started`);
-    }
+    constructor(private parserEventRepository: Repository<ParserEvent>) { }
 
     async getAll(): Promise<ParserEvent[]> {
         const events = await this.parserEventRepository.find();
