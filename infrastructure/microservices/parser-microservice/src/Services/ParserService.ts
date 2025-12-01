@@ -14,7 +14,7 @@ export class ParserService implements IParserService {
     private readonly analysisEngineClient: AxiosInstance;
     private readonly eventClient: AxiosInstance;
 
-    constructor(private parserEventRepository: Repository<ParserEvent>, private validator: IEventValidator ) {
+    constructor(private parserEventRepository: Repository<ParserEvent>, private validator: IEventValidator) {
         console.log(`\x1b[35m[Logger@1.45.4]\x1b[0m Service started`);
 
         const analysisServiceURL = process.env.ANALYSIS_ENGINE_API;
@@ -36,57 +36,24 @@ export class ParserService implements IParserService {
         });
     }
 
-    async getAll(): Promise<ParserEvent[]> {
-        const events = await this.parserEventRepository.find();
-        return events;
-    }
-
-    async getParserEventById(id: number): Promise<ParserEvent> {
-        const event = await this.parserEventRepository.findOne({ where: { parserId: id } });
-        if (!event) {
-            throw new Error(`Parser Event with id=${id} not found.`);
-        }
-        return event;
-    }
-
-    async deleteById(id: number): Promise<boolean> {
-        const result = await this.parserEventRepository.delete({ parserId: id })
-        return result.affected !== undefined && result.affected !== null && result.affected > 0;
-    }
-
     async normalizeAndSaveEvent(eventMessage: string): Promise<EventDTO> {
-        this.validator.validateInputMessage(eventMessage); //validation
+        this.validator.validateInputMessage(eventMessage);
 
         let event = this.normalizeEventWithRegexes(eventMessage);
 
-        
         if (event.id === -1)    // Couldn't normalize with regexes -> send it to LLM
             event = await this.normalizeEventWithLlm(eventMessage);
 
-        //Validate generated event
-        this.validator.validateEvent(event);
-
+        this.validator.validateEvent(event);    // Validate generated event
         const dto = this.toDTO(event);
 
-        this.validator.validateDTO(dto);
-
         const eventDTO = (await this.eventClient.post<EventDTO>("/events", dto)).data;    // Saving to the Events table (calling event-collector)
-
 
         if (eventDTO.id === -1)
             throw Error("Failed to save event to the database");
 
         const parserEvent: ParserEvent = { parserId: 0, eventId: eventDTO.id, textBeforeParsing: eventMessage, timestamp: new Date() }
         await this.parserEventRepository.insert(parserEvent);   // Saving to the Parser table
-
-        
-        // const eventDTO: EventDTO = {
-        // id: event.id,
-        // source: event.source,
-        // type: event.type,
-        // description: event.description,
-        // timestamp: event.timestamp
-        // };
 
         return eventDTO;
     }
@@ -134,19 +101,18 @@ export class ParserService implements IParserService {
         if (parseResult.doesMatch)
             return parseResult.event!;
 
-        const event = new Event();  // Nothing matched → send to LLM
+        const event = new Event();  // Nothing matched -> send to LLM
         event.id = -1;
         return event;
     }
 
-    //1
+    // 1
     private parseLoginMessage(message: string): ParseResult {
         const SUCCESS_LOGIN_REGEX = /\b(success(ful(ly)?)?|logged\s+in|login\s+ok|authentication\s+successful)\b/i;
         const FAIL_LOGIN_REGEX = /\b(fail(ed)?|unsuccessful|incorrect|invalid|denied|error).*(login|authentication)\b/i;
 
         if (!SUCCESS_LOGIN_REGEX.test(message) && !FAIL_LOGIN_REGEX.test(message))      // Checks for login event
             return { doesMatch: false };
-
 
         const username = this.extractUsernameFromMessage(message);
         if (username === '')
@@ -167,7 +133,7 @@ export class ParserService implements IParserService {
         };
     }
 
-    //2
+    // 2
     private parsePermissionChangeMessage(message: string): ParseResult {
         const PERMISSION_CHANGE_REGEX = /\b((permission|role|access|privilege)(s)?\s+(changed?|updated?|granted?|assigned?)|(promoted?|elevated?|upgraded?)\s+to|(admin|privileged?|manager|supervisor)\s+(role|access|rights?)(s?)?\s+(granted?|assigned?))\b/i;
 
@@ -192,7 +158,7 @@ export class ParserService implements IParserService {
         };
     }
 
-    //3
+    // 3
     private parseDbAccessMessage(message: string): ParseResult {
         const DB_ACCESS_REGEX = /\b(bulk|massive|large|batch)\s+(read|select|insert|update|delete|export|import|operation|query|write)s?\b/i;
 
@@ -217,7 +183,7 @@ export class ParserService implements IParserService {
         };
     }
 
-    //4
+    // 4
     private parseRateLimitMessage(message: string): ParseResult {
         const RATE_LIMIT_REGEX = /\b(rate\s+limit(ed)?|quota\s+exceeded|throttled?|429|too\s+many\s+requests)\b/i;
 
@@ -243,7 +209,7 @@ export class ParserService implements IParserService {
         };
     }
 
-    //5
+    // 5A
     private parseBruteForceMessage(message: string): ParseResult {
         const BRUTE_FORCE_REGEX = /\b(brute\s*force\s*(attack|attempt|detected)?)\b/i;
 
@@ -268,7 +234,7 @@ export class ParserService implements IParserService {
         };
     }
 
-    //5
+    // 5B
     private parseSqlInjectionMessage(message: string): ParseResult {
         const SQLI_REGEX = /\b(sql(\s|-)?injection|sqli|potential\s*sql\s*injection|sql\s*attack|sql\s*exploit)\b/i;
 
@@ -293,10 +259,9 @@ export class ParserService implements IParserService {
         };
     }
 
-    //6A
+    // 6A
     private parseServiceConfigurationChangeMessage(message: string): ParseResult {
-         const SERVICE_CONFIG_REGEX = /\b(config(uration)?\s*(file|setting|service)?\s*((was\s*)?(changed?|modified?|updated?|edited?))|service\s*(restart(ed)?|reloaded?|stopped?|started?)|settings\s*((was\s*)?(changed?|updated?|modified?)))\b/i;
-
+        const SERVICE_CONFIG_REGEX = /\b(config(uration)?\s*(file|setting|service)?\s*((was\s*)?(changed?|modified?|updated?|edited?))|service\s*(restart(ed)?|reloaded?|stopped?|started?)|settings\s*((was\s*)?(changed?|updated?|modified?)))\b/i;
 
         if (!SERVICE_CONFIG_REGEX.test(message))
             return { doesMatch: false };
@@ -309,7 +274,7 @@ export class ParserService implements IParserService {
 
         const event = new Event();
         event.source = '';
-        event.type = EventType.WARNING; 
+        event.type = EventType.WARNING;
         event.description = description;
         event.timestamp = new Date();
 
@@ -319,11 +284,11 @@ export class ParserService implements IParserService {
         };
     }
 
-    //6B
+    // 6B
     private pareseResourceExplotationMessage(message: string): ParseResult {
-         const RESOURCE_EXPLOIT_REGEX = /\b(cpu|processor|memory|ram|disk|storage|resource)\s*(overuse|abuse|exhaustion|spike|anomaly|overflow|limit|hog|leak)\b/i;
+        const RESOURCE_EXPLOIT_REGEX = /\b(cpu|processor|memory|ram|disk|storage|resource)\s*(overuse|abuse|exhaustion|spike|anomaly|overflow|limit|hog|leak)\b/i;
 
-         if (!RESOURCE_EXPLOIT_REGEX.test(message))
+        if (!RESOURCE_EXPLOIT_REGEX.test(message))
             return { doesMatch: false };
 
         const username = this.extractUsernameFromMessage(message);
@@ -334,7 +299,7 @@ export class ParserService implements IParserService {
 
         const event = new Event();
         event.source = '';
-        event.type = EventType.WARNING; 
+        event.type = EventType.WARNING;
         event.description = description;
         event.timestamp = new Date();
 
@@ -344,11 +309,11 @@ export class ParserService implements IParserService {
         };
     }
 
-    //7
+    // 7
     private parseFileChangeMessage(message: string): ParseResult {
         const FILE_EVENT_REGEX = /\b(file\s*(changed|modified|modification|edited|tampered|corrupted)|malicious\s+file|infected\s+file|virus\s+detected|unauthorized\s+file\s*(change|modification)|checksum\s*(failed|mismatch)|hash\s*(failed|mismatch)|integrity\s*(check\s*)?(failed|mismatch))\b/i;
-        
-         if (!FILE_EVENT_REGEX.test(message))
+
+        if (!FILE_EVENT_REGEX.test(message))
             return { doesMatch: false };
 
         const username = this.extractUsernameFromMessage(message);
@@ -359,7 +324,7 @@ export class ParserService implements IParserService {
 
         const event = new Event();
         event.source = '';
-        event.type = EventType.ERROR; 
+        event.type = EventType.ERROR;
         event.description = description;
         event.timestamp = new Date();
 
@@ -369,7 +334,7 @@ export class ParserService implements IParserService {
         };
     }
 
-    //8
+    // 8
     private parseNetworkAnomalyMessage(message: string): ParseResult {
         //sus ip, ip scanning, ip abuese
         const IP_ANOMALY_REGEX = /\b(ip\s*(abuse|misuse|attack|scan|scanning|flood|probe|spoof))\b/i;
@@ -389,7 +354,7 @@ export class ParserService implements IParserService {
 
         const event = new Event();
         event.source = '';
-        event.type = EventType.WARNING; 
+        event.type = EventType.WARNING;
         event.description = description;
         event.timestamp = new Date();
 
@@ -407,21 +372,19 @@ export class ParserService implements IParserService {
     }
 
     private async normalizeEventWithLlm(message: string): Promise<Event> {
-
         const requestBody = {
             message: message
         };
 
-        //Call Analysis Engine endpoint
         const response = await this.analysisEngineClient.post("/AnalysisEngine/processEvent", requestBody);
 
-        //Extract LLM-generated event JSON
+        // Extract LLM-generated event JSON
         const eventData = response.data?.eventData;
-        if(!eventData) {
+        if (!eventData) {
             throw new Error("Invalid response from Analysis Engine (missing eventData)");
         }
 
-        //Convert JSON to Event model
+        // Convert JSON to Event model
         const event = new Event();
         event.type = eventData.type;
         event.description = eventData.description;
@@ -429,7 +392,6 @@ export class ParserService implements IParserService {
         event.timestamp = eventData.timestamp ? new Date(eventData.timestamp) : new Date();
 
         return event;
-
     }
 
     private toDTO(event: Event): EventDTO {

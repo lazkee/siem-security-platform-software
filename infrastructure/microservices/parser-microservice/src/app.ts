@@ -10,13 +10,15 @@ import { IParserService } from './Domain/services/IParserService';
 import { ParserService } from './Services/ParserService';
 import { ParserController } from './WebAPI/controllers/ParserController';
 import { EventValidator } from './Application/validators/EventValidator';
+import { IParserRepositoryService } from './Domain/services/IParserRepositoryService';
+import { ParserRepositoryService } from './Services/ParserRepositoryService';
 
 dotenv.config({ quiet: true });
 
 const app = express();
 
 // Read CORS settings from environment
-const corsOrigin = process.env.CORS_ORIGIN?.split(",").map(m=>m.trim()) ?? "*"; //imamo vise adresa u cors origin
+const corsOrigin = process.env.CORS_ORIGIN?.split(",").map(m => m.trim()) ?? "*"; //imamo vise adresa u cors origin
 const corsMethods = process.env.CORS_METHODS?.split(",").map(m => m.trim()) ?? ["POST"];
 
 // Protected microservice from unauthorized access
@@ -32,13 +34,15 @@ initialize_database();
 // ORM Repositories
 const parserEventRepository: Repository<ParserEvent> = Db.getRepository(ParserEvent);
 
-//validator
+// Validators
 const validator = new EventValidator();
+
 // Services
 const parserService: IParserService = new ParserService(parserEventRepository, validator);
+const parserRepositoryService: IParserRepositoryService = new ParserRepositoryService(parserEventRepository);
 
 // WebAPI routes
-const parserController = new ParserController(parserService);
+const parserController = new ParserController(parserService, parserRepositoryService);
 
 // Registering routes
 app.use('/api/v1', parserController.getRouter());
