@@ -10,6 +10,9 @@ import { CorrelationService } from './Services/CorrelationService';
 import { ILLMChatAPIService } from './Domain/Services/ILLMChatAPIService';
 import { LLMChatAPIService } from './Services/LLMChatAPIService';
 
+import { RecurringCorrelationJob } from './Services/ReccuringCorrelationJob';
+import { IntervalScheduler } from './Infrastructure/Scheduler/IntervalScheduler';
+
 import { Repository } from 'typeorm';
 import { Correlation } from './Domain/models/Correlation';
 import { Db } from './Database/DbConnectionPool';
@@ -47,5 +50,13 @@ const correlationService: ICorrelationService = new CorrelationService(Correlati
 const analysisEngineController = new AnalysisEngineController(correlationService, llmChatAPIService);
 
 app.use('/api/v1', analysisEngineController.getRouter());
+
+export function startRecurringJobs() {
+    const recurringCorrelationJob = new RecurringCorrelationJob(correlationService);
+    const intervalMs = 15 * 60 * 1000; // 15 minutes
+
+    const intervalScheduler = new IntervalScheduler(recurringCorrelationJob, intervalMs);
+    intervalScheduler.start();
+}
 
 export default app;

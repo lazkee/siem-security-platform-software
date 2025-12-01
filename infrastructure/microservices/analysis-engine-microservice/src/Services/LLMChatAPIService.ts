@@ -3,24 +3,36 @@ import dotenv from "dotenv";
 import { ILLMChatAPIService } from "../Domain/Services/ILLMChatAPIService";
 import { ChatMessage } from "../Domain/types/ChatMessage";
 
-dotenv.config();
-const API_URL = process.env.API_URL!;
-const MODEL_ID = process.env.MODEL_ID!;
 
 export class LLMChatAPIService implements ILLMChatAPIService {
 
+    private readonly apiUrl: string;
+    private readonly gemmaModelId: string;
+    private readonly deepseekModelId: string;
+
     constructor() {
-        if (!API_URL || !MODEL_ID) {
-            throw new Error("API_URL or MODEL_ID not defined in environment variables");
+        this.apiUrl = process.env.LLM_API_URL ?? "";
+        this.gemmaModelId = process.env.GEMMA_MODEL_ID ?? "";
+        this.deepseekModelId = process.env.DEEPSEEK_MODEL_ID ?? "";
+
+        if (!this.apiUrl) {
+            throw new Error("LLM_API_URL (or API_URL) not defined in environment variables");
+        }
+        if (!this.gemmaModelId) {
+            throw new Error("GEMMA_MODEL_ID not defined in environment variables");
+        }
+        if (!this.deepseekModelId) {
+            throw new Error("DEEPSEEK_MODEL_ID not defined in environment variables");
         }
     }
 
-    async sendPromptToLLM(rawMessage: string): Promise<string | JSON> {
-        try {
+    
 
-            const llmPromptSystem: ChatMessage = {
+    async sendNormalizationPrompt(rawMessage: string): Promise<string | JSON> {
+        const messages: ChatMessage[] = [
+            {
                 role: "system",
-                content: `You are an analyzer that transforms raw logs into Event JSON objects.
+                content: `You are an SIEM analyzer that transforms raw logs into Event JSON objects.
                         Instructions:
                         1. Output a single JSON object matching the Event entity:
                         {
@@ -28,22 +40,48 @@ export class LLMChatAPIService implements ILLMChatAPIService {
                             "description": string
                         }
                         2. Ensure 'type' matches one of the EventType enum values.
-                        3. 'timestamp' must be a valid ISO 8601 string.
-                        4. 'description' should summarize the content concisely.
-                        5. Output only the JSON, no explanations or extra text.`
-            };
-
-            const llmPromptUser: ChatMessage = {
+                        3. 'description' should summarize the content concisely.
+                        4. Output only the JSON, no explanations or extra text.`
+            },
+            {
                 role: "user",
                 content: `TASK: Create an Event JSON\nInput: ${rawMessage}`
-            };
+            }
+        ];
 
-            const messages: ChatMessage[] = [llmPromptSystem, llmPromptUser];
+        return this.sendChatCompletion(this.gemmaModelId, messages);
+    }
 
+    async sendCorrelationPrompt(rawMessage: string): Promise<string | JSON> {
+        const messages: ChatMessage[] = [
+            {
+                role: "system",
+                content: `You are a Senior Security Analyst specializing in SIEM correlation analysis.
+                        Respond with a single JSON object describing correlations between the provided events.
+                        JSON shape:
+                        {
+                          "correlation_detected": boolean,
+                          "confidence": number,   // 0-1
+                          "summary": string,
+                          "related_indicators": string[] // indicators, IPs, hosts, users, or rules involved
+                        }
+                        Output only JSON. No extra text.`
+            },
+            {
+                role: "user",
+                content: `TASK: Detect correlations between events\nInput: ${rawMessage}`
+            }
+        ];
+
+        return this.sendChatCompletion(this.deepseekModelId, messages);
+    }
+
+    private async sendChatCompletion(modelId: string, messages: ChatMessage[]): Promise<string | JSON> {
+        try {
             const res = await axios.post(
-                API_URL,
+                this.apiUrl,
                 {
-                    model: MODEL_ID,
+                    model: modelId,
                     messages,
                     temperature: 0.1,
                 },
@@ -57,13 +95,19 @@ export class LLMChatAPIService implements ILLMChatAPIService {
 
             const responseText = res.data?.choices?.[0]?.message?.content ?? "No response from the model.";
 
-            // Remove markdown ```json blocks if present
-            const cleaned = responseText.replace(/^```(?:json)?\s*/, '').replace(/```$/, '').trim();
+            // if LLM returns not onlu JSON, clean the response
+           const cleaned = responseText
+                .replace(/<think>[\s\S]*?<\/think>/gi, "")
+                .replace(/```(?:json)?\s*([\s\S]*?)```/gi, "$1")
+                .replace(/```/g, "")
+                .trim();
 
-            // Parse JSON
-            const processedEventJson = JSON.parse(cleaned);
 
-            return processedEventJson;
+            try {
+                return JSON.parse(cleaned);
+            } catch {
+                return cleaned;
+            }
 
         } catch (error: any) {
             if (axios.isAxiosError(error)) {

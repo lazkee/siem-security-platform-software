@@ -1,3 +1,4 @@
 export interface ILLMChatAPIService {
-  sendPromptToLLM(rawMessage: string): Promise<string | JSON>;
+  sendNormalizationPrompt(rawMessage: string): Promise<string | JSON>;
+  sendCorrelationPrompt(rawMessage: string): Promise<string | JSON>;
 }

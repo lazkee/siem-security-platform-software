@@ -33,7 +33,7 @@ export class CorrelationService implements ICorrelationService{
     
 
     async findCorrelations(): Promise<void> {
-        throw new Error("Method not implemented.");
+        console.log(`\x1b[35m[CorrelationService@1.45.4]\x1b[0m Finding correlations...`);
         //na svakih 15 minuta 
         //salje podatke u poslednjih sat vremena
         //LLM vrsi analizu u cilju pronalazenja korelacija

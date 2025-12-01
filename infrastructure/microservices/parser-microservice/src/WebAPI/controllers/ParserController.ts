@@ -1,9 +1,16 @@
 import { Router, Request, Response } from "express";
 import { IParserService } from "../../Domain/services/IParserService";
+import { IParserRepositoryService } from "../../Domain/services/IParserRepositoryService";
+import { ILogerService } from "../../Domain/services/ILogerService";
+import { ValidateInputMessage } from "../validators/ParserValidator";
 export class ParserController {
     private readonly router: Router;
 
-    constructor(private readonly parserService: IParserService) {
+    constructor(
+        private readonly parserService: IParserService,
+        private readonly parserRepositoryService: IParserRepositoryService,
+        private readonly logger: ILogerService
+    ) {
         this.router = Router();
         this.initializeRoutes();
     }
@@ -17,9 +24,18 @@ export class ParserController {
 
     private async log(req: Request, res: Response): Promise<void> {
         try {
-            const rawMessage = req.body.message as string;  //drugi tim mora da nam salje json sa message kako bi mi izvukli poruku
-            console.log('Log message before normalization: ' + rawMessage);
-            const response =  await this.parserService.normalizeAndSaveEvent(rawMessage);
+            const rawMessage = req.body.message as string;  // Team 2 sends JSON with event message and event source (microservice which called log)
+            const source = req.body.source as string;
+            
+            const validate = ValidateInputMessage(rawMessage);
+            if (!validate.success) {
+                res.status(400).json({ success: false, message: validate.message });
+                return;
+            }
+
+            this.logger.log(`Raw log message from "${source}": ${rawMessage}`)
+
+            const response = await this.parserService.normalizeAndSaveEvent(rawMessage, source);
             res.status(201).json(response);
         } catch (err) {
             res.status(500).json({ message: (err as Error).message });
@@ -28,7 +44,8 @@ export class ParserController {
 
     private async getAllParserEvents(req: Request, res: Response): Promise<void> {
         try {
-            const response = this.parserService.getAll();
+            this.logger.log(`Fetching all parser events`);
+            const response = this.parserRepositoryService.getAll();
             res.status(200).json(response);
         } catch (err) {
             res.status(500).json({ message: (err as Error).message });
@@ -37,13 +54,14 @@ export class ParserController {
 
     private async getParserEvent(req: Request, res: Response): Promise<void> {
         try {
-            const id = Number(req.params.id)
-            console.log("id params->" + id);
+            const id = Number(req.params.id);
             if (isNaN(id)) {
                 res.status(400).json({ message: "Invalid ID" });
                 return;
             }
-            const response = await this.parserService.getParserEventById(id);
+            this.logger.log(`Fetching parser event with ID: ${id}`);
+
+            const response = await this.parserRepositoryService.getParserEventById(id);
             res.status(200).json(response);
         } catch (err) {
             res.status(404).json({ message: (err as Error).message });
@@ -53,13 +71,13 @@ export class ParserController {
     private async deleteParserEvent(req: Request, res: Response): Promise<void> {
         try {
             const id = Number(req.params.id)
-            console.log("id params->" + id);
             if (isNaN(id)) {
                 res.status(400).json({ message: "Invalid ID" });
                 return;
             }
+            this.logger.log(`Deleting parser event with ID: ${id}`);
 
-            const response = await this.parserService.deleteById(id);
+            const response = await this.parserRepositoryService.deleteById(id);
             if (!response) {
                 res.status(404).json({ message: `Parse Event with id=${id} not found` });
                 return;

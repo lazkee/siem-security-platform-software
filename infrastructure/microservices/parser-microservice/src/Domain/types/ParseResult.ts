@@ -1,6 +1,6 @@
-import { Event } from "../models/Event";
+import { EventDTO } from "../DTOs/EventDTO";
 
 export type ParseResult = {
     doesMatch: boolean;
-    event?: Event;
+    event?: EventDTO;
 }

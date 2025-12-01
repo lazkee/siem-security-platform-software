@@ -1,5 +1,9 @@
 console.clear();
 import app from './app';
+import {startRecurringJobs} from "./app";
+
+// Start recurring jobs
+startRecurringJobs();
 
 const port = process.env.PORT || 5000;
 

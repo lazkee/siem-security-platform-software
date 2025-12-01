@@ -5,14 +5,10 @@ import { AlertSeverity } from "../Domain/enums/AlertSeverity";
 import { AlertStatus } from "../Domain/enums/AlertStatus";
 import { IAlertRepositoryService } from "../Domain/services/IAlertRepositoryService";
 import { IAlertService } from "../Domain/services/IAlertService";
-import { IThreatAnalyzerService } from "../Domain/services/IThreatAnalyzerService";
-
+import { AlertQueryDTO, PaginatedAlertsDTO } from "../Domain/DTOs/AlertQueryDTO";
 
 export class AlertService implements IAlertService {
-  constructor(
-    private repo: IAlertRepositoryService,
-    private threatAnalyzer: IThreatAnalyzerService
-  ) {}
+  constructor(private repo: IAlertRepositoryService) {}
 
   private toDTO(alert: any): AlertDTO {
     return {
@@ -83,8 +79,22 @@ export class AlertService implements IAlertService {
     return this.repo.delete(id);
   }
 
-  // Ovo poziva AnalysisEngine
-  async showAlert(correlationId: number): Promise<void> {
-    await this.threatAnalyzer.analyze([correlationId]);
+  // filtering and pagination
+  async getAlertsWithFilters(query: AlertQueryDTO): Promise<PaginatedAlertsDTO> {
+    const { alerts, total } = await this.repo.findWithFilters(query);
+
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: alerts.map(a => this.toDTO(a)),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
+      }
+    }
   }
 }
