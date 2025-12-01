@@ -38,7 +38,7 @@ export class AlertRepositoryService implements IAlertRepositoryService {
     return result.affected !== 0;
   }
 
-  // FILTERING & PAGINATION
+  // FILTERING AND PAGINATION
   async findWithFilters(query: AlertQueryDTO): Promise<{ alerts: Alert[], total: number }> {
     const {
       page = 1,
