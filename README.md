@@ -18,6 +18,7 @@ SIEM consists of multiple subsystems that monitor and respond to various types o
 - [Jira](#jira)
 - [Database System Design](#database-system-design)
 - [Information System Design](#information-system-design)
+- [Wireframe Design](#wireframe-design)
 - [License](#license)
 
 ## Jira
