@@ -26,6 +26,16 @@ app.use(
 
 initialize_database();
 
+// health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    service: "AlertService",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // repositories
 const typeormAlertRepo: Repository<Alert> = Db.getRepository(Alert);
 

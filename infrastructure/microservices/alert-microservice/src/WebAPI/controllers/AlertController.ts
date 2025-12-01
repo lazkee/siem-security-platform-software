@@ -6,6 +6,7 @@ import { AlertStatus } from "../../Domain/enums/AlertStatus";
 import { CreateAlertDTO } from "../../Domain/DTOs/CreateAlertDTO";
 import { ResolveAlertDTO } from "../../Domain/DTOs/ResolveAlertDTO";
 import { CreateAlertFromCorrelationDTO } from "../../Domain/DTOs/CreateAlertFromCorrelationDTO";
+import { AlertQueryDTO } from "../../Domain/DTOs/AlertQueryDTO";
 
 export class AlertController {
   private router: Router;
@@ -19,6 +20,7 @@ export class AlertController {
   }
 
   private initializeRoutes() {
+    this.router.get("/alerts/search", this.searchAlerts.bind(this));
     this.router.post("/alerts", this.createAlert.bind(this));
     this.router.get("/alerts", this.getAllAlerts.bind(this));
     this.router.get("/alerts/:id", this.getAlertById.bind(this));
@@ -34,6 +36,28 @@ export class AlertController {
 
   getRouter() {
     return this.router;
+  }
+
+    // search sa filterom i paginacijom
+  async searchAlerts(req: Request, res: Response) {
+    try {
+      const query: AlertQueryDTO = {
+        page: req.query.page ? Number(req.query.page) : undefined,
+        limit: req.query.limit ? Number(req.query.limit) : undefined,
+        severity: req.query.severity as AlertSeverity,
+        status: req.query.status as AlertStatus,
+        startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
+        endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
+        source: req.query.source as string,
+        sortBy: req.query.sortBy as 'createdAt' | 'severity' | 'status',
+        sortOrder: req.query.sortOrder as 'ASC' | 'DESC'
+      };
+
+      const result = await this.alertService.getAlertsWithFilters(query);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   }
 
   async createAlert(req: Request, res: Response) {

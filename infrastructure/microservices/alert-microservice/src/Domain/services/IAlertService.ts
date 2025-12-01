@@ -3,6 +3,7 @@ import { CreateAlertDTO } from "../DTOs/CreateAlertDTO";
 import { ResolveAlertDTO } from "../DTOs/ResolveAlertDTO";
 import { AlertSeverity } from "../enums/AlertSeverity";
 import { AlertStatus } from "../enums/AlertStatus";
+import { AlertQueryDTO, PaginatedAlertsDTO } from "../DTOs/AlertQueryDTO";
 
 export interface IAlertService {
   createAlert(data: CreateAlertDTO): Promise<AlertDTO>;
@@ -13,4 +14,7 @@ export interface IAlertService {
   resolveAlert(id: number, data: ResolveAlertDTO): Promise<AlertDTO>;
   updateAlertStatus(id: number, status: AlertStatus): Promise<AlertDTO>;
   deleteAlert(id: number): Promise<boolean>;
+
+  getAlertsWithFilters(query: AlertQueryDTO): Promise<PaginatedAlertsDTO>;
+
 }
