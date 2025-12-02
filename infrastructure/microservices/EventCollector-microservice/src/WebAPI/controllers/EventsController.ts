@@ -98,7 +98,14 @@ export class EventsController {
 
     private async deleteOldEvents(req: Request, res: Response): Promise<void> {
         try {
-            const anyDeleted = await this.eventsService.deleteOldEvents(req.params.oldIds);
+            const ids = req.body as number[];
+
+            if (!Array.isArray(ids) || ids.some((id) => typeof id !== "number")) {
+                res.status(400).json({ message: "Body must be an array of numbers" });
+                return;
+            }
+
+            const anyDeleted = await this.eventsService.deleteOldEvents(ids);
             res.status(200).json({ success: anyDeleted });
         } catch (err) {
             const message = (err as Error).message;
@@ -106,6 +113,7 @@ export class EventsController {
             res.status(500).json({ message });
         }
     }
+
 
 
     public getRouter(): Router {
