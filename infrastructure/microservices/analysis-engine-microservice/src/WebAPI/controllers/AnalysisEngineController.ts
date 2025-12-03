@@ -24,7 +24,7 @@ export class AnalysisEngineController {
                 return;
             }
 
-            const processedEventJson = await this.llmChatAPIService.sendCorrelationPrompt(rawMessage);
+            const processedEventJson = await this.llmChatAPIService.sendNormalizationPrompt(rawMessage);
 
             res.status(200).json({ eventData: processedEventJson });
             //it needs to be called eventData because ParserService expects it

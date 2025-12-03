@@ -40,8 +40,15 @@ export class CorrelationService implements ICorrelationService{
         //mozda ne bi bilo lose za korelacije koristiti 
         //DeepSeek-R1-Distill-Qwen-7B ili neki slican malo jaci model
 
+        //get event from event collector microservice ili query?
+
+        
+        
+    }
 
 
+    async deleteArchivedCorrelations(): Promise<void> {
+        throw new Error("Method not implemented.");
     }
 
 }
