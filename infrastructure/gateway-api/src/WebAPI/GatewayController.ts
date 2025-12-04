@@ -35,7 +35,6 @@ export class GatewayController {
     this.router.get("/siem/alerts/:id",authenticate,authorize("sysadmin"),this.getAlertById.bind(this));
     this.router.put("/siem/alerts/:id/resolve",authenticate,authorize("sysadmin"),this.resolveAlert.bind(this));
     this.router.put("/siem/alerts/:id/status",authenticate,authorize("sysadmin"),this.updateAlertStatus.bind(this));
-    this.router.delete("/siem/alerts/:id",authenticate,authorize("sysadmin"),this.deleteAlert.bind(this));
   }
 
   private async login(req: Request, res: Response): Promise<void> {
@@ -186,16 +185,6 @@ export class GatewayController {
       }
 
       const result = await this.gatewayService.updateAlertStatus(id, status);
-      res.status(200).json(result);
-    } catch (err) {
-      res.status(500).json({ message: (err as Error).message });
-    }
-  }
-
-  private async deleteAlert(req: Request, res: Response): Promise<void> {
-    try {
-      const id = parseInt(req.params.id, 10);
-      const result = await this.gatewayService.deleteAlert(id);
       res.status(200).json(result);
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });

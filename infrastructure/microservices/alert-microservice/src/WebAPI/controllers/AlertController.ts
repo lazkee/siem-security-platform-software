@@ -28,7 +28,6 @@ export class AlertController {
     this.router.get("/alerts/status/:status", this.getAlertsByStatus.bind(this));
     this.router.put("/alerts/:id/resolve", this.resolveAlert.bind(this));
     this.router.put("/alerts/:id/status", this.updateAlertStatus.bind(this));
-    this.router.delete("/alerts/:id", this.deleteAlert.bind(this));
     this.router.post("/alerts/correlation", this.createAlertFromCorrelation.bind(this));
   }
 
@@ -132,12 +131,5 @@ export class AlertController {
       await this.notificationService.broadcastAlertUpdate(updated, "STATUS_CHANGED");
       res.json(updated);
     } catch (err: any) { res.status(400).json({ error: err.message }); }
-  }
-
-  async deleteAlert(req: Request, res: Response) {
-    try {
-      const ok = await this.alertService.deleteAlert(Number(req.params.id));
-      res.json({ success: ok });
-    } catch (err: any) { res.status(500).json({ error: err.message }); }
   }
 }

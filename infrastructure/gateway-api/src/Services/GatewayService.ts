@@ -100,9 +100,4 @@ export class GatewayService implements IGatewayService {
     const response = await this.alertClient.put<AlertDTO>(`/alerts/${id}/status`, { status });
     return response.data;
   }
-
-  async deleteAlert(id: number): Promise<{ success: boolean }> {
-    const response = await this.alertClient.delete<{ success: boolean }>(`/alerts/${id}`);
-    return response.data;
-  }
 }
