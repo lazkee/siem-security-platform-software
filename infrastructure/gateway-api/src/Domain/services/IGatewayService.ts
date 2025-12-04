@@ -21,4 +21,8 @@ export interface IGatewayService {
   searchAlerts(query: AlertQueryDTO): Promise<PaginatedAlertsDTO>;
   resolveAlert(id: number, resolvedBy: string, status: string): Promise<AlertDTO>;
   updateAlertStatus(id: number, status: string): Promise<AlertDTO>;
+
+  // Query
+  searchEvents(query: string): Promise<any>;
+  getOldEvents(hours: number): Promise<any>;
 }

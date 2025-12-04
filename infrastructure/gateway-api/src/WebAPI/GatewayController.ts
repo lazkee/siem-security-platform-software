@@ -35,6 +35,10 @@ export class GatewayController {
     this.router.get("/siem/alerts/:id",authenticate,authorize("sysadmin"),this.getAlertById.bind(this));
     this.router.put("/siem/alerts/:id/resolve",authenticate,authorize("sysadmin"),this.resolveAlert.bind(this));
     this.router.put("/siem/alerts/:id/status",authenticate,authorize("sysadmin"),this.updateAlertStatus.bind(this));
+
+    // Query
+    this.router.get("/siem/query/search", authenticate, authorize("sysadmin"), this.searchEvents.bind(this));
+    this.router.get("/siem/query/oldEvents/:hours", authenticate, authorize("sysadmin"), this.getOldEvents.bind(this));
   }
 
   private async login(req: Request, res: Response): Promise<void> {
@@ -186,6 +190,26 @@ export class GatewayController {
 
       const result = await this.gatewayService.updateAlertStatus(id, status);
       res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message });
+    }
+  }
+
+  private async searchEvents(req: Request, res: Response): Promise<void> {
+    try {
+      const query = req.query.query as string;
+      const results = await this.gatewayService.searchEvents(query);
+      res.status(200).json(results);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message });
+    }
+  }
+
+  private async getOldEvents(req: Request, res: Response): Promise<void> {
+    try {
+      const hours = Number(req.params.hours);
+      const results = await this.gatewayService.getOldEvents(hours);
+      res.status(200).json(results);
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
     }
