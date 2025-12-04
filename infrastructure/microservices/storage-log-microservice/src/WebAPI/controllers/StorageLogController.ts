@@ -27,7 +27,7 @@ export class StorageLogController{
 
     private async runArchiveProcess(req: Request, res: Response): Promise<void>{
         try{
-            const response = this.storageLogService.runArchiveProcess();
+            const response = await this.storageLogService.runArchiveProcess();
             res.status(201).json(response);
         } catch (err){
             res.status(500).json({ message: (err as Error).message });

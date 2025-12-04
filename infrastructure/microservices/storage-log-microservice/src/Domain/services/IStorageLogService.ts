@@ -1,4 +1,4 @@
 export interface IStorageLogService {
-    runArchiveProcess(): Promise<void>;
+    runArchiveProcess(): Promise<Boolean>;
     getArchives(): Promise<any[]>;
 }

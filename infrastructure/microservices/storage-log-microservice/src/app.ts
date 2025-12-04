@@ -10,6 +10,8 @@ import { StorageLogService } from './Services/StorageLogService';
 import axios from 'axios';
 import { StorageLogController } from './WebAPI/controllers/StorageLogController';
 import { IStorageLogService } from './Domain/services/IStorageLogService';
+import { ILogerService } from './Domain/services/ILogerService';
+import { LogerService } from './Services/LogerService';
 
 dotenv.config({ quiet: true });
 
@@ -36,11 +38,12 @@ void (async () => {
 
 const storageRepo = Db.getRepository(StorageLog);
 
-const storageLogService : IStorageLogService = new StorageLogService(storageRepo);
+const logerService : ILogerService = new LogerService();
+const storageLogService : IStorageLogService = new StorageLogService(storageRepo, logerService);
 
 const storageController = new StorageLogController(storageLogService);
 
-app.use("/api/v1/storageLog", storageController.getRouter());
+app.use("/api/v1", storageController.getRouter());
 
 
 //pokretanje na svakih 15 minuta
