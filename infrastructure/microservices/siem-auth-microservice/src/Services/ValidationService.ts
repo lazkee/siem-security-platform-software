@@ -22,7 +22,7 @@ export class ValidationService implements IValidationService {
             return null;
         }
 
-        return s.toLowerCase().startsWith('Bearer') ? s.slice(6).trim() : s;
+        return s.toLowerCase().startsWith('bearer ') ? s.slice(7).trim() : s;
         // Bearer "token" ili samo "token"
     }
     
@@ -65,7 +65,7 @@ export class ValidationService implements IValidationService {
     }
 
     private normalizeClaims(decoded: JwtPayload | string): AuthTokenClaims | null {
-        if(!decoded && typeof(decoded) === 'string'){
+        if(!decoded || typeof(decoded) === 'string'){
             return null;
         }
 
@@ -75,7 +75,7 @@ export class ValidationService implements IValidationService {
         const username = payload.username;
         const role = payload.role;
 
-        if(!user_id || username || role === undefined){
+        if(user_id === undefined || username === undefined || role === undefined){
             // fali podataka
             return null;
         }
