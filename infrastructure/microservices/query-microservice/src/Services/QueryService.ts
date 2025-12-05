@@ -51,13 +51,6 @@ export class QueryService implements IQueryService {
             return true;
         });
     }
-    public convertEventsToJson(events: EventDTO[]): string {
-        try {
-            return JSON.stringify(events);
-        } catch (error) {
-            console.error(error);
-            return JSON.stringify([]); 
-        }
-    }
+   
     
 }
