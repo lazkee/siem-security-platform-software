@@ -4,20 +4,40 @@ import { Event } from "../Domain/models/Event";
 import { parseQueryString } from "../Utils/ParseQuery";
 import { EventDTO } from "../Domain/DTOs/EventDTO";
 
+// princip pretrage:
+// imamo recnik koji mapira reci iz eventa na event id-eve
+// npr. "error" => [1, 5, 7]
+// npr. "server1" => [2, 3, 6]
+// prilikom pretrage se parsira query string i za svaku rec iz query stringa se dobijaju id-evi iz recnika
+// kao rezultat pretrage se vracaju id-evi koji se pojavljuju u barem jednom skupu za svaku rec iz query stringa
+// promenljiva lastProcessedId cuva id event-a koji je poslednji procesiran
+// kada se pokrene pretraga, prvo se od EventCollector servisa trazi da vrati najveci id eventa koji je sacuvan
+// ukoliko je veci od lastProcessedId, znaci da ima novih event-a
+// onda se ti event-i uzimaju i azurira se recnik sa njihovim podacima
+// na 15 minuta se brisu eventi koji su stariji od 72h, i tada se brisu i njihovi podaci iz recnika
+// imamo i mapu koja mapira event id na reci iz eventa za lakse brisanje
+
 export class QueryService implements IQueryService {
     constructor(
         private readonly queryRepositoryService: IQueryRepositoryService,
     ) {}
 
-    async searchEvents(query: string): Promise<any[]> {
+    async searchEvents(query: string): Promise<EventDTO[]> {
         const allEvents = await this.queryRepositoryService.getAllEvents();
 
         // query je npr. "type=info|date=20/10/2025" ili "type=info|host=server1|dateFrom=2025-11-20|dateTo=2025-11-22"
         // pozivamo parseQueryString da dobijemo parove kljuc-vrednost sa nazivom polja i vrednosti za pretragu
         const filters = parseQueryString(query);
+        const textQuery = filters["text"] || "";
+        delete filters["text"];
+
+        const matchingIds = textQuery ? this.queryRepositoryService.getIdsForTokens(textQuery) : null;
+
+        // filtriramo sve evente na osnovu dobijenih id-eva iz indeksa
+        const filteredEvents = allEvents.filter(event => !matchingIds || matchingIds.has(event.id));
 
         // dodaj pre vracanja kesiranje
-        return allEvents.filter(event => {
+        return filteredEvents.filter(event => {
 
             for (const key of Object.keys(filters)) {
                 const value = filters[key].toLowerCase();
@@ -34,23 +54,22 @@ export class QueryService implements IQueryService {
                     continue;
                 }
                 
-                // za event proverava polja sa nazivom trenutnog key
-                // npr. event[type] ili event[host]
+                // za event proverava polja sa nazivom trenutnog key event[type] 
                 // da li sadrzi vrednost iz query stringa
-                // ako ne sadrzi takvo polje onda stavljamo da event za to polje "ima" vrednost ""
                 const eventValue = (event as any)[key]?.toString().toLowerCase() || "";
                 if (!eventValue.includes(value)) {
                     return false;
                 }
-
-                // proveriti da li je sve pokriveno
-                // date range je pokriven
-                // a proveriti da li poslednja provera ispravno proverava sva ostala polja
             }
 
             return true;
-        });
-    }
-   
-    
+        }).map(e => ({
+            source: e.source,
+            type: e.type,
+            description: e.description,
+            timestamp: e.timestamp,
+        }));
+    } 
+
+    // dodati logovanje za debug kad se doda LoggerService
 }

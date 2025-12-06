@@ -1,7 +1,7 @@
 import { EventType } from "../enums/EventType";
 
 export interface EventDTO {
-    id: number;
+    //id: number;
     source: string;
     type: EventType;
     description: string;
