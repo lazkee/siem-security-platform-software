@@ -1,4 +1,4 @@
-import { Entity, ObjectIdColumn, Column } from "typeorm";
+import { Entity, ObjectIdColumn, Column, Index } from "typeorm";
 
 @Entity("cachedQueries")
 export class CacheEntry {
@@ -14,4 +14,4 @@ export class CacheEntry {
 
     @Column({ type: "timestamp" })
     cachedAt!: Date;
-}
+} 

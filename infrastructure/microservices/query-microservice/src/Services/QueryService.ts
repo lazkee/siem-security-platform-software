@@ -3,6 +3,7 @@ import { IQueryRepositoryService } from "../Domain/services/IQueryRepositoryServ
 import { Event } from "../Domain/models/Event";
 import { parseQueryString } from "../Utils/ParseQuery";
 import { EventDTO } from "../Domain/DTOs/EventDTO";
+import { PdfGenerator } from "../Utils/PdfGenerator";
 
 // princip pretrage:
 // imamo recnik koji mapira reci iz eventa na event id-eve
@@ -70,6 +71,19 @@ export class QueryService implements IQueryService {
             timestamp: e.timestamp,
         }));
     } 
+    public async generatePdfReport(query: string): Promise<string> {
+        
+        const eventsToReport = await this.searchEvents(query); 
+
+        if (eventsToReport.length === 0) {
+            console.warn(`No results found for query: ${query}.`);
+            return ''; 
+        }
+
+        const base64PdfString = await PdfGenerator.createReport(eventsToReport); 
+        
+        return base64PdfString; 
+    }
 
     // dodati logovanje za debug kad se doda LoggerService
 }
