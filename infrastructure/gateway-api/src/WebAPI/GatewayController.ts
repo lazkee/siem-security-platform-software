@@ -65,7 +65,7 @@ export class GatewayController {
   private async getUserById(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id, 10); 
-      if (!req.user || req.user.id !== id) {
+      if (!req.user || req.user.user_id !== id) {
         res.status(401).json({ message: "You can only access your own data!" });
         return;
       }
@@ -94,7 +94,7 @@ export class GatewayController {
       res.setHeader("Connection", "keep-alive");
       res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
 
-      const userId = req.user?.id || "unknown";
+      const userId = req.user?.user_id || "unknown";
       const username = req.user?.username || "unknown";
 
       console.log(`\x1b[36m[Gateway]\x1b[0m SSE connection established for SysAdmin: ${username}`);

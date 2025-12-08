@@ -10,6 +10,7 @@ export interface IGatewayService {
   // Auth
   login(data: LoginUserDTO): Promise<AuthResponseType>;
   register(data: RegistrationUserDTO): Promise<AuthResponseType>;
+  validateToken(token: string) : Promise<{valid: boolean; payload?: any; isSysAdmin?: boolean; error?: string }>;
 
   // Users
   getAllUsers(): Promise<UserDTO[]>;

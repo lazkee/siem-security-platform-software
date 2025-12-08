@@ -65,6 +65,10 @@ export class GatewayService implements IGatewayService {
     }
   }
 
+  async validateToken(token: string) : Promise<{valid: boolean; payload?: any; isSysAdmin?: boolean; error?: string }>{
+    return {valid: false}
+  }
+
   // User microservice
   async getAllUsers(): Promise<UserDTO[]> {
     const response = await this.userClient.get<UserDTO[]>("/users");
