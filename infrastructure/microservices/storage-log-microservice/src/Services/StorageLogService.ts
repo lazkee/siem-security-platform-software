@@ -189,4 +189,42 @@ export class StorageLogService implements IStorageLogService {
 
         return true;
     }
+
+    public async searchArchives(query: string): Promise<StorageLog[]> {
+        const allArchives = await this.getArchives();
+        const normalized = query.toLowerCase();
+        return allArchives.filter(a => a.fileName.toLowerCase().includes(normalized));
+    }
+
+    public async sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<StorageLog[]> {
+        const allArchives = await this.getArchives();
+        const factor = order == "asc" ? 1 : -1;
+
+        allArchives.sort((a, b) => {
+            let valA: number | string;
+            let valB: number | string;
+
+            switch (by) {
+                case "date":
+                    valA = new Date(a.createdAt).getTime();
+                    valB = new Date(b.createdAt).getTime();
+                    break;
+
+                case "size": 
+                    valA = a.fileSize;
+                    valB = b.fileSize;
+                    break;
+                
+                case "name":
+                    valA = a.fileName;
+                    valB = b.fileName;
+                    break;
+            }
+
+            if(valA < valB) return -1 * factor;
+            if(valA > valB) return 1 * factor;
+            return 0; 
+        });
+        return allArchives;
+    }
 }
