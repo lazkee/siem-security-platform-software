@@ -10,4 +10,10 @@ export class StorageLog {
 
     @Column({name: "event_count", type: "int", default: 0})
     eventCount!: number;
+
+    @Column({name: "created_at", type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
+    createdAt!: Date;
+
+    @Column({name: "file_size", type: "int"})
+    fileSize!: number;
 }

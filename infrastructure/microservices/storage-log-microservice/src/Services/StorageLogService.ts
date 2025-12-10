@@ -2,7 +2,7 @@ import path from "path";
 import axios, { AxiosInstance } from "axios";
 import { Repository } from "typeorm";
 import { StorageLog } from "../Domain/models/StorageLog";
-import { mkdirSync, unlinkSync, writeFileSync } from "fs";
+import { mkdirSync, statSync, unlinkSync, writeFileSync } from "fs";
 import { IStorageLogService } from "../Domain/services/IStorageLogService";
 import { EventDTO } from "../Domain/DTOs/EventDTO";
 import { exec } from "child_process";
@@ -118,6 +118,8 @@ export class StorageLogService implements IStorageLogService {
         // kreiranje tar arhive
         const tarName = `logs_${new Date().toISOString().replace(/[:.]/g, "_")}.tar`;
         const tarPath = path.join(ARCHIVE_DIR, tarName);
+        const stats = statSync(tarPath);
+        const sizeInBytes = stats.size;
 
         try {
             await execSync(`tar -cf ${tarPath} -C ${TEMP_DIR} ${txtFiles.join(" ")}`);
@@ -129,9 +131,12 @@ export class StorageLogService implements IStorageLogService {
 
         // upis u bazu
         try {
+            const stats = statSync(tarPath);
+
             const entry = this.storageRepo.create({
                 fileName: tarName,
-                eventCount: eventsToArchive.length
+                eventCount: eventsToArchive.length,
+                fileSize: stats.size
             });
 
             await this.storageRepo.save(entry);
