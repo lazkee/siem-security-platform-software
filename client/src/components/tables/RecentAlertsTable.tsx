@@ -1,16 +1,43 @@
 import React from "react";
+import { AlertDTO } from "../../models/alerts/AlertDTO";
+import { AlertSeverity } from "../../enums/AlertSeverity";
+import { AlertStatus } from "../../enums/AlertStatus";
 import { PiWarningOctagonFill, PiInfoBold } from "react-icons/pi";
 import { BiMessageRounded } from "react-icons/bi";
 
-interface AlertRow {
-  id: string;
-  time: string;
-  isAlert: boolean;
+interface RecentAlertsTableProps {
+  alerts: AlertDTO[];
+  onSelectAlert: (id: number) => void;
+  onResolve: (id: number, resolvedBy: string) => void;
+  onUpdateStatus: (id: number, status: string) => void;
 }
 
+export default function RecentAlertsTable({ 
+  alerts, 
+  onSelectAlert,
+}: RecentAlertsTableProps) {
+  
+  const getSeverityColor = (severity: AlertSeverity) => {
+    switch (severity) {
+      case AlertSeverity.CRITICAL: return "#ff4b4b";
+      case AlertSeverity.HIGH: return "#ffa500";
+      case AlertSeverity.MEDIUM: return "#ffd700";
+      case AlertSeverity.LOW: return "#4ade80";
+      default: return "#60a5fa";
+    }
+  };
 
-//pomerice se styles u css fajl na kraju
-export default function RecentAlertsTable({ alerts }: { alerts: AlertRow[] }) {
+  const getStatusColor = (status: AlertStatus) => {
+    switch (status) {
+      case AlertStatus.ACTIVE: return "#ffa500";
+      case AlertStatus.INVESTIGATING: return "#60a5fa";
+      case AlertStatus.RESOLVED: return "#4ade80";
+      case AlertStatus.DISMISSED: return "#a6a6a6";
+      case AlertStatus.ESCALATED: return "#ff4b4b";
+      default: return "#60a5fa";
+    }
+  };
+
   const containerStyle: React.CSSProperties = {
     background: "#1f1f1f",
     borderRadius: "14px",
@@ -18,7 +45,6 @@ export default function RecentAlertsTable({ alerts }: { alerts: AlertRow[] }) {
     boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
     marginTop: "12px",
     border: "1px solid #333",
-    margin: "10px",
   };
 
   const tableStyle: React.CSSProperties = {
@@ -33,47 +59,37 @@ export default function RecentAlertsTable({ alerts }: { alerts: AlertRow[] }) {
   };
 
   const thStyle: React.CSSProperties = {
-    padding: "12px 16px",
+    padding: "14px 16px",
     textAlign: "left",
     color: "#d0d0d0",
     fontWeight: 600,
-    fontSize: "14px",
+    fontSize: "13px",
     borderBottom: "1px solid #3a3a3a",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
   };
 
   const tdStyle: React.CSSProperties = {
-    padding: "12px 16px",
+    padding: "14px 16px",
     borderBottom: "1px solid #2d2d2d",
     color: "#dcdcdc",
   };
 
-  const eventIdStyle: React.CSSProperties = {
-    ...tdStyle,
-    fontFamily: "Consolas, 'Courier New', monospace",
-    fontSize: "13px",
-    color: "#b5b5b5",
+  const rowStyle: React.CSSProperties = {
+    cursor: "pointer",
+    transition: "background 0.2s",
   };
 
-  const badgeBase: React.CSSProperties = {
+  const badgeStyle = (color: string): React.CSSProperties => ({
     padding: "5px 10px",
-    borderRadius: "10px",
+    borderRadius: "8px",
     fontSize: "12px",
     fontWeight: 600,
-  };
-
-  const yesBadge: React.CSSProperties = {
-    ...badgeBase,
-    background: "rgba(239, 68, 68, 0.15)",
-    color: "#f87171",
-    border: "1px solid rgba(239, 68, 68, 0.3)",
-  };
-
-  const noBadge: React.CSSProperties = {
-    ...badgeBase,
-    background: "rgba(59, 130, 246, 0.15)",
-    color: "#60a5fa",
-    border: "1px solid rgba(59, 130, 246, 0.3)",
-  };
+    display: "inline-block",
+    background: `${color}22`,
+    color: color,
+    border: `1px solid ${color}44`,
+  });
 
   return (
     <div style={containerStyle}>
@@ -82,37 +98,105 @@ export default function RecentAlertsTable({ alerts }: { alerts: AlertRow[] }) {
           <tr>
             <th style={thStyle}></th>
             <th style={thStyle}>ID</th>
-            <th style={thStyle}>Time</th>
-            <th style={thStyle}>IS ALERT</th>
-            <th style={thStyle}>Details</th>
+            <th style={thStyle}>Title</th>
+            <th style={thStyle}>Severity</th>
+            <th style={thStyle}>Status</th>
+            <th style={thStyle}>Source</th>
+            <th style={thStyle}>Created At</th>
+            <th style={thStyle}>Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {alerts.map((a, index) => (
-            <tr key={index}>
-              <td style={tdStyle}>
-                {a.isAlert ? (
-                  <PiWarningOctagonFill color="#f87171" size={20} />
-                ) : (
-                  <BiMessageRounded size={20} />
-                )}
-              </td>
-
-              <td style={eventIdStyle}>{a.id}</td>
-              <td style={tdStyle}>{a.time}</td>
-
-              <td style={tdStyle}>
-                <span style={a.isAlert ? yesBadge : noBadge}>
-                  {a.isAlert ? "YES" : "NO"}
-                </span>
-              </td>
-
-              <td style={{ ...tdStyle, textAlign: "center" }}>
-                <PiInfoBold size={18} />
+          {alerts.length === 0 ? (
+            <tr>
+              <td colSpan={8} style={{ ...tdStyle, textAlign: "center", padding: "40px", color: "#a6a6a6" }}>
+                No alerts found
               </td>
             </tr>
-          ))}
+          ) : (
+            alerts.map((alert) => (
+              <tr 
+                key={alert.id} 
+                style={rowStyle}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#2a2a2a"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                {/* Icon */}
+                <td style={tdStyle}>
+                  {alert.severity === AlertSeverity.CRITICAL || alert.severity === AlertSeverity.HIGH ? (
+                    <PiWarningOctagonFill color={getSeverityColor(alert.severity)} size={20} />
+                  ) : (
+                    <BiMessageRounded color={getSeverityColor(alert.severity)} size={20} />
+                  )}
+                </td>
+
+                {/* ID */}
+                <td style={{ ...tdStyle, fontFamily: "Consolas, monospace", fontSize: "13px", color: "#60cdff" }}>
+                  #{alert.id}
+                </td>
+
+                {/* Title */}
+                <td style={{ ...tdStyle, maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {alert.title}
+                </td>
+
+                {/* Severity */}
+                <td style={tdStyle}>
+                  <span style={badgeStyle(getSeverityColor(alert.severity))}>
+                    {alert.severity}
+                  </span>
+                </td>
+
+                {/* Status */}
+                <td style={tdStyle}>
+                  <span style={badgeStyle(getStatusColor(alert.status))}>
+                    {alert.status}
+                  </span>
+                </td>
+
+                {/* Source */}
+                <td style={tdStyle}>{alert.source}</td>
+
+                {/* Created At */}
+                <td style={tdStyle}>
+                  {new Date(alert.createdAt).toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </td>
+
+                {/* Actions */}
+                <td style={{ ...tdStyle, textAlign: "center" }}>
+                  <button
+                    onClick={() => onSelectAlert(alert.id)}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid #60a5fa",
+                      color: "#60a5fa",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#60a5fa22";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    <PiInfoBold size={14} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+                    Details
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
