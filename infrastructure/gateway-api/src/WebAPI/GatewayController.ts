@@ -95,6 +95,26 @@ export class GatewayController {
       requireSysAdmin,
       this.getOldEvents.bind(this)
     );
+
+    // Storage
+    this.router.get(
+      "/storageLog",
+      this.authenticate,
+      this.getAllArchives.bind(this)
+    );
+
+    this.router.get(
+      "/storageLog/search",
+      this.authenticate,
+      this.searchArchives.bind(this)
+    );
+
+    this.router.get(
+      "/storageLog/sort",
+      this.authenticate,
+      this.sortArchives.bind(this)
+    );
+
   }
 
   private async login(req: Request, res: Response): Promise<void> {
@@ -283,6 +303,35 @@ export class GatewayController {
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
     }
+  }
+
+  // Storage
+  private async getAllarchives(req: Request, res: Response) {
+    try {
+      const archives = await this.gatewayService.getAllArchives();
+      res.status(200).json(archives);
+    } catch(err) {
+      res.status(500).json({ message: (err as Error).message });
+    }
+  }
+
+  private async searchArchives(req: Request, res: Response){
+    try {
+      const archives = await this.gatewayService.searchArchives(req.query.q as string);
+      res.status(200).json(archives);
+    } catch(err) {
+      res.status(500).json({ message: (err as Error).message});
+    }
+  }
+
+  private async sortArchives(req: Request, res: Response) {
+    try {
+      const {by, order} = req.query;
+      const archives = await this.gatewayService.sortArchives(by as any, order as any);
+      res.status(200).json(archives);
+    } catch(err) {
+      res.status(500).json({ message: (err as Error).message});
+    } 
   }
 
   public getRouter(): Router {
