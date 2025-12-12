@@ -306,7 +306,7 @@ export class GatewayController {
   }
 
   // Storage
-  private async getAllarchives(req: Request, res: Response) {
+  private async getAllArchives(req: Request, res: Response) {
     try {
       const archives = await this.gatewayService.getAllArchives();
       res.status(200).json(archives);

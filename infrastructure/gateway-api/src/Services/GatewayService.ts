@@ -8,6 +8,7 @@ import { AlertDTO } from "../Domain/DTOs/AlertDTO";
 import { AlertQueryDTO } from "../Domain/DTOs/AlertQueryDTO";
 import { PaginatedAlertsDTO } from "../Domain/DTOs/PaginatedAlertsDTO";
 import { ArchiveDTO } from "../Domain/DTOs/ArchiveDTO";
+import { ArchiveStatsDTO } from "../Domain/DTOs/ArchiveStatsDTO";
 
 export class GatewayService implements IGatewayService {
   private readonly authClient: AxiosInstance;
@@ -204,6 +205,23 @@ export class GatewayService implements IGatewayService {
   async sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<ArchiveDTO[]> {
     const response = await this.storageLogClient.get<ArchiveDTO[]>("/storageLog/sort", {
       params: {by, order},
+    });
+    return response.data;
+  }
+
+  async runArchiveProcess(): Promise<ArchiveDTO> {
+    const response = await this.storageLogClient.post<ArchiveDTO>("/storageLog/run");
+    return response.data;
+  }
+
+  async getArchiveStats(): Promise<ArchiveStatsDTO> {
+    const response = await this.storageLogClient.get<ArchiveStatsDTO>("/storageLog/stats");
+    return response.data;
+  }
+
+  async downloadArchive(id: string): Promise<ArrayBuffer> {
+    const response = await this.storageLogClient.get(`/storageLog/file/${id}`, {
+      responseType: "arraybuffer"
     });
     return response.data;
   }
