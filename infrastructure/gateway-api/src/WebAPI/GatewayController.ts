@@ -115,6 +115,24 @@ export class GatewayController {
       this.sortArchives.bind(this)
     );
 
+    this.router.get(
+      "/storageLog/stats",
+      this.authenticate,
+      this.getArchiveStats.bind(this)
+    );
+
+    this.router.get(
+      "/storageLog/file/:id",
+      this.authenticate,
+      this.downloadArchive.bind(this)
+    );
+
+    this.router.post(
+      "/storageLog/run",
+      this.authenticate,
+      this.runArchiveProcess.bind(this)
+    );
+
   }
 
   private async login(req: Request, res: Response): Promise<void> {
@@ -332,6 +350,39 @@ export class GatewayController {
     } catch(err) {
       res.status(500).json({ message: (err as Error).message});
     } 
+  }
+
+  private async getArchiveStats(req: Request, res: Response){
+    try{
+      const stats = await this.gatewayService.getArchiveStats();
+      res.status(200).json(stats);
+    } catch (err) {
+      res.status(500).json( { message: (err as Error).message});
+    }
+  }
+
+  private async runArchiveProcess(req: Request, res: Response){
+    try{
+      const result = await this.gatewayService.runArchiveProcess();
+      res.status(201).json(result);
+    } catch (err) {
+      res.status(500).json( { message : (err as Error).message });
+    }
+  }
+
+  private async downloadArchive(req: Request, res: Response){
+    try{
+      const id = req.params.id;
+
+      const fileBuffer = await this.gatewayService.downloadArchive(id);
+
+      res.setHeader("Content-Type", "application/x-tar"); //obavestavamo browsera da je to tar fajl
+      res.setHeader("Content-Disposition", `attachment; filename="archive_${id}.tar"`); //iz ovoga zna browser da treba da skine taj fajl
+
+      res.status(200).send(fileBuffer); //ovde saljemo binarni sadrzaj fajla klijentu
+    } catch (err) {
+      res.status(500).json( { message: (err as Error).message });
+    }
   }
 
   public getRouter(): Router {
