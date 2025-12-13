@@ -1,149 +1,191 @@
-import axios from "axios";
-import { ILLMChatAPIService } from "../Domain/Services/ILLMChatAPIService";
+import axios, { AxiosError } from "axios";
+import dotenv from "dotenv";
+import { ILLMChatAPIService } from "../Domain/services/ILLMChatAPIService";
 import { ChatMessage } from "../Domain/types/ChatMessage";
+import { EventDTO } from "../Domain/types/EventDTO";
+import { CorrelationDTO } from "../Domain/types/CorrelationDTO";
+import { extractJson } from "../Infrastructure/parsers/extractJson";
+import { parseEventDTO } from "../Infrastructure/parsers/EventParser";
+import { parseCorrelationCandidates } from "../Infrastructure/parsers/CorrelationParser";
+
+dotenv.config();
 
 export class LLMChatAPIService implements ILLMChatAPIService {
+  private readonly apiUrl: string;
+  private readonly apiKey: string;
+  private readonly normalizationModelId: string;
+  private readonly correlationModelId: string;
 
-    private readonly apiUrl: string;
-    private readonly gemmaModelId: string;
-    private readonly deepseekModelId: string;
+  private readonly timeoutMs = 60000;
+  private readonly maxRetries = 3;
 
-    constructor() {
-        this.apiUrl = process.env.LLM_API_URL ?? "";
-        this.gemmaModelId = process.env.GEMMA_MODEL_ID ?? "";
-        this.deepseekModelId = process.env.DEEPSEEK_MODEL_ID ?? "";
+  constructor() {
+    this.apiUrl = (process.env.LLM_API_URL ?? "").replace(/\/+$/, "");
+    this.apiKey = process.env.GEMINI_API_KEY ?? "";
+    this.normalizationModelId = process.env.GEMINI_NORMALIZATION_MODEL_ID ?? "";
+    this.correlationModelId = process.env.GEMINI_CORRELATION_MODEL_ID ?? "";
 
-        if (!this.apiUrl) throw new Error("LLM_API_URL not configured");
-        if (!this.gemmaModelId) throw new Error("GEMMA_MODEL_ID not configured");
-        if (!this.deepseekModelId) throw new Error("DEEPSEEK_MODEL_ID not configured");
+    console.info("[LLM] Service initialized", {
+      apiUrl: this.apiUrl,
+      normalizationModelId: this.normalizationModelId,
+      correlationModelId: this.correlationModelId,
+    });
+  }
+
+  // =========================================================
+  // NORMALIZATION (EventDTO)
+  // =========================================================
+  async sendNormalizationPrompt(rawLog: string): Promise<EventDTO> {
+    if (!rawLog || rawLog.trim().length === 0) {
+      console.warn("[LLM] Normalization skipped: empty log");
+      return this.emptyEvent();
     }
 
-    async sendNormalizationPrompt(rawMessage: string): Promise<string | JSON> {
-        const messages: ChatMessage[] = [
-            {
-                role: "system",
-                content: `
-                You are a deterministic SIEM normalization engine.
-
-                RULES:
-                - Output ONLY a JSON object matching:
-                  {"type":"INFO"|"ERROR"|"WARNING","description":string}
-                - No explanations.
-                - No commentary.
-                - Absolutely no <think>.
-                `
-            },
-            {
-                role: "user",
-                content: `Normalize this raw log:\n${rawMessage}`
-            }
-        ];
-
-        return this.sendChatCompletion(this.gemmaModelId, messages, 0.0);
-    }
-
-    async sendCorrelationPrompt(rawMessage: string): Promise<string | JSON> {
     const messages: ChatMessage[] = [
-        {
-            role: "system",
-            content: `
-                You are a deterministic SIEM Correlation Engine.
+      {
+        role: "user",
+        content: `
+            You are a deterministic SIEM normalization engine.
 
-                Your job is to analyze a list of security events and determine if a correlation exists.
+            Return ONLY valid JSON with EXACT structure:
+            {"type":"INFO"|"WARNING"|"ERROR","description":string}
 
-                ### OUTPUT FORMAT (STRICT)
-                Return ONLY a JSON object with EXACTLY the following fields:
+            Rules:
+            - No markdown
+            - No explanations
+            - Deterministic output
+            - Do not invent data
 
-                {
-                "correlation_detected": boolean,
-                "confidence": number,
-                "description": string,
-                "severity": "LOW" | "MEDIUM" | "HIGH",
-                "related_event_ids": number[]
-                }
-
-                ### RULES
-                - Output ONLY raw JSON.
-                - NO markdown.
-                - NO <think>.
-                - NO explanation text outside the JSON.
-                - Deterministic: same input must always produce the same output.
-                - "confidence" must be a number between 0 and 1.
-                - "related_event_ids" must contain ONLY event_id numbers that directly participate in the correlation.
-                - Use ONLY the provided event list — do not invent data.
-
-                ### CORRELATION CATEGORIES TO CHECK
-                You may detect correlations such as:
-                - privilege_escalation chains
-                - brute_force → auth_success sequence
-                - ransomware (multiple file_encrypt / crypto events)
-                - lateral_movement sequences
-                - cloud_login anomalies
-                - multi_stage_attack (multiple categories in sequence)
-
-                ONLY mark correlation_detected=true if the evidence is strong.
-            `
-        },
-        {
-            role: "user",
-            content: `Analyze the following events:\n${rawMessage}`
-        }
+            Log:
+            ${rawLog}`.trim(),
+      },
     ];
 
-    return this.sendChatCompletion(this.deepseekModelId, messages, 0.0);
-}
+    const raw = await this.sendChatCompletion(this.normalizationModelId, messages);
+    const event = parseEventDTO(raw);
 
-
-    private async sendChatCompletion(
-        modelId: string,
-        messages: ChatMessage[],
-        temperature: number
-    ): Promise<string | JSON> {
-        try {
-            const res = await axios.post(
-                this.apiUrl,
-                {
-                    model: modelId,
-                    messages,
-                    temperature
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: "Bearer lm-studio"
-                    }
-                }
-            );
-
-            let responseText =
-                res.data?.choices?.[0]?.message?.content ??
-                "No response from the model.";
-
-            // Remove DeepSeek R1 <think> 
-            let cleaned = responseText
-                .replace(/<think>[\s\S]*?<\/think>/gi, "")
-                .replace(/```(?:json)?/gi, "")
-                .replace(/```/g, "")
-                .trim();
-
-            
-            const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-            if (jsonMatch) cleaned = jsonMatch[0];
-
-            try {
-                return JSON.parse(cleaned);
-            } catch {
-                return cleaned; 
-            }
-
-        } catch (error: any) {
-            if (axios.isAxiosError(error)) {
-                const apiMsg =
-                    error.response?.data?.error?.message ??
-                    error.response?.data?.message;
-                throw new Error(`LLM error: ${apiMsg ?? error.message}`);
-            }
-            throw new Error(`Unexpected error: ${error.message}`);
-        }
+    if (!event) {
+      console.warn("[LLM] Normalization failed schema validation", raw);
+      return this.emptyEvent();
     }
+
+    return event;
+  }
+
+  // =========================================================
+  // CORRELATION (CorrelationDTO[])
+  // =========================================================
+  async sendCorrelationPrompt(rawMessage: string): Promise<CorrelationDTO[]> {
+    if (!rawMessage || rawMessage.trim().length === 0) {
+      console.warn("[LLM] Correlation skipped: empty input");
+      return [];
+    }
+
+    const messages: ChatMessage[] = [
+      {
+        role: "user",
+        content: `
+            You are a deterministic SIEM correlation analysis engine.
+
+            Your task is to analyze the provided security events and propose 0..N potential correlations.
+
+            === OUTPUT FORMAT (STRICT) ===
+            Return ONLY raw JSON in ONE of the following forms:
+
+            A) Array of correlations:
+            [
+            {
+                "correlationDetected": boolean,
+                "confidence": number,
+                "description": string,
+                "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+                "correlatedEventIds": number[]
+            }
+            ]
+
+            B) Empty array if no meaningful correlation:
+            []
+
+            === HARD RULES ===
+            - Output ONLY raw JSON
+            - NO markdown
+            - NO explanations
+            - Deterministic output
+            - confidence MUST be between 0 and 1
+            - correlatedEventIds MUST contain ONLY integers from provided events
+
+            === EVENTS ===
+            ${rawMessage}`.trim(),
+      },
+    ];
+
+    const raw = await this.sendChatCompletion(this.correlationModelId, messages);
+    return parseCorrelationCandidates(raw);
+  }
+
+  // =========================================================
+  // LLM CALL (Gemini)
+  // =========================================================
+  private async sendChatCompletion(
+    modelId: string,
+    messages: ChatMessage[]
+  ): Promise<unknown> {
+    const url = `${this.apiUrl}/models/${modelId}:generateContent`;
+
+    const payload = {
+      contents: messages.map((m) => ({
+        role: m.role,
+        parts: [{ text: m.content }],
+      })),
+      generationConfig: { temperature: 0.0 },
+    };
+
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        const res = await axios.post(url, payload, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": this.apiKey,
+          },
+          timeout: this.timeoutMs,
+        });
+
+        const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text || typeof text !== "string") return null;
+
+        const jsonText = extractJson(text);
+        if (!jsonText) return null;
+
+        return JSON.parse(jsonText);
+      } catch (err) {
+        const axErr = err as AxiosError;
+
+        console.warn("[LLM] Request failed", {
+          attempt,
+          status: axErr.response?.status,
+          message: axErr.message,
+        });
+
+        if (attempt === this.maxRetries) break;
+        await this.sleep(400 * attempt);
+      }
+    }
+
+    console.error("[LLM] All retries exhausted");
+    return null;
+  }
+
+  // =========================================================
+  // FALLBACKS
+  // =========================================================
+  private emptyEvent(): EventDTO {
+    return {
+      type: "INFO",
+      description: "__NORMALIZATION_FAILED__",
+    };
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 }

@@ -1,134 +1,182 @@
-import {In, Repository} from "typeorm";
-import { ICorrelationService } from "../Domain/Services/ICorrelationService";
+import { In, Repository } from "typeorm";
+import axios, { AxiosInstance } from "axios";
+import { ICorrelationService } from "../Domain/services/ICorrelationService";
+import { ILLMChatAPIService } from "../Domain/services/ILLMChatAPIService";
 import { Correlation } from "../Domain/models/Correlation";
 import { CorrelationEventMap } from "../Domain/models/CorrelationEventMap";
-import axios, { AxiosInstance } from "axios";
-import { ILLMChatAPIService } from "../Domain/Services/ILLMChatAPIService";
 import { CorrelationDTO } from "../Domain/types/CorrelationDTO";
-import { mapLLMResponseToCorrelationDTO } from "../Application/mappers/mapLLMResponseToCorrelationDTO";
 
-export class CorrelationService implements ICorrelationService{
+export class CorrelationService implements ICorrelationService {
+  private readonly alertClient: AxiosInstance;
+  private readonly queryClient: AxiosInstance;
 
-    
-    private readonly parserClient: AxiosInstance;
-    private readonly alertClient: AxiosInstance;
-    private readonly queryClient: AxiosInstance;
+  private readonly confidenceThreshold =
+    Number(process.env.CORRELATION_CONFIDENCE_THRESHOLD ?? 0.51);
 
-    constructor(private correlationRepo: Repository<Correlation>, private correlationEventMap: Repository<CorrelationEventMap>, private readonly llmChatApiService: ILLMChatAPIService) {
+  private readonly queryEventsPath =
+    process.env.QUERY_EVENTS_PATH ?? "/query/oldEvents/1";
 
-        console.log(`\x1b[35m[CorrelationService@1.45.4]\x1b[0m Service started`);
+  constructor(
+    private readonly correlationRepo: Repository<Correlation>,
+    private readonly correlationEventMap: Repository<CorrelationEventMap>,
+    private readonly llmChatApiService: ILLMChatAPIService
+  ) {
+    console.log(`[CorrelationService] started`);
 
-        const parserServiceURL = process.env.PARSER_SERVICE_API;
-        const alertServiceURL = process.env.ALERT_SERVICE_API;
-        const queryServiceURL = process.env.QUERY_SERVICE_API;
+    this.queryClient = axios.create({
+      baseURL: process.env.QUERY_SERVICE_API,
+      headers: { "Content-Type": "application/json" },
+      timeout: 5000,
+    });
 
-        this.queryClient = axios.create({
-            baseURL: queryServiceURL,
-            headers: { "Content-Type": "application/json" },
-            timeout: 5000,
-        });
+    this.alertClient = axios.create({
+      baseURL: process.env.ALERT_SERVICE_API,
+      headers: { "Content-Type": "application/json" },
+      timeout: 5000,
+    });
+  }
 
-        this.parserClient = axios.create({
-            baseURL: parserServiceURL,
-            headers: { "Content-Type": "application/json" },
-            timeout: 5000,
-        });
+  async findCorrelations(): Promise<void> {
+    console.log(`[CorrelationService] Finding correlations`);
 
-        this.alertClient = axios.create({
-            baseURL: alertServiceURL,
-            headers: { "Content-Type": "application/json" },
-            timeout: 5000,
-        });
+    // 1. Fetch events (external → untrusted)
+    let events: unknown;
+    try {
+      const res = await this.queryClient.get(this.queryEventsPath);
+      events = res.data;
+    } catch (err) {
+      console.error(`[CorrelationService] Failed to fetch events`, err);
+      return;
     }
-    
 
-    async findCorrelations(): Promise<void> {
-        console.log(`\x1b[35m[CorrelationService]\x1b[0m Finding correlations...`);
+    // 2. Ask LLM (guaranteed contract)
+    let candidates: CorrelationDTO[];
+    try {
+      candidates = await this.llmChatApiService.sendCorrelationPrompt(
+        JSON.stringify(events, null, 2)
+      );
+    } catch (err) {
+      console.error(`[CorrelationService] LLM analysis failed`, err);
+      return;
+    }
 
-        const events = await this.queryClient.get(`/query/oldEvents/1`);
+    if (candidates.length === 0) {
+      console.log(`[CorrelationService] No correlation candidates returned`);
+      return;
+    }
 
+    const inputEventIds = this.extractNumericEventIds(events);
 
-        const correlationDTO = mapLLMResponseToCorrelationDTO(
-            await this.llmChatApiService.sendCorrelationPrompt(JSON.stringify(events))
-        );
+    // 3. Apply policy + persist
+    for (const candidate of candidates) {
+      if (!this.passesPolicy(candidate, inputEventIds)) continue;
 
-        const isValid =
-            correlationDTO.correlationDetected &&
-            correlationDTO.confidence >= 0.51;
+      try {
+        const correlationId = await this.saveCorrelation(candidate);
+        candidate.id = correlationId;
 
-        if (!isValid) {
-            console.log(`\x1b[33m[CorrelationService]\x1b[0m No valid correlation detected.`);
-            return;
+        await this.sendCorrelationAlert(candidate);
+
+        console.log(`[CorrelationService] Correlation stored (ID=${correlationId})`);
+      } catch (err) {
+        console.error(`[CorrelationService] Failed to process candidate`, err);
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // POLICY VALIDATION (Use-case responsibility)
+  // ------------------------------------------------------------------
+
+  private passesPolicy(
+    candidate: CorrelationDTO,
+    inputEventIds: Set<number>
+  ): boolean {
+    if (!candidate.correlationDetected) return false;
+
+    if (candidate.confidence < this.confidenceThreshold) return false;
+
+    if (candidate.correlatedEventIds.length < 2) return false;
+
+    if (
+      inputEventIds.size > 0 &&
+      candidate.correlatedEventIds.some((id) => !inputEventIds.has(id))
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // ------------------------------------------------------------------
+  // HELPERS
+  // ------------------------------------------------------------------
+
+  private extractNumericEventIds(events: unknown): Set<number> {
+    const ids = new Set<number>();
+
+    if (Array.isArray(events)) {
+      for (const e of events) {
+        if (e && typeof e === "object" && "id" in e) {
+          const v = (e as any).id;
+          if (typeof v === "number" && Number.isFinite(v)) {
+            ids.add(v);
+          }
         }
-
-        const correlationID = await this.saveCorrelation(correlationDTO);
-        correlationDTO.id = correlationID;
-
-        await this.sendCorrelationAlert(correlationDTO);
-
-        console.log(
-            `\x1b[32m[CorrelationService]\x1b[0m Correlation processed (ID=${correlationID}).`
-        );
+      }
     }
 
+    return ids;
+  }
 
-     async sendCorrelationAlert(correlation: CorrelationDTO): Promise<void> {
-        try {
-            await this.alertClient.post("/alerts/correlation", {
-                correlationId: correlation.id,
-                description: correlation.description,
-                severity: correlation.severity,
-                correlatedEventIds: correlation.correlatedEventIds
-            });
-            console.log(
-                `\x1b[35m[CorrelationService]\x1b[0m Notified Alert service for correlation ID ${correlation.id}`
-            );
-        } catch (error) {
-            console.error(
-                `\x1b[31m[CorrelationService]\x1b[0m Failed to notify Alert service for correlation ID ${correlation.id}: ${(error as Error).message}`
-            );
-        }
-    }
+  // ------------------------------------------------------------------
+  // OUTBOUND INTEGRATIONS
+  // ------------------------------------------------------------------
 
+  private async sendCorrelationAlert(correlation: CorrelationDTO): Promise<void> {
+    await this.alertClient.post("/alerts/correlation", {
+      correlationId: correlation.id,
+      description: correlation.description,
+      severity: correlation.severity,
+      correlatedEventIds: correlation.correlatedEventIds,
+    });
+  }
 
-    async saveCorrelation(correlationData: CorrelationDTO): Promise<number> {
-        const newCorrelation = this.correlationRepo.create({
-            description: correlationData.description,
-            timestamp: correlationData.timestamp,
-            isAlert: correlationData.correlationDetected,
-        });
+  private async saveCorrelation(dto: CorrelationDTO): Promise<number> {
+    const correlation = this.correlationRepo.create({
+      description: dto.description,
+      timestamp: dto.timestamp,
+      isAlert: dto.correlationDetected,
+    });
 
-        const savedCorrelation = await this.correlationRepo.save(newCorrelation);
+    const saved = await this.correlationRepo.save(correlation);
 
-        const eventMaps = correlationData.correlatedEventIds.map(eventId =>
-                    this.correlationEventMap.create({
-                        correlation_id: savedCorrelation.id,
-                        event_id: eventId,
-                    }));
-                    
+    const maps = dto.correlatedEventIds.map((eventId) =>
+      this.correlationEventMap.create({
+        correlation_id: saved.id,
+        event_id: eventId,
+      })
+    );
 
-        await this.correlationEventMap.save(eventMaps);
+    await this.correlationEventMap.save(maps);
 
+    return saved.id;
+  }
 
-        return savedCorrelation.id;
-    }
+  async deleteCorrelationsByEventIds(eventIds: number[]): Promise<number> {
+    if (eventIds.length === 0) return 0;
 
+    const maps = await this.correlationEventMap.find({
+      where: { event_id: In(eventIds) },
+    });
 
-    async deleteCorrelationsByEventIds(eventIds: number[]): Promise<number> {
-        if(!eventIds || eventIds.length === 0) return 0 ;
+    const ids = [...new Set(maps.map((m) => m.correlation_id))];
 
-        const maps = await this.correlationEventMap.find({
-            where: { event_id: In(eventIds) }
-        })
+    if (ids.length === 0) return 0;
 
-        const correlationIds = Array.from(new Set(maps.map(map => map.correlation_id)));
-        if(correlationIds.length === 0) return 0 ;
+    await this.correlationEventMap.delete({ correlation_id: In(ids) });
+    await this.correlationRepo.delete({ id: In(ids) });
 
-        await this.correlationEventMap.delete({ correlation_id: In(correlationIds) });
-        await this.correlationRepo.delete({ id: In(correlationIds) });
-
-        console.log(`\x1b[35m[CorrelationService]\x1b[0m Deleted correlations associated with event IDs: [${eventIds.join(", ")}]`);    
-        return correlationIds.length;
-    }
-
+    return ids.length;
+  }
 }

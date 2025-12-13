@@ -4,6 +4,6 @@ export interface CorrelationDTO {
     description: string;
     timestamp: Date;
     confidence: number;
-    severity: "CRITITCAL"|"HIGH" | "MEDIUM" | "LOW";
+    severity: "CRITICAL"|"HIGH" | "MEDIUM" | "LOW";
     correlatedEventIds: number[];
 }

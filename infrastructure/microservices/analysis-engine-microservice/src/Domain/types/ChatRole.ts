@@ -1,1 +1,1 @@
-export type ChatRole = "system" | "user";
+export type ChatRole = "user" | "model";

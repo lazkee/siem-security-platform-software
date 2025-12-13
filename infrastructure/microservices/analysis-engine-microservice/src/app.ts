@@ -4,14 +4,14 @@ import "reflect-metadata";
 import { initialize_database } from './Database/InitializeConnection';
 import dotenv from 'dotenv';
 
-import { ICorrelationService } from './Domain/Services/ICorrelationService';
+import { ICorrelationService } from './Domain/services/ICorrelationService';
 import { CorrelationService } from './Services/CorrelationService';
 
-import { ILLMChatAPIService } from './Domain/Services/ILLMChatAPIService';
+import { ILLMChatAPIService } from './Domain/services/ILLMChatAPIService';
 import { LLMChatAPIService } from './Services/LLMChatAPIService';
 
 import { RecurringCorrelationJob } from './Services/ReccuringCorrelationJob';
-import { IntervalScheduler } from './Infrastructure/Scheduler/IntervalScheduler';
+import { IntervalScheduler } from './Infrastructure/schedulers/IntervalScheduler';
 
 import { Repository } from 'typeorm';
 import { Correlation } from './Domain/models/Correlation';

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
-import { ICorrelationService } from "../../Domain/Services/ICorrelationService";
-import { ILLMChatAPIService } from "../../Domain/Services/ILLMChatAPIService";
+import { ICorrelationService } from "../../Domain/services/ICorrelationService";
+import { ILLMChatAPIService } from "../../Domain/services/ILLMChatAPIService";
 
 export class AnalysisEngineController {
 
@@ -28,7 +28,6 @@ export class AnalysisEngineController {
             const processedEventJson = await this.llmChatAPIService.sendNormalizationPrompt(rawMessage);
 
             res.status(200).json({ eventData: processedEventJson });
-            //it needs to be called eventData because ParserService expects it
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });
         }
