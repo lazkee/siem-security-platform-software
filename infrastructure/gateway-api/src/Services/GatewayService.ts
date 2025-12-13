@@ -9,6 +9,7 @@ import { AlertQueryDTO } from "../Domain/DTOs/AlertQueryDTO";
 import { PaginatedAlertsDTO } from "../Domain/DTOs/PaginatedAlertsDTO";
 import { ArchiveDTO } from "../Domain/DTOs/ArchiveDTO";
 import { ArchiveStatsDTO } from "../Domain/DTOs/ArchiveStatsDTO";
+import { EventDTO } from "../Domain/DTOs/EventDTO";
 
 export class GatewayService implements IGatewayService {
   private readonly authClient: AxiosInstance;
@@ -175,19 +176,41 @@ export class GatewayService implements IGatewayService {
   }
 
   // Query Service
-  async searchEvents(query: string): Promise<any[]> {
+  async searchEvents(query: string): Promise<EventDTO[]> {
     const response = await this.queryClient.get<any[]>("/query/search", {
       params: { query },
     });
     return response.data;
   }
 
-  async getOldEvents(hours: number): Promise<any[]> {
+  async getOldEvents(hours: number): Promise<EventDTO[]> {
     const response = await this.queryClient.get<any[]>(
       `/query/oldEvents/${hours}`
     );
     return response.data;
   }
+
+  async getLastThreeEvents(): Promise<EventDTO[]> {
+    const response = await this.queryClient.get<any[]>(
+      `/query/lastThreeEvents`
+    );
+    return response.data;
+  }
+
+  async getAllEvents(): Promise<EventDTO[]> {
+    const response = await this.queryClient.get<any[]>(
+      "/query/events"
+    );
+    return response.data;
+  }
+
+  async getEventsCount(): Promise<number> {
+    const response = await this.queryClient.get<{ count: number }>(
+      "/query/eventsCount"
+    );
+    return response.data.count;
+  }
+
 
   // Storage 
   async getAllArchives(): Promise<ArchiveDTO[]> {

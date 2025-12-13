@@ -95,6 +95,24 @@ export class GatewayController {
       requireSysAdmin,
       this.getOldEvents.bind(this)
     );
+    this.router.get(
+      "/siem/query/lastThreeEvents",
+      this.authenticate,
+      requireSysAdmin,
+      this.getLastThreeEvents.bind(this)
+    );    
+    this.router.get(
+      "/siem/query/events",
+      this.authenticate,
+      requireSysAdmin,
+      this.getAllEvents.bind(this)
+    );
+    this.router.get(
+      "/siem/query/eventsCount",
+      this.authenticate,
+      requireSysAdmin,
+      this.getEventsCount.bind(this)
+    );  
 
     // Storage
     this.router.get(
@@ -303,6 +321,7 @@ export class GatewayController {
     }
   }
 
+  // Query
   private async searchEvents(req: Request, res: Response): Promise<void> {
     try {
       const query = req.query.query as string;
@@ -318,6 +337,33 @@ export class GatewayController {
       const hours = Number(req.params.hours);
       const results = await this.gatewayService.getOldEvents(hours);
       res.status(200).json(results);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message });
+    }
+  }
+
+  private async getLastThreeEvents(req: Request, res: Response): Promise<void> {
+    try {
+      const results = await this.gatewayService.getLastThreeEvents();
+      res.status(200).json(results);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message });
+    } 
+  }
+
+  private async getAllEvents(rew: Request, res: Response): Promise<void> {
+    try {
+      const results = await this.gatewayService.getAllEvents();
+      res.status(200).json(results);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message });
+    }
+  }
+
+  private async getEventsCount(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await this.gatewayService.getEventsCount();
+      res.status(200).json({ count: result });
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
     }
