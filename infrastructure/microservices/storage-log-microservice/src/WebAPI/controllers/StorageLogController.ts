@@ -18,12 +18,14 @@ export class StorageLogController{
         this.router.get("/storageLog/sort", this.sortArchives.bind(this));
         this.router.get("/storageLog/stats", this.getStats.bind(this));
         this.router.get("/storageLog/file/:id", this.getArchiveFile.bind(this));
+        this.router.get("/storageLog/top", this.getTopArchives.bind(this));
+        this.router.get("/storageLog/volume", this.getArchiveVolume.bind(this));
     }
 
     private async getAllArchives(req: Request, res: Response): Promise<void>{
         try{
-            await this.storageLogService.getArchives();
-            res.status(200).json({success: true});
+            const archives = await this.storageLogService.getArchives();
+            res.status(200).json(archives);
         } catch (err){
             res.status(500).json({ message: (err as Error).message });
         }
@@ -81,6 +83,27 @@ export class StorageLogController{
 
             res.download(filePath);
         }catch(err) {
+            res.status(500).json({message: (err as Error).message});
+        }
+    }
+
+    private async getTopArchives(req: Request, res: Response): Promise<void> {
+        try {
+            const type = req.query.type as "events" | "alerts";
+            const limit = Number(req.query.limit) || 5;
+            const result = await this.storageLogService.getTopArchives(type, limit);
+            res.status(200).json(result);
+        } catch(err) {
+            res.status(500).json({message: (err as Error).message});
+        }
+    }  
+    
+    private async getArchiveVolume(req: Request, res: Response): Promise<void> {
+        try {
+            const period = req.query.period as "daily" | "monthly" | "yearly";
+            const result = await this.storageLogService.getArchiveVolume(period);
+            res.status(200).json(result);
+        } catch(err) {
             res.status(500).json({message: (err as Error).message});
         }
     }

@@ -12,6 +12,9 @@ import util from "util";
 import { ArchiveStatsDTO } from "../Domain/DTOs/ArchiveStatsDTO";
 import { archiveEvents } from "../Utils/ArchiveEvents";
 import { archiveAlerts } from "../Utils/ArchiveAlerts";
+import { TopArchiveDTO } from "../Domain/DTOs/TopArchiveDTO";
+import { ArchiveVolumeDTO } from "../Domain/DTOs/ArchiveVolumeDTO";
+import { ArchiveType } from "../Domain/enums/ArchiveType";
 
 //da bi izvrsio komandu asinhrono, arhiviranje se odvija u pozadi
 const execSync = util.promisify(exec);
@@ -290,5 +293,47 @@ export class StorageLogService implements IStorageLogService {
         
         const fullPath = path.join(ARCHIVE_DIR, log.fileName);
         return fullPath;
+    }
+
+    public async getTopArchives(type: "events" | "alerts", limit: number): Promise<TopArchiveDTO[]> {
+        const archiveType = type === "events" ? ArchiveType.EVENT : ArchiveType.ALERT;
+        
+        const archives = await this.storageRepo.find({
+            where: {archiveType},
+            order: {recordCount: "DESC"},
+            take: limit
+        });
+
+        return archives.map(a => ({
+            id: a.storageLogId,
+            fileName: a.fileName,
+            count: a.recordCount
+        }));
+    }
+
+    public async getArchiveVolume(period: "daily" | "monthly" | "yearly"): Promise<ArchiveVolumeDTO[]> {
+        const archives = await this.storageRepo.find();
+        const volumeMap: Record<string, number> = {};
+
+        archives.forEach(a => {
+            const date = new Date(a.createdAt);
+            let key: string;
+
+            switch(period){
+                case "daily":
+                    key = date.toISOString().split("T")[0];
+                    break;
+                case "monthly":
+                    key = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, "0")}`;
+                    break;
+                case "yearly":
+                    key = `${date.getFullYear()}`;
+                    break;
+            }
+
+            volumeMap[key] = (volumeMap[key] || 0) + a.recordCount;
+        });
+
+        return Object.entries(volumeMap).map(([label, size]) => ({label, size})).sort((a, b) => a.label.localeCompare(b.label));
     }
 }
