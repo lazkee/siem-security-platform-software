@@ -23,7 +23,7 @@ export class StorageLogController{
     private async getAllArchives(req: Request, res: Response): Promise<void>{
         try{
             await this.storageLogService.getArchives();
-            res.status(201).json({success: true});
+            res.status(200).json({success: true});
         } catch (err){
             res.status(500).json({ message: (err as Error).message });
         }
@@ -32,7 +32,7 @@ export class StorageLogController{
     private async runArchiveProcess(req: Request, res: Response): Promise<void>{
         try{
             const response = await this.storageLogService.runArchiveProcess();
-            res.status(201).json(response);
+            res.status(200).json(response);
         } catch (err){
             res.status(500).json({ message: (err as Error).message });
         }

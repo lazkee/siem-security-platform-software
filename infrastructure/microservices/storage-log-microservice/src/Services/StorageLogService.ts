@@ -10,6 +10,8 @@ import { getTimeGroup } from "../Utils/TimeGroup";
 import { ILogerService } from "../Domain/services/ILogerService";
 import util from "util";
 import { ArchiveStatsDTO } from "../Domain/DTOs/ArchiveStatsDTO";
+import { archiveEvents } from "../Utils/ArchiveEvents";
+import { archiveAlerts } from "../Utils/ArchiveAlerts";
 
 //da bi izvrsio komandu asinhrono, arhiviranje se odvija u pozadi
 const execSync = util.promisify(exec);
@@ -63,6 +65,25 @@ export class StorageLogService implements IStorageLogService {
         await this.logger.log("Starting archive process...");
 
         const hours = 72;
+
+        await archiveEvents(
+            hours,
+            this.queryClient,
+            this.eventClient,
+            this.storageRepo
+        );
+
+        await archiveAlerts(
+            hours,
+            this.queryClient,
+            this.correlationClient,
+            this.storageRepo
+        );
+
+        await this.logger.log("Archive process finished.");
+        return true;
+
+        /*
         // dobavljanje dogadjaja i pretnje
         //getOldEvents(int hours) : List<Event>
         //dobavljanje podataka ide od queryClient
@@ -206,6 +227,7 @@ export class StorageLogService implements IStorageLogService {
         await this.logger.log("Archive process completed successfully.");
 
         return true;
+        */
     }
 
     public async searchArchives(query: string): Promise<StorageLog[]> {

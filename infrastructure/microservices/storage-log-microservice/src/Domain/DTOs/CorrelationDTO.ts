@@ -3,4 +3,5 @@ export interface CorrelationDTO{
     description: string;
     timestamp: Date;
     is_alert: boolean;
+    source: string;
 }
