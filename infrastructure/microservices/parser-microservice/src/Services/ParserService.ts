@@ -32,15 +32,19 @@ export class ParserService implements IParserService {
 
         let event = this.normalizeEventWithRegexes(eventMessage);
 
-        if (event.id === -1)    // Couldn't normalize with regexes -> send it to LLM
+        if (event.id === -1) {    // Couldn't normalize with regexes -> send it to LLM
             event = await this.normalizeEventWithLlm(eventMessage);
+
+            if (event.id === -1)    // Couldn't normalize with LLM either -> discarding event
+                return event;
+        }
 
         event.source = eventSource;
         event.timestamp = timeOfEvent;
         const responseEvent = (await this.eventClient.post<EventDTO>("/events", event)).data;    // Saving to the Events table (calling event-collector)
 
         if (responseEvent.id === -1)
-            throw Error("Failed to save event to the database");
+            console.warn("Failed to save event to the database");
 
         const parserEvent: ParserEvent = { parserId: 0, eventId: responseEvent.id, textBeforeParsing: eventMessage, timestamp: timeOfEvent }
         await this.parserEventRepository.insert(parserEvent);   // Saving to the Parser table
@@ -372,8 +376,16 @@ export class ParserService implements IParserService {
 
         // Extract LLM-generated event JSON
         const eventData = response.data?.eventData;
-        if (!eventData) {
-            throw new Error("Invalid response from Analysis Engine (missing eventData)");
+        if (!eventData || eventData.description === "_NORMALIZATION_FAILED_") {
+            console.warn("[Parser] Skipping empty or invalid normalized event");
+
+            const event: EventDTO = {
+                id: -1,
+                type: EventType.ERROR,
+                description: "_NORMALIZATION_FAILED_"
+            };
+
+            return event;
         }
 
         // Convert JSON to Event
