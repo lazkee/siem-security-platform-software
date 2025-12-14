@@ -10,6 +10,7 @@ import { PaginatedAlertsDTO } from "../Domain/DTOs/PaginatedAlertsDTO";
 import { ArchiveDTO } from "../Domain/DTOs/ArchiveDTO";
 import { ArchiveStatsDTO } from "../Domain/DTOs/ArchiveStatsDTO";
 import { EventDTO } from "../Domain/DTOs/EventDTO";
+import { TopArchiveDTO } from "../Domain/DTOs/TopArchiveDTO";
 
 export class GatewayService implements IGatewayService {
   private readonly authClient: AxiosInstance;
@@ -248,4 +249,19 @@ export class GatewayService implements IGatewayService {
     });
     return response.data;
   }
+
+  async getTopArchives(type: "events" | "alerts", limit: number): Promise<TopArchiveDTO[]>{
+    const response = await this.storageLogClient.get<TopArchiveDTO[]>("/storageLove/top", {
+      params: {type, limit}
+    });
+    return response.data;
+  }
+
+  async getArchiveVolume(period: "daily" | "monthly" | "yearly"): Promise<ArchiveVolumeDTO[]>{
+    const response = await this.storageLogClient.get<ArchiveVolumeDTO[]>("/storageLog/volume", {
+      params: {period}
+    });
+    return response.data;
+  }
+
 }

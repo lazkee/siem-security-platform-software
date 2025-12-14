@@ -151,6 +151,17 @@ export class GatewayController {
       this.runArchiveProcess.bind(this)
     );
 
+    this.router.get(
+      "/storageLog/top",
+      this.authenticate,
+      this.getTopArchives.bind(this)
+    );
+
+    this.router.get(
+      "/storageLog/volume",
+      this.authenticate,
+      this.getArchiveVolume.bind(this)
+    );
   }
 
   private async login(req: Request, res: Response): Promise<void> {
@@ -428,6 +439,27 @@ export class GatewayController {
       res.status(200).send(fileBuffer); //ovde saljemo binarni sadrzaj fajla klijentu
     } catch (err) {
       res.status(500).json( { message: (err as Error).message });
+    }
+  }
+
+  private async getTopArchives(req: Request, res: Response) {
+    try {
+      const type = req.query.type as "events" | "alerts";
+      const limit = Number(req.query.limit) || 5;
+      const result = await this.gatewayService.getTopArchives(type, limit);
+      res.status(200).json(result);
+    } catch(err) {
+      res.status(500).json({ message: (err as Error).message});
+    }
+  }
+
+  private async getArchiveVolume(req: Request, res: Response) {
+    try {
+      const period = req.query.period as "daily" | "monthly" | "yearly";
+      const result = await this.gatewayService.getArchiveVolume(period);
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message});
     }
   }
 

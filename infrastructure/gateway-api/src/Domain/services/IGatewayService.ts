@@ -2,10 +2,12 @@ import { AlertDTO } from "../DTOs/AlertDTO";
 import { AlertQueryDTO } from "../DTOs/AlertQueryDTO";
 import { ArchiveDTO } from "../DTOs/ArchiveDTO";
 import { ArchiveStatsDTO } from "../DTOs/ArchiveStatsDTO";
+import { ArchiveVolumeDTO } from "../DTOs/ArchiveVolumeDTO";
 import { EventDTO } from "../DTOs/EventDTO";
 import { LoginUserDTO } from "../DTOs/LoginUserDTO";
 import { PaginatedAlertsDTO } from "../DTOs/PaginatedAlertsDTO";
 import { RegistrationUserDTO } from "../DTOs/RegistrationUserDTO";
+import { TopArchiveDTO } from "../DTOs/TopArchiveDTO";
 import { UserDTO } from "../DTOs/UserDTO";
 import { AuthResponseType } from "../types/AuthResponse";
 
@@ -52,4 +54,6 @@ export interface IGatewayService {
   sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<ArchiveDTO[]>;
   getArchiveStats(): Promise<ArchiveStatsDTO>;
   downloadArchive(id: string): Promise<ArrayBuffer>;
+  getTopArchives(type: "events" | "alerts", limit: number): Promise<TopArchiveDTO[]>;
+  getArchiveVolume(period: "daily" | "monthly" | "yearly"): Promise<ArchiveVolumeDTO[]>;
 }
