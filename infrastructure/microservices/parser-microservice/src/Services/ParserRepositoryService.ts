@@ -9,7 +9,6 @@ export class ParserRepositoryService implements IParserRepositoryService {
 
     async getAll(): Promise<ParserEventDto[]> {
         const events = await this.parserEventRepository.find();
-        console.log(`Prije prelaska u dto rez\n ${events}`);
         return events.map(e => toDTO(e));
     }
 
@@ -18,7 +17,6 @@ export class ParserRepositoryService implements IParserRepositoryService {
         if (!event) {
             throw new Error(`Parser Event with id=${id} not found.`);
         }
-        console.log(`Prije prelaska u dto rez\n ${event}`);
         return toDTO(event);
     }
 

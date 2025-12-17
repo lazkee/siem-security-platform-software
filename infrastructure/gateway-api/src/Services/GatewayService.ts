@@ -65,32 +65,41 @@ export class GatewayService implements IGatewayService {
 
     this.storageLogClient = axios.create({
       baseURL: storageAuthBaseURL,
-      headers: { "Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       timeout: 5000,
     });
-    
+
     this.parserEventClient = axios.create({
       baseURL: parserEventURL,
-      headers: { "Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       timeout: 5000,
     });
   }
+
+  //Parser
+
   async log(eventMessage: string, eventSource: string): Promise<EventDTO> {
-    const response = await this.parserEventClient.post<EventDTO>("/parserEvents/log",{
-        eventMessage,
-        eventSource,
-      });
+    const response = await this.parserEventClient.post<EventDTO>(
+      "/parserEvents/log",
+      {
+        message: eventMessage,
+        source: eventSource,
+      }
+    );
+
     return response.data;
   }
+  
   async getAllParserEvents(): Promise<ParserEventDto[]> {
-    console.log("aaaaaaaaaaaa\n");
     const response = await this.parserEventClient.get<ParserEventDto[]>("/parserEvents");
     return response.data;
   }
-   async getParserEventById(id: number): Promise<ParserEventDto> {
+
+  async getParserEventById(id: number): Promise<ParserEventDto> {
     const response = await this.parserEventClient.get<ParserEventDto>(`/parserEvents/${id}`);
     return response.data;
   }
+  
   async deleteById(id: number): Promise<boolean> {
     const response = await this.parserEventClient.delete<boolean>(`/parserEvents/${id}`);
     return response.data;
@@ -251,14 +260,14 @@ export class GatewayService implements IGatewayService {
 
   async searchArchives(query: string): Promise<ArchiveDTO[]> {
     const response = await this.storageLogClient.get<ArchiveDTO[]>("/storageLog/search", {
-      params: {q: query},
+      params: { q: query },
     });
     return response.data;
   }
 
   async sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<ArchiveDTO[]> {
     const response = await this.storageLogClient.get<ArchiveDTO[]>("/storageLog/sort", {
-      params: {by, order},
+      params: { by, order },
     });
     return response.data;
   }
@@ -280,16 +289,16 @@ export class GatewayService implements IGatewayService {
     return response.data;
   }
 
-  async getTopArchives(type: "events" | "alerts", limit: number): Promise<TopArchiveDTO[]>{
+  async getTopArchives(type: "events" | "alerts", limit: number): Promise<TopArchiveDTO[]> {
     const response = await this.storageLogClient.get<TopArchiveDTO[]>("/storageLove/top", {
-      params: {type, limit}
+      params: { type, limit }
     });
     return response.data;
   }
 
-  async getArchiveVolume(period: "daily" | "monthly" | "yearly"): Promise<ArchiveVolumeDTO[]>{
+  async getArchiveVolume(period: "daily" | "monthly" | "yearly"): Promise<ArchiveVolumeDTO[]> {
     const response = await this.storageLogClient.get<ArchiveVolumeDTO[]>("/storageLog/volume", {
-      params: {period}
+      params: { period }
     });
     return response.data;
   }

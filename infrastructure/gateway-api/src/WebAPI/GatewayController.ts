@@ -164,8 +164,8 @@ export class GatewayController {
     );
 
     //Parser
-    this.router.get("/parserEvents", this.getAllParserEvents.bind(this));
-    this.router.get("/parserEvents/:id",  this.getParserEvent.bind(this));
+    this.router.get("/parserEvents", this.authenticate, requireSysAdmin, this.getAllParserEvents.bind(this));
+    this.router.get("/parserEvents/:id", this.authenticate, requireSysAdmin, this.getParserEvent.bind(this));
     this.router.post("/parserEvents/log", this.authenticate, requireSysAdmin, this.log.bind(this));
     this.router.delete("/parserEvents/:id", this.authenticate, requireSysAdmin, this.deleteParserEvent.bind(this));
   }
@@ -174,44 +174,44 @@ export class GatewayController {
 
   private async getAllParserEvents(req: Request, res: Response): Promise<void> {
     try {
-      console.log("Zahtjev za sve parser events\n");
-      const response = this.gatewayService.getAllParserEvents();
-      console.log(`Response\n${response}`);
+      const response = await this.gatewayService.getAllParserEvents();
       res.status(200).json(response);
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
     }
   }
+
   private async getParserEvent(req: Request, res: Response): Promise<void> {
     try {
       const id = Number(req.params.id);
-      console.log(`Zahtjev za jedan parser events ${id} \n`);
-      const response = this.gatewayService.getParserEventById(id);
-      console.log(`Response\n${response}`);
+      const response = await this.gatewayService.getParserEventById(id);
       res.status(200).json(response);
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
     }
   }
+
   private async log(req: Request, res: Response): Promise<void> {
     try {
       const rawMessage = req.body.message as string;
       const source = req.body.source as string;
-      const response = this.gatewayService.log(rawMessage, source);
+      const response = await this.gatewayService.log(rawMessage, source);
       res.status(200).json(response);
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
     }
   }
+
   private async deleteParserEvent(req: Request, res: Response): Promise<void> {
     try {
       const id = Number(req.params.id);
-      const response = this.gatewayService.deleteById(id);
+      const response = await this.gatewayService.deleteById(id);
       res.status(200).json(response);
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
     }
   }
+
   private async login(req: Request, res: Response): Promise<void> {
     const data: LoginUserDTO = req.body;
     const result = await this.gatewayService.login(data);

@@ -43,7 +43,6 @@ export class ParserController {
     }
 
     private async getAllParserEvents(req: Request, res: Response): Promise<void> {
-        console.log("bbbbbb\n");
         try {
             this.logger.log(`Fetching all parser events`);
             const response =await this.parserRepositoryService.getAll();
