@@ -10,8 +10,9 @@ import { ArchiveVolumeDTO } from "../../models/storage/ArchiveVolumeDTO";
 
 import {StatisticsChart} from "../statistics/StatisticsChart";
 import {EventDistribution} from "../statistics/EventDistribution";
-import {TopArchives} from "../statistics/TopArchives";
-import {ArchiveVolume} from "../statistics/ArchiveVolume";
+import TopArchives from "../statistics/TopArchives";
+import ArchiveVolume from "../statistics/ArchiveVolume";
+
 
 const queryAPI = new QueryAPI();
 const storageAPI = new StorageAPI();
@@ -26,7 +27,7 @@ export default function Statistics() {
     const [alertStats, setAlertStats] = useState<AlertStatisticsDTO[]>([]);
     const [distribution, setDistribution] = useState<DistributionDTO | null>(null);
     const [topArchives, setToparchives] = useState<TopArchiveDTO[]>([]);
-    const [arhiveVolume, setArchiveVolume] = useState<ArchiveVolumeDTO[]>([]);
+    const [archiveVolume, setArchiveVolume] = useState<ArchiveVolumeDTO[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -90,7 +91,7 @@ export default function Statistics() {
         width: "100%",
         padding: "10px"
     };
-
+/*
     if (isLoading){
         return (
             <div style={rectangleStyle}>
@@ -98,7 +99,7 @@ export default function Statistics() {
             </div>
         );
     }
-
+*/
     return (
         <div style={rectangleStyle}>
             <div>
@@ -114,13 +115,19 @@ export default function Statistics() {
 
                 <div>
                     <h3 style={headingStyle}> Top 5 Archives</h3>
-                    <TopArchives/>
+                    <TopArchives
+                        data={topArchives}
+                        type={archiveType}
+                        onTypeChange={setArchiveType}/>
                 </div>
             </div>
 
             <div>
                 <h3 style={headingStyle}>Daily Archive Volume (in MB)</h3>
-                <ArchiveVolume/>
+                <ArchiveVolume
+                    data={archiveVolume}
+                    period={volumePeriod}
+                    onPeriodChange={setVolumePeriod}/>
             </div>
         </div>
     );
