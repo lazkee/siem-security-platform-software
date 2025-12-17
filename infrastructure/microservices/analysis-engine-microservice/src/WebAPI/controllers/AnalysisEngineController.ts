@@ -38,19 +38,23 @@ export class AnalysisEngineController {
         try {
             const eventIds: number[] = req.body.eventIds;
 
-            if (!eventIds || eventIds.length === 0) {
-                res.status(400).json({ error: "eventIds array is required" });
+            if (
+                !Array.isArray(eventIds) ||
+                eventIds.length === 0 ||
+                !eventIds.every(id => typeof id === "number")
+            ) {
+                res.status(400).json({ error: "eventIds must be a non-empty array of numbers" });
                 return;
             }
 
             const deletedCount = await this.correlationService.deleteCorrelationsByEventIds(eventIds);
 
             if (deletedCount === 0) {
-                res.status(204).json({ message: "No correlations found for the provided event IDs" });
+                res.status(204).send();
                 return;
             }
             res.status(200).json({
-                message: `Deleted ${deletedCount} correlations associated with the provided event IDs.`
+                deletedCount: deletedCount
             });
 
         } catch (err) {

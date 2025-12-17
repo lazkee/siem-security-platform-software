@@ -5,6 +5,7 @@ import { ArchiveStatsDTO } from "../DTOs/ArchiveStatsDTO";
 import { ArchiveVolumeDTO } from "../DTOs/ArchiveVolumeDTO";
 import { EventDTO } from "../DTOs/EventDTO";
 import { LoginUserDTO } from "../DTOs/LoginUserDTO";
+import { NormalizedEventDTO } from "../DTOs/NormalizedEventDTO";
 import { PaginatedAlertsDTO } from "../DTOs/PaginatedAlertsDTO";
 import { ParserEventDto } from "../DTOs/ParserEventDTO";
 import { RegistrationUserDTO } from "../DTOs/RegistrationUserDTO";
@@ -64,4 +65,8 @@ export interface IGatewayService {
   getParserEventById(id: number): Promise<ParserEventDto>;
   deleteById(id: number): Promise<boolean>;
   log(eventMessage: string, eventSource: string): Promise<EventDTO>;
+
+  //Analysis Engine
+  analysisEngineNormalize(rawMessage: string): Promise<NormalizedEventDTO>;
+  analysisEngineDeleteCorrelationsByEventIds(eventIds: number[]): Promise<number>;
 }

@@ -13,6 +13,7 @@ import { EventDTO } from "../Domain/DTOs/EventDTO";
 import { TopArchiveDTO } from "../Domain/DTOs/TopArchiveDTO";
 import { ParserEventDto } from "../Domain/DTOs/ParserEventDTO";
 import { ArchiveVolumeDTO } from "../Domain/DTOs/ArchiveVolumeDTO";
+import { NormalizedEventDTO } from "../Domain/DTOs/NormalizedEventDTO";
 
 export class GatewayService implements IGatewayService {
   private readonly authClient: AxiosInstance;
@@ -22,6 +23,7 @@ export class GatewayService implements IGatewayService {
   private readonly siemAuthClient: AxiosInstance;
   private readonly storageLogClient: AxiosInstance;
   private readonly parserEventClient: AxiosInstance;
+  private readonly analysisEngineClient: AxiosInstance;
 
   constructor() {
     const authBaseURL = process.env.AUTH_SERVICE_API;
@@ -31,6 +33,7 @@ export class GatewayService implements IGatewayService {
     const siemAuthBaseURL = process.env.SIEM_AUTH_SERVICE_API;
     const storageAuthBaseURL = process.env.STORAGE_LOG_SERVICE_API;
     const parserEventURL = process.env.PARSER_SERVICE_API;
+    const analysisEngineURL = process.env.ANALYSIS_ENGINE_SERVICE_API;
 
     this.authClient = axios.create({
       baseURL: authBaseURL,
@@ -71,6 +74,12 @@ export class GatewayService implements IGatewayService {
 
     this.parserEventClient = axios.create({
       baseURL: parserEventURL,
+      headers: { "Content-Type": "application/json" },
+      timeout: 5000,
+    });
+
+    this.analysisEngineClient = axios.create({
+      baseURL: analysisEngineURL,
       headers: { "Content-Type": "application/json" },
       timeout: 5000,
     });
@@ -302,5 +311,39 @@ export class GatewayService implements IGatewayService {
     });
     return response.data;
   }
+
+
+  //Analysis Engine
+  async analysisEngineNormalize(rawMessage: string): Promise<NormalizedEventDTO> {
+    const response = await this.analysisEngineClient.post<NormalizedEventDTO>(
+      "/analysisEngine/normalize",
+      {
+        message: rawMessage,
+      }
+    );
+
+    return response.data;
+  }
+
+
+ async analysisEngineDeleteCorrelationsByEventIds(eventIds: number[]): Promise<number> {
+    const response = await this.analysisEngineClient.post<{
+        deletedCount: number;
+    }>("/correlations/delete-by-event-ids", {
+        eventIds,
+    });
+
+    const data = response.data;
+
+    if (
+        !data ||
+        typeof data !== "object" ||
+        typeof data.deletedCount !== "number"
+    ) {
+        console.error("Invalid response from correlation service");
+    }
+
+    return data.deletedCount;
+}
 
 }

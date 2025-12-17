@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { raw, Request, Response, Router } from "express";
 import { IGatewayService } from "../Domain/services/IGatewayService";
 import { LoginUserDTO } from "../Domain/DTOs/LoginUserDTO";
 import { RegistrationUserDTO } from "../Domain/DTOs/RegistrationUserDTO";
@@ -168,6 +168,19 @@ export class GatewayController {
     this.router.get("/parserEvents/:id", this.authenticate, requireSysAdmin, this.getParserEvent.bind(this));
     this.router.post("/parserEvents/log", this.authenticate, requireSysAdmin, this.log.bind(this));
     this.router.delete("/parserEvents/:id", this.authenticate, requireSysAdmin, this.deleteParserEvent.bind(this));
+
+    //Analysis Engine
+    this.router.get(
+      "/analysis-engine/normalize",
+      this.authenticate,
+      requireSysAdmin,
+       this.gatewayService.analysisEngineNormalize.bind(this));
+
+    this.router.get(
+      "/analysis-engine/deleteCorrelationsByEventIds",
+      this.authenticate,
+      requireSysAdmin,
+       this.gatewayService.analysisEngineDeleteCorrelationsByEventIds.bind(this));
   }
 
   //Parser
@@ -247,6 +260,7 @@ export class GatewayController {
       res.status(404).json({ message: (err as Error).message });
     }
   }
+
 
   // Alert
 
@@ -510,6 +524,32 @@ export class GatewayController {
       res.status(500).json({ message: (err as Error).message });
     }
   }
+
+  //Analysis Engine
+  private async analysisEngineNormalize(req: Request, res: Response): Promise<void> {
+    try {
+      const rawMessage = req.body.message as string;
+      const result = await this.gatewayService.analysisEngineNormalize(rawMessage);
+
+      if(!rawMessage){
+        res.status(400).json({ message: "Raw message is required" });
+        return;
+      }
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message });
+    }
+  }
+
+  private async analysisEngineDeleteCorrelationsByEventIds(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await this.gatewayService.analysisEngineDeleteCorrelationsByEventIds();
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message });
+    }
+  }
+
 
   public getRouter(): Router {
     return this.router;

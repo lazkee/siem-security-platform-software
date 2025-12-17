@@ -174,8 +174,18 @@ export class CorrelationService implements ICorrelationService {
 
     if (ids.length === 0) return 0;
 
-    await this.correlationEventMap.delete({ correlation_id: In(ids) });
-    await this.correlationRepo.delete({ id: In(ids) });
+    //using manager transaction to ensure consistency(delete from both tables or none)
+    await this.correlationRepo.manager.transaction(async manager => {
+        await manager.delete(
+            CorrelationEventMap,
+            { correlation_id: In(ids) }
+        );
+
+        await manager.delete(
+            Correlation,
+            { id: In(ids) }
+        );
+    });
 
     return ids.length;
   }
