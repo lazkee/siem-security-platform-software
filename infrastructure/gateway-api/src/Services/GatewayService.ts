@@ -227,7 +227,7 @@ export class GatewayService implements IGatewayService {
   // Query Service
   async searchEvents(query: string): Promise<EventDTO[]> {
     const response = await this.queryClient.get<any[]>("/query/search", {
-      params: { query },
+      params: { q: query },
     });
     return response.data;
   }

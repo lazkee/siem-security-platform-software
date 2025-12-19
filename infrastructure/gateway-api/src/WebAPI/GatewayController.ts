@@ -85,8 +85,6 @@ export class GatewayController {
     // Query
     this.router.get(
       "/siem/query/search",
-      this.authenticate,
-      requireSysAdmin,
       this.searchEvents.bind(this)
     );
     this.router.get(
@@ -103,8 +101,6 @@ export class GatewayController {
     );
     this.router.get(
       "/siem/query/events",
-      this.authenticate,
-      requireSysAdmin,
       this.getAllEvents.bind(this)
     );
     this.router.get(
@@ -397,7 +393,7 @@ export class GatewayController {
   // Query
   private async searchEvents(req: Request, res: Response): Promise<void> {
     try {
-      const query = req.query.query as string;
+      const query = req.query.q as string;
       const results = await this.gatewayService.searchEvents(query);
       res.status(200).json(results);
     } catch (err) {
