@@ -130,12 +130,12 @@ export default function Statistics() {
             </div>
 
             <div style={sectionStyle}>
-                <div style={rectangleStyle}>
+                <div style={{flex: 1, ...rectangleStyle}}>
                     <h3 style={headingStyle}>Event Distribution</h3>
                     <EventDistribution data={testData}/>
                 </div>
 
-                <div>
+                <div style={{flex: 1, ...rectangleStyle}}>
                     <h3 style={headingStyle}> Top 5 Archives</h3>
                     <TopArchives
                         data={topArchives}
