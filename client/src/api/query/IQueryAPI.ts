@@ -4,13 +4,13 @@ import { DistributionDTO } from "../../models/query/DistributionDTO";
 import { EventStatisticsDTO } from "../../models/query/EventStatisticsDTO";
 
 export interface IQueryAPI {
-  getAllEvents(): Promise<EventDTO[]>;
-  getEventsByQuery(query: string): Promise<EventDTO[]>;
-  getLastThreeEvents(): Promise<EventDTO[]>;
-  getEventsCount(): Promise<number>;
-  getInfoCount(): Promise<number>;
-  getWarningCount(): Promise<number>;
-  getErrorCount(): Promise<number>;
+  getAllEvents(token: string): Promise<EventDTO[]>;
+  getEventsByQuery(query: string, token: string): Promise<EventDTO[]>;
+  getLastThreeEvents(token: string): Promise<EventDTO[]>;
+  getEventsCount(token: string): Promise<number>;
+  getInfoCount(token: string): Promise<number>;
+  getWarningCount(token: string): Promise<number>;
+  getErrorCount(token: string): Promise<number>;
 
   //statistics:
   getEventStatistics(token: string): Promise<EventStatisticsDTO[]>;

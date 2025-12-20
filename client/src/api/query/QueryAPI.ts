@@ -18,42 +18,56 @@ export class QueryAPI implements IQueryAPI {
     });
   }
 
-  async getAllEvents(): Promise<EventDTO[]> {
-    const response = await this.client.get<EventDTO[]>("/siem/query/events");
-    return response.data;
-  }
-
-  async getEventsByQuery(query: string): Promise<EventDTO[]> {
-    const response = await this.client.get<EventDTO[]>("/siem/query/search", {
-      params: { q: query },
+  async getAllEvents(token: string): Promise<EventDTO[]> {
+    const response = await this.client.get<EventDTO[]>("/siem/query/events", {
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   }
 
-  async getLastThreeEvents(): Promise<EventDTO[]> {
+  async getEventsByQuery(query: string, token: string): Promise<EventDTO[]> {
+    const response = await this.client.get<EventDTO[]>("/siem/query/search", {
+      params: { q: query },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  }
+
+  async getLastThreeEvents(token: string): Promise<EventDTO[]> {
     const response = await this.client.get<EventDTO[]>(
-      "/siem/query/lastThreeEvents"
+      "/siem/query/lastThreeEvents",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
     return response.data;
   }
 
-  async getEventsCount(): Promise<number> {
-    const response = await this.client.get<CountResponseDTO>("/siem/query/eventsCount");
+  async getEventsCount(token: string): Promise<number> {
+    const response = await this.client.get<CountResponseDTO>("/siem/query/eventsCount", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data.count;
   }
 
-  async getInfoCount(): Promise<number> {
-    const response = await this.client.get<CountResponseDTO>("/siem/query/infoCount");
+  async getInfoCount(token: string): Promise<number> {
+    const response = await this.client.get<CountResponseDTO>("/siem/query/infoCount", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data.count;
   }
 
-  async getWarningCount(): Promise<number> {
-    const response = await this.client.get<CountResponseDTO>("/siem/query/warningCount");
+  async getWarningCount(token: string): Promise<number> {
+    const response = await this.client.get<CountResponseDTO>("/siem/query/warningCount", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data.count;
   }
 
-  async getErrorCount(): Promise<number> {
-    const response = await this.client.get<CountResponseDTO>("/siem/query/errorCount");
+  async getErrorCount(token: string): Promise<number> {
+    const response = await this.client.get<CountResponseDTO>("/siem/query/errorCount", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data.count;
   }
 
@@ -77,10 +91,9 @@ export class QueryAPI implements IQueryAPI {
   }
 
   async getEventDistribution(token: string): Promise<DistributionDTO> {
-    const response = await this.client.get<DistributionDTO>(
-      "query/distribution",
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const response = await this.client.get<DistributionDTO>("/query/distribution", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     return response.data;
   }
