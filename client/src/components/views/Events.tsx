@@ -179,7 +179,7 @@ export default function Events() {
                 query += query ? `|type=${eventType.toUpperCase()}` : `type=${eventType.toUpperCase()}`;
             }
             
-            const data: EventDTO[] = await api.getEventsByQuery(query);
+            const data: EventDTO[] = await api.getEventsByQuery(query, token);
             const mapped = data.map(mapEventDTOToRow);
 
             setEvents(mapped);
@@ -201,7 +201,7 @@ export default function Events() {
 
                 const api = new QueryAPI();
 
-                const data: EventDTO[] = await api.getAllEvents(); 
+                const data: EventDTO[] = await api.getAllEvents(token); 
                 const mapped = data.map(mapEventDTOToRow);
                 setEvents(mapped);
             } catch (err) {
@@ -256,7 +256,7 @@ export default function Events() {
                 <div style={leftSideStyle}>
                     <input
                         style={searchInputStyle}
-                        placeholder="🔍Type..."
+                        placeholder="Type..."
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value.toString())}
                     />

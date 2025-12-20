@@ -7,6 +7,7 @@ import RecentEventsTable from "../tables/RecentEventsTable";
 import { useEffect, useState } from "react";
 import { QueryAPI } from "../../api/query/QueryAPI";
 import { EventType } from "../../enums/EventType";
+import { useAuth } from "../../hooks/useAuthHook";
 
 export default function Dashboard() {
     const [eventsData, setEventsData] = useState<EventRow[]>([]);
@@ -14,6 +15,7 @@ export default function Dashboard() {
     const [infoCount, setInfoCount] = useState<number>(0);
     const [warningCount, setWarningCount] = useState<number>(0);
     const [errorCount, setErrorCount] = useState<number>(0);
+    const { token } = useAuth();
 
     // Inline styles for now, will be in CSS later
     // types, interfaces and classes will be moved too
@@ -53,9 +55,10 @@ export default function Dashboard() {
 
     useEffect(() => {
         const fetchData = async () => {
+            if (!token) return;
             const api = new QueryAPI();
             try {
-                const recentEvents = await api.getLastThreeEvents();
+                const recentEvents = await api.getLastThreeEvents(token);
                 const mappedEvents: EventRow[] = recentEvents.map(event => ({
                     id: event.id,
                     source: event.source,
@@ -64,23 +67,21 @@ export default function Dashboard() {
                     description: event.description
                 }));
                 setEventsData(mappedEvents); 
-                //console.log("Recent Events:", mappedEvents);
-                const allEventsCount = await api.getEventsCount();
+                const allEventsCount = await api.getEventsCount(token);
                 setEventCount(allEventsCount);
                 
-                const infoCount = await api.getInfoCount();
+                const infoCount = await api.getInfoCount(token);
                 setInfoCount(infoCount);
-                const warningCount = await api.getWarningCount();
+                const warningCount = await api.getWarningCount(token);
                 setWarningCount(warningCount);
-                const errorCount = await api.getErrorCount();
+                const errorCount = await api.getErrorCount(token);
                 setErrorCount(errorCount);
-                //console.log("Event Counts:", { allEventsCount, infoCount, warningCount, errorCount });
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         };
         fetchData();
-    }, []);
+    }, [token]);
 
     return (
         <div style={dashboardRectangleStyle}>
