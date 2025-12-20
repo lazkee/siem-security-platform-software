@@ -37,6 +37,22 @@ export default function Statistics() {
     { date: "14/12", count: 6 }
     ];
 
+    const testTopArchives: TopArchiveDTO[] = [
+    { id: 1, fileName: "logs_2025_12_14_22_00.tar", eventCount: 120 },
+    { id: 2, fileName: "auth_logs_2025_12_14.tar", eventCount: 95 },
+    { id: 3, fileName: "system_events_2025_12_13.tar", eventCount: 78 },
+    { id: 4, fileName: "app_errors_2025_12_12.tar", eventCount: 54 },
+    { id: 5, fileName: "network_2025_12_11.tar", eventCount: 33 }
+    ];
+
+    const testArchiveVolume: ArchiveVolumeDTO[] = [
+    { label: "10/12", size: 1024 }, 
+    { label: "11/12", size: 850 },
+    { label: "12/12", size: 1200 },
+    { label: "13/12", size: 640 },
+    { label: "14/12", size: 980 }
+    ];
+
     const {token} = useAuth();
 
     const [archiveType, setArchiveType] = useState<"events" | "alerts">("events");
@@ -138,7 +154,7 @@ export default function Statistics() {
                 <div style={{flex: 1, ...rectangleStyle}}>
                     <h3 style={headingStyle}> Top 5 Archives</h3>
                     <TopArchives
-                        data={topArchives}
+                        data={testTopArchives}
                         type={archiveType}
                         onTypeChange={setArchiveType}/>
                 </div>
@@ -147,7 +163,7 @@ export default function Statistics() {
             <div>
                 <h3 style={headingStyle}>Daily Archive Volume (in MB)</h3>
                 <ArchiveVolume
-                    data={archiveVolume}
+                    data={testArchiveVolume}
                     period={volumePeriod}
                     onPeriodChange={setVolumePeriod}/>
             </div>
