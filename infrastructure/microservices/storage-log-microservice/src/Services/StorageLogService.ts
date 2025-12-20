@@ -78,7 +78,7 @@ export class StorageLogService implements IStorageLogService {
             await this.logger.log("Archiving events started...");
 
             const events = (await this.queryClient.get<EventDTO[]>("/query/oldEvents", 
-                { params: {ARCHIVE_RETENTION_HOURS} }
+                { params: { hours: ARCHIVE_RETENTION_HOURS} }
             )).data;
 
             if (events.length === 0){
@@ -136,7 +136,7 @@ export class StorageLogService implements IStorageLogService {
             await this.logger.log("Archiving alerts started...");
             
             const alerts = (await this.queryClient.get<CorrelationDTO[]>("/query/oldAlerts",
-                { params: {ARCHIVE_RETENTION_HOURS} }
+                { params: { hours: ARCHIVE_RETENTION_HOURS} }
             )).data;
 
             if (alerts.length === 0) {

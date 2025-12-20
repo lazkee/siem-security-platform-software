@@ -1,9 +1,10 @@
 //tabela arhiva
 
 import { ArchiveDTO } from "../../models/storage/ArchiveDTO"
+import StorageTableRow from "./StorageTableRow";
 
 type Props = {
-    archives: ArchiveDTO;
+    archives: ArchiveDTO[];
 }
 
 export default function StorageTable({archives}: Props){
@@ -18,11 +19,11 @@ export default function StorageTable({archives}: Props){
                     <th></th>
                 </tr>
             </thead>
-            {/* <tbody>
+            <tbody>
                 {archives.map(a => (
-                    <StorageTableRow key={a.id archive={a}}}/>
+                    <StorageTableRow key={a.id} archive={a}/>
                 ))}
-            </tbody> */}
+            </tbody>
         </table>
     );
 }

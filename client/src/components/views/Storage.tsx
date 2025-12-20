@@ -15,13 +15,13 @@ export default function Storage() {
 
     const [archives, setArchives] = useState<ArchiveDTO[]>([]);
     const [stats, setStats] = useState<ArchiveStatsDTO | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    //const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if(!token) return;
 
         const fetchData = async () => {
-            setIsLoading(true);
+            //setIsLoading(true);
 
             try{
                 const [archivesData, statsData] = await Promise.all([
@@ -34,19 +34,38 @@ export default function Storage() {
             } catch (err) {
                 //console.error(err);
             } finally {
-                setIsLoading(false);
+                //setIsLoading(false);
             }
         };
 
         fetchData();
     }, [token]);
 
-    //if(isLoading) return <div>Loading storage...</div>
+    useEffect(() => {
+        setArchives([{
+            id: 1,
+            fileName: "test_archive.tar",
+            fileSize: 123456,
+            eventCount: 10,
+            createdAt: new Date().toISOString(),
+            downloadUrl: ""
+        }]);
+
+        setStats({
+            totalSize: 123456,
+            retentionHours: 72,
+            lastArchiveName: "test_archive.tar"
+        });
+
+        //setIsLoading(false);
+    }, []);
+
+    // if(isLoading) return <div>Loading storage...</div>
 
     return (
         <>
             {stats && <StorageStats stats={stats}/>}
-            {/* <StorageTable archives={archives}/> */}
+            <StorageTable archives={archives}/>
         </>
     );
 }

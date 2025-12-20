@@ -20,10 +20,11 @@ export default function StorageStats({stats} : Props){
                 value={stats.retentionHours}
             />
 
-            {/* <StatCard 
+            <StatCard 
                 title="Last archive"
-                value={stats.lastArchiveName}
-            /> */}
+                value={0}
+                subtitle={stats.lastArchiveName ?? "-"}
+            />
 
         </div>
     );
