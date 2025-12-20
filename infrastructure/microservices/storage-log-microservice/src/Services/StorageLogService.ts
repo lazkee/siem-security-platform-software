@@ -15,7 +15,9 @@ import { ArchiveVolumeDTO } from "../Domain/DTOs/ArchiveVolumeDTO";
 import { ArchiveType } from "../Domain/enums/ArchiveType";
 import { CorrelationDTO } from "../Domain/DTOs/CorrelationDTO";
 import { ARCHIVE_DIR, TEMP_DIR, ARCHIVE_RETENTION_HOURS } from "../Domain/constants/ArchiveConstants";
-
+import { SortArchives } from "../Utils/SortArchives";
+import { WriteGroupedFiles } from "../Utils/WriteGroupedFiles";
+import { CleanUpFiles } from "../Utils/CleanUpFiles";
 const execSync = util.promisify(exec);
 
 export class StorageLogService implements IStorageLogService {
@@ -96,22 +98,14 @@ export class StorageLogService implements IStorageLogService {
                 groups[key].push(line);
             }
 
-            const txtFiles: string[] = [];
-
-            for(const [slot, content] of Object.entries(groups)){
-                const name = `logs_${slot}.txt`;
-                writeFileSync(path.join(TEMP_DIR, name), content.join("\n"));
-                txtFiles.push(name);
-            }
+            const txtFiles = WriteGroupedFiles(TEMP_DIR, groups);
 
             const tarName = `events_${new Date().toISOString().replace(/[:.]/g, "_")}.tar`;
             const tarPath = path.join(ARCHIVE_DIR, tarName);
 
             await execSync(`tar -cf "${tarPath}" -C "${TEMP_DIR}" ${txtFiles.join(" ")}`);
             
-            txtFiles.forEach(f => 
-                unlinkSync(path.join(TEMP_DIR, f))
-            );
+            CleanUpFiles(TEMP_DIR, txtFiles);
 
             const stats = statSync(tarPath);
 
@@ -162,22 +156,14 @@ export class StorageLogService implements IStorageLogService {
                 groups[key].push(line);
             }
 
-            const txtFiles: string[] = [];
-
-            for(const [slot, content] of Object.entries(groups)){
-                const name = `logs_${slot}.txt`;
-                writeFileSync(path.join(TEMP_DIR, name), content.join("\n"));
-                txtFiles.push(name);
-            }
+            const txtFiles = WriteGroupedFiles(TEMP_DIR, groups);
 
             const tarName = `alerts_${new Date().toISOString().replace(/[:.]/g, "_")}.tar`;
             const tarPath = path.join(ARCHIVE_DIR, tarName);
 
             await execSync(`tar -cf "${tarPath}" -C "${TEMP_DIR}" ${txtFiles.join(" ")}`);
             
-            txtFiles.forEach(f => 
-                unlinkSync(path.join(TEMP_DIR, f))
-            );
+            CleanUpFiles(TEMP_DIR, txtFiles);
 
             const stats = statSync(tarPath);
 
@@ -211,34 +197,8 @@ export class StorageLogService implements IStorageLogService {
 
     public async sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<StorageLog[]> {
         const allArchives = await this.getArchives();
-        const factor = order == "asc" ? 1 : -1;
-
-        allArchives.sort((a, b) => {
-            let valA: number | string;
-            let valB: number | string;
-
-            switch (by) {
-                case "date":
-                    valA = new Date(a.createdAt).getTime();
-                    valB = new Date(b.createdAt).getTime();
-                    break;
-
-                case "size":
-                    valA = a.fileSize;
-                    valB = b.fileSize;
-                    break;
-
-                case "name":
-                    valA = a.fileName;
-                    valB = b.fileName;
-                    break;
-            }
-
-            if (valA < valB) return -1 * factor;
-            if (valA > valB) return 1 * factor;
-            return 0;
-        });
-        return allArchives;
+       
+        return SortArchives(allArchives, by, order);
     }
 
     public async getStats(): Promise<ArchiveStatsDTO> {
