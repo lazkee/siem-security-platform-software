@@ -5,6 +5,7 @@ import { ArchiveDTO } from "../../models/storage/ArchiveDTO";
 import { ArchiveStatsDTO } from "../../models/storage/ArchiveStatsDTO";
 import StorageStats from "../storage/StorageStats";
 import StorageTable from "../tables/StorageTable";
+import StorageToolBar from "../storage/StorageToolbar";
 
 
 const storageAPI = new StorageAPI();
@@ -32,7 +33,7 @@ export default function Storage() {
                 setArchives(archivesData);
                 setStats(statsData);
             } catch (err) {
-                //console.error(err);
+                console.error(err);
             } finally {
                 //setIsLoading(false);
             }
@@ -40,6 +41,28 @@ export default function Storage() {
 
         fetchData();
     }, [token]);
+
+    const handleSearchArchives = async (query: string) => {
+        if(!token) return;
+
+        try{
+            const data = await storageAPI.searchArchives(query);
+            setArchives(data);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const handleSortArchives = async (by: "date" | "size" | "name", order: "asc" | "desc") => {
+        if(!token) return;
+
+        try{
+            const data = await storageAPI.sortArchives(by, order);
+            setArchives(data);
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     useEffect(() => {
         setArchives([{
@@ -65,6 +88,7 @@ export default function Storage() {
     return (
         <>
             {stats && <StorageStats stats={stats}/>}
+            <StorageToolBar onSearch={handleSearchArchives} onSort={handleSortArchives} />
             <StorageTable archives={archives}/>
         </>
     );

@@ -22,7 +22,6 @@ export default function StorageStats({stats} : Props){
 
             <StatCard 
                 title="Last archive"
-                value={0}
                 subtitle={stats.lastArchiveName ?? "-"}
             />
 

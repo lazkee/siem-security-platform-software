@@ -1,6 +1,6 @@
 type StatCardProps = {
     title: string;
-    value: number;
+    value?: number;
     valueDescription?: string;
     icon?: React.ReactNode;
     iconColor?: string;
