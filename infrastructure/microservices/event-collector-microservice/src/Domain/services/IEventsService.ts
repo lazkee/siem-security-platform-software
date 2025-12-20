@@ -3,12 +3,12 @@ import { Event } from "../models/Event";
 
 export interface IEventsService {
     createEvent(event: EventDTO): Promise<EventDTO>;
-    getAll(): Promise<Event[]>;
+    getAll(): Promise<EventDTO[]>;
     getById(id: number): Promise<EventDTO>;
     deleteById(id: number): Promise<boolean>;
     deleteOldEvents(expiredIds:Number[]): Promise<boolean>;
     getMaxId():Promise<EventDTO>;
-    getEventsFromId1ToId2(fromId: number, toId: number): Promise<Event[]>
-    getSortedEventsByDate(): Promise<Event[]>
+    getEventsFromId1ToId2(fromId: number, toId: number): Promise<EventDTO[]>
+    getSortedEventsByDate(): Promise<EventDTO[]>
     getEventPercentagesByEvent(): Promise<Number[]>
 }

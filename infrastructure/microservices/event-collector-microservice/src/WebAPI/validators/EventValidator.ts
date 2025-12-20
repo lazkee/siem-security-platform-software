@@ -1,9 +1,10 @@
 import { EventDTO } from "../../Domain/DTOs/EventDTO";
 import { EventType } from "../../Domain/enums/EventType";
+import { ValidationResult } from "../../Domain/types/ValidationResult";
 
 export function validateEventData(
   data: EventDTO,
-): { success: boolean; message?: string } {
+): ValidationResult {
   if (!data.source || data.source.trim().length === 0) {
     return { success: false, message: "Source is required" };
   }

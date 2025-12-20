@@ -9,43 +9,44 @@ import { toDTO } from "../Utils/Converters/ConvertToDTO";
 export class EventsService implements IEventsService {
     constructor(
         private readonly eventRepository: Repository<Event>,
-    ) {}
+    ) { }
 
 
-    async getSortedEventsByDate(): Promise<Event[]> {
-       return await this.eventRepository.find({
-        order: {
-            timestamp: "DESC", 
-        },
-    });
+    async getSortedEventsByDate(): Promise<EventDTO[]> {
+        const events = await this.eventRepository.find({
+            order: {
+                timestamp: "DESC",
+            },
+        });
+        return events.map(e => toDTO(e));
     }
     async getEventPercentagesByEvent(): Promise<Number[]> {
         const total = await this.eventRepository.count();
 
-    if (total === 0) {
-        return [0, 0, 0];
+        if (total === 0) {
+            return [0, 0, 0];
+        }
+
+        const infoCount = await this.eventRepository.count({
+            where: { type: EventType.INFO },
+        });
+
+        const warningCount = await this.eventRepository.count({
+            where: { type: EventType.WARNING },
+        });
+
+        const errorCount = await this.eventRepository.count({
+            where: { type: EventType.ERROR },
+        });
+        //ide procenat za info,warning pa error 
+        return [
+            (infoCount / total) * 100,
+            (warningCount / total) * 100,
+            (errorCount / total) * 100,
+        ];
     }
 
-    const infoCount = await this.eventRepository.count({
-        where: { type: EventType.INFO },
-    });
 
-    const warningCount = await this.eventRepository.count({
-        where: { type: EventType.WARNING },
-    });
-
-    const errorCount = await this.eventRepository.count({
-        where: { type: EventType.ERROR },
-    });
-    //ide procenat za info,warning pa error 
-    return [
-        (infoCount / total) * 100,
-        (warningCount / total) * 100,
-        (errorCount / total) * 100,
-    ];
-    }
-
-   
 
     async createEvent(eventDto: EventDTO): Promise<EventDTO> {
         const timestamp = eventDto.timestamp ? new Date(eventDto.timestamp) : new Date();
@@ -61,59 +62,61 @@ export class EventsService implements IEventsService {
         return toDTO(saved);
     }
 
-    async getAll(): Promise<Event[]> {
-        return this.eventRepository.find();
+    async getAll(): Promise<EventDTO[]> {
+        const allEvents = await this.eventRepository.find();
+        return allEvents.map(e => toDTO(e));
     }
 
     async getById(id: number): Promise<EventDTO> {
         const event = await this.eventRepository.findOne({ where: { id } });
         if (!event) {
-            const emptyEvent:EventDTO={
-                id:-1
+            const emptyEvent: EventDTO = {
+                id: -1
             }
             return emptyEvent;
         }
-        return event;
+        return toDTO(event);
     }
 
     async deleteById(id: number): Promise<boolean> {
-        const result = await this.eventRepository.delete({ id:id });
+        const result = await this.eventRepository.delete({ id: id });
         return !!result.affected && result.affected > 0;
     }
 
-     async deleteOldEvents(oldIds:number[]): Promise<boolean> {
+    async deleteOldEvents(oldIds: number[]): Promise<boolean> {
         var deletedOnes = 0;
-        for(const id of oldIds){
-           var sucessfulDelete= await this.deleteById(id);
-           if(sucessfulDelete){
-            deletedOnes++
-           }
+        for (const id of oldIds) {
+            var sucessfulDelete = await this.deleteById(id);
+            if (sucessfulDelete) {
+                deletedOnes++
+            }
         }
         return deletedOnes > 0
     }
-    
+
     async getMaxId(): Promise<EventDTO> {
         const event = await this.eventRepository.findOne({
-        order: { id: "DESC" }
-    });
+            order: { id: "DESC" }
+        });
         if (!event) {
-             const emptyEvent:EventDTO={
-                id:-1
+            const emptyEvent: EventDTO = {
+                id: -1
             }
             return emptyEvent;
         }
-        return event;
+        return toDTO(event);
     }
-    async getEventsFromId1ToId2(fromId: number, toId: number): Promise<Event[]> {
-      return await this.eventRepository.find({
-        where: {
-            id: Between(fromId, toId)
-        },
-        order: {
-            id: "ASC"
-        }
-    });
+    async getEventsFromId1ToId2(fromId: number, toId: number): Promise<EventDTO[]> {
+        const events= await this.eventRepository.find({
+            where: {
+                id: Between(fromId, toId)
+            },
+            order: {
+                id: "ASC"
+            }
+        });
+        return events.map(e=>toDTO(e));
     }
 
-    
+
 }
