@@ -4,6 +4,7 @@ import { EventDTO } from "../Domain/DTOs/EventDTO";
 import { IEventsService } from "../Domain/services/IEventsService";
 import { Between } from "typeorm"
 import { EventType } from "../Domain/enums/EventType";
+import { toDTO } from "../Utils/Converters/ConvertToDTO";
 
 export class EventsService implements IEventsService {
     constructor(
@@ -57,17 +58,20 @@ export class EventsService implements IEventsService {
         });
 
         const saved = await this.eventRepository.save(entity);
-        return this.toDTO(saved);
+        return toDTO(saved);
     }
 
     async getAll(): Promise<Event[]> {
         return this.eventRepository.find();
     }
 
-    async getById(id: number): Promise<Event> {
+    async getById(id: number): Promise<EventDTO> {
         const event = await this.eventRepository.findOne({ where: { id } });
         if (!event) {
-            throw new Error(`Event with id=${id} not found.`);
+            const emptyEvent:EventDTO={
+                id:-1
+            }
+            return emptyEvent;
         }
         return event;
     }
@@ -88,12 +92,15 @@ export class EventsService implements IEventsService {
         return deletedOnes > 0
     }
     
-    async getMaxId(): Promise<Event> {
+    async getMaxId(): Promise<EventDTO> {
         const event = await this.eventRepository.findOne({
         order: { id: "DESC" }
     });
         if (!event) {
-            throw new Error(`Event database is empty`);
+             const emptyEvent:EventDTO={
+                id:-1
+            }
+            return emptyEvent;
         }
         return event;
     }
@@ -108,13 +115,5 @@ export class EventsService implements IEventsService {
     });
     }
 
-    private toDTO(event: Event): EventDTO {
-        return {
-            id: event.id,
-            source: event.source,
-            type: event.type,
-            description: event.description,
-            timestamp: event.timestamp,
-        };
-    }
+    
 }

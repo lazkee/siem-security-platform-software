@@ -48,7 +48,7 @@ export class EventsController {
             res.status(201).json(created);
         } catch (err) {
             const message = (err as Error).message;
-            await this.logger.log(`Error while creating event: ${message}`);
+            this.logger.log(`Error while creating event: ${message}`);
             res.status(500).json({ message });
         }
     }
@@ -59,7 +59,7 @@ export class EventsController {
             res.status(200).json(events);
         } catch (err) {
             const message = (err as Error).message;
-            await this.logger.log(`Error while getting events: ${message}`);
+            this.logger.log(`Error while getting events: ${message}`);
             res.status(500).json({ message });
         }
     }
@@ -73,7 +73,11 @@ export class EventsController {
             }
 
             const event = await this.eventsService.getById(id);
-            res.status(200).json(event);
+            if(event.id!=-1){
+                res.status(200).json(event);
+            }else{
+                res.status(404).json({message:"Event with this ID not found"})
+            }
         } catch (err) {
             res.status(404).json({ message: (err as Error).message });
         }
@@ -112,7 +116,7 @@ export class EventsController {
             res.status(200).json({ success: anyDeleted });
         } catch (err) {
             const message = (err as Error).message;
-            await this.logger.log(`Error while deleting old events: ${message}`);
+            this.logger.log(`Error while deleting old events: ${message}`);
             res.status(500).json({ message });
         }
     }
@@ -120,11 +124,15 @@ export class EventsController {
     private async getMaxId(req: Request, res: Response): Promise<void> {
          try{
             const created = await this.eventsService.getMaxId();
-            res.status(201).json(created);
+            if(created.id!=-1){
+                res.status(200).json(created);
+            }else{
+                res.status(404).json({message:"Event with this ID not found"})
+            }
          } 
          catch(err){
             const message = (err as Error).message;
-            await this.logger.log(`Error while creating event: ${message}`);
+            this.logger.log(`Error while creating event: ${message}`);
             res.status(500).json({ message });
          }
    }
@@ -152,7 +160,7 @@ export class EventsController {
     }
     catch(err){
         const message = (err as Error).message;
-            await this.logger.log(`Error while getting events from range: ${message}`);
+            this.logger.log(`Error while getting events from range: ${message}`);
             res.status(500).json({ message });
     }
   }
@@ -163,7 +171,7 @@ export class EventsController {
             res.status(200).json(events);
         } catch (err) {
             const message = (err as Error).message;
-            await this.logger.log(`Error while getting sorted events by date: ${message}`);
+            this.logger.log(`Error while getting sorted events by date: ${message}`);
             res.status(500).json({ message });
         }
     }
@@ -175,7 +183,7 @@ export class EventsController {
         }
         catch(err){
             const message = (err as Error).message;
-            await this.logger.log(`Error while getting percentages for each event type: ${message}`);
+            this.logger.log(`Error while getting percentages for each event type: ${message}`);
             res.status(500).json({ message });
         }
     }
