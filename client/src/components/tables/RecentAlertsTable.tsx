@@ -43,9 +43,7 @@ export default function RecentAlertsTable({
     borderRadius: "14px",
     overflow: "hidden",
     boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-    marginTop: "12px",
     border: "1px solid #333",
-    margin: "10px",
   };
 
   const tableStyle: React.CSSProperties = {
@@ -98,7 +96,6 @@ export default function RecentAlertsTable({
         <thead style={theadStyle}>
           <tr>
             <th style={thStyle}></th>
-            <th style={thStyle}>ID</th>
             <th style={thStyle}>Title</th>
             <th style={thStyle}>Severity</th>
             <th style={thStyle}>Status</th>
@@ -111,7 +108,7 @@ export default function RecentAlertsTable({
         <tbody>
           {alerts.length === 0 ? (
             <tr>
-              <td colSpan={8} style={{ ...tdStyle, textAlign: "center", padding: "40px", color: "#a6a6a6" }}>
+              <td colSpan={7} style={{ ...tdStyle, textAlign: "center", padding: "40px", color: "#a6a6a6" }}>
                 No alerts found
               </td>
             </tr>
@@ -129,10 +126,6 @@ export default function RecentAlertsTable({
                   ) : (
                     <BiMessageRounded color={getSeverityColor(alert.severity)} size={20} />
                   )}
-                </td>
-
-                <td style={{ ...tdStyle, fontFamily: "Consolas, monospace", fontSize: "13px", color: "#60cdff" }}>
-                  #{alert.id}
                 </td>
 
                 <td style={{ ...tdStyle, maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
