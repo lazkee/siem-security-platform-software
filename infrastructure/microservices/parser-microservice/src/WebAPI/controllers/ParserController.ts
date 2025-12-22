@@ -26,7 +26,7 @@ export class ParserController {
         try {
             const rawMessage = req.body.message as string;  // Team 2 sends JSON with event message and event source (microservice which called log)
             const source = req.body.source as string;
-            
+
             const validate = ValidateInputParameters(rawMessage, source);
             if (!validate.success) {
                 res.status(400).json({ success: false, message: validate.message });
@@ -36,19 +36,25 @@ export class ParserController {
             this.logger.log(`Raw log message from "${source}": ${rawMessage}`)
 
             const response = await this.parserService.normalizeAndSaveEvent(rawMessage, source);
-            res.status(201).json(response);
+            if (response.id === -1) {
+                res.status(500).json({ message: "Service error: Failed to log event." });
+                return;
+            }
+            res.status(200).json(response);
         } catch (err) {
-            res.status(500).json({ message: (err as Error).message });
+            this.logger.log("Parser service error while trying to log event. Erorr: " + err);
+            res.status(500).json({ message: "Service error: Failed to log event." });
         }
     }
 
     private async getAllParserEvents(req: Request, res: Response): Promise<void> {
         try {
             this.logger.log(`Fetching all parser events`);
-            const response =await this.parserRepositoryService.getAll();
+            const response = await this.parserRepositoryService.getAll();
             res.status(200).json(response);
         } catch (err) {
-            res.status(500).json({ message: (err as Error).message });
+            this.logger.log("Parser service error while trying to fetch parser events. Erorr: " + err);
+            res.status(500).json({ message: "Service error: Failed to fetch parser events." });
         }
     }
 
@@ -62,9 +68,14 @@ export class ParserController {
             this.logger.log(`Fetching parser event with ID: ${id}`);
 
             const response = await this.parserRepositoryService.getParserEventById(id);
+            if (response.parser_id === -1) {
+                res.status(404).json({ message: `Parse Event with id=${id} not found` });
+                return;
+            }
             res.status(200).json(response);
         } catch (err) {
-            res.status(404).json({ message: (err as Error).message });
+            this.logger.log("Parser service error while trying to fetch parser event. Erorr: " + err);
+            res.status(500).json({ message: "Service error: Failed to fetch parser event." });
         }
     }
 
@@ -84,7 +95,8 @@ export class ParserController {
             }
             res.status(200).json({ success: true });
         } catch (err) {
-            res.status(500).json({ message: (err as Error).message });
+            this.logger.log("Parser service error while trying to delete parser event. Erorr: " + err);
+            res.status(500).json({ message: "Service error: Failed to delete parser event." });
         }
     }
 

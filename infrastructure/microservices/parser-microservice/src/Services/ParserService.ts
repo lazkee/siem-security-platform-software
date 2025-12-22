@@ -69,13 +69,13 @@ export class ParserService implements IParserService {
 
         // Extract LLM-generated event JSON
         const eventData = response.data?.eventData;
-        if (!eventData || eventData.description === "_NORMALIZATION_FAILED_") {
+        if (!eventData || eventData.description === "__NORMALIZATION_FAILED__") {
             this.logger.log("LLM failed to normalize event. Raw message: " + message);
 
             const event: EventDTO = {
                 id: -1,
                 type: EventType.ERROR,
-                description: "_NORMALIZATION_FAILED_"
+                description: "__NORMALIZATION_FAILED__"
             };
 
             return event;
