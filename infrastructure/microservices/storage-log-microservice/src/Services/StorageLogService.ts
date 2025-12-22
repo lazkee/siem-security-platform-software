@@ -6,7 +6,7 @@ import { mkdirSync, statSync, unlinkSync, writeFileSync } from "fs";
 import { IStorageLogService } from "../Domain/services/IStorageLogService";
 import { EventDTO } from "../Domain/DTOs/EventDTO";
 import { exec } from "child_process";
-import { getTimeGroup } from "../Utils/TimeGroup";
+import { getTimeGroup } from "../Utils/Service/TimeGroup";
 import { ILogerService } from "../Domain/services/ILogerService";
 import util from "util";
 import { ArchiveStatsDTO } from "../Domain/DTOs/ArchiveStatsDTO";
@@ -15,9 +15,10 @@ import { ArchiveVolumeDTO } from "../Domain/DTOs/ArchiveVolumeDTO";
 import { ArchiveType } from "../Domain/enums/ArchiveType";
 import { CorrelationDTO } from "../Domain/DTOs/CorrelationDTO";
 import { ARCHIVE_DIR, TEMP_DIR, ARCHIVE_RETENTION_HOURS } from "../Domain/constants/ArchiveConstants";
-import { SortArchives } from "../Utils/SortArchives";
-import { WriteGroupedFiles } from "../Utils/WriteGroupedFiles";
-import { CleanUpFiles } from "../Utils/CleanUpFiles";
+import { SortArchives } from "../Utils/Service/SortArchives";
+import { WriteGroupedFiles } from "../Utils/Service/WriteGroupedFiles";
+import { CleanUpFiles } from "../Utils/Service/CleanUpFiles";
+import { createAxiosClient } from "../Utils/Client/AxiosClient";
 const execSync = util.promisify(exec);
 
 export class StorageLogService implements IStorageLogService {
@@ -25,30 +26,14 @@ export class StorageLogService implements IStorageLogService {
     private readonly eventClient: AxiosInstance;
     private readonly correlationClient: AxiosInstance;
 
-    constructor(private readonly storageRepo: Repository<StorageLog>,
+    constructor(
+        private readonly storageRepo: Repository<StorageLog>,
         private readonly logger: ILogerService
     ) {
-        const queryServiceURL = process.env.QUERY_SERVICE_API;
-        const eventServiceURL = process.env.EVENT_SERVICE_API;
-        const analysisServiceURL = process.env.ANALYSIS_ENGINE_API;
 
-        this.queryClient = axios.create({
-            baseURL: queryServiceURL,
-            headers: { "Content-Type": "application/json" },
-            timeout: 5000
-        });
-
-        this.eventClient = axios.create({
-            baseURL: eventServiceURL,
-            headers: { "Content-Type": "application/json" },
-            timeout: 5000
-        });
-
-        this.correlationClient = axios.create({
-            baseURL: analysisServiceURL,
-            headers: { "Content-Type": "application/json" },
-            timeout: 5000
-        });
+        this.queryClient = createAxiosClient(process.env.QUERY_SERVICE_API ?? "");
+        this.eventClient = createAxiosClient(process.env.EVENT_SERVICE_API ?? "");
+        this.correlationClient = createAxiosClient(process.env.ANALYSIS_ENGINE_API ?? "");
 
         //radi proveru 
         mkdirSync(ARCHIVE_DIR, { recursive: true });
