@@ -11,6 +11,7 @@ import { EventResponseSchema } from "../Infrastructure/schemas/EventResponse.sch
 import { CorrelationResponseSchema } from "../Infrastructure/schemas/CorrelationResponse.schema";
 import { NORMALIZATION_PROMPT } from "../Infrastructure/prompts/normalization.prompt";
 import { CORRELATION_PROMPT } from "../Infrastructure/prompts/correlation.prompt";
+import { ILoggerService } from "../Domain/Services/ILoggerService";
 dotenv.config();
 
 export class LLMChatAPIService implements ILLMChatAPIService {
@@ -22,13 +23,13 @@ export class LLMChatAPIService implements ILLMChatAPIService {
   private readonly timeoutMs = 60000;
   private readonly maxRetries = 3;
 
-  constructor() {
+  constructor(private readonly loggerService: ILoggerService) {
     this.apiUrl = (process.env.LLM_API_URL ?? "").replace(/\/+$/, "");
     this.apiKey = process.env.GEMINI_API_KEY ?? "";
     this.normalizationModelId = process.env.GEMINI_NORMALIZATION_MODEL_ID ?? "";
     this.correlationModelId = process.env.GEMINI_CORRELATION_MODEL_ID ?? "";
 
-    console.info("[LLM] Service initialized", {
+    loggerService.info("[LLM] Service initialized", {
       apiUrl: this.apiUrl,
       normalizationModelId: this.normalizationModelId,
       correlationModelId: this.correlationModelId,
@@ -55,7 +56,7 @@ export class LLMChatAPIService implements ILLMChatAPIService {
     const event = parseEventDTO(raw);
 
     if (!event) {
-      console.warn("[LLM] Normalization failed schema validation", raw);
+      this.loggerService.warn("[LLM] Normalization failed schema validation", raw);
       return this.emptyEvent();
     }
 
@@ -67,7 +68,7 @@ export class LLMChatAPIService implements ILLMChatAPIService {
   // =========================================================
   async sendCorrelationPrompt(rawMessage: string): Promise<CorrelationDTO[]> {
     if (!rawMessage || rawMessage.trim().length === 0) {
-      console.warn("[LLM] Correlation skipped: empty input");
+      this.loggerService.warn("[LLM] Correlation skipped: empty input");
       return [];
     }
 
@@ -144,7 +145,7 @@ export class LLMChatAPIService implements ILLMChatAPIService {
       } catch (err) {
         const axErr = err as AxiosError;
 
-        console.warn("[LLM] Request failed", {
+        this.loggerService.warn("[LLM] Request failed", {
           attempt,
           status: axErr.response?.status,
           message: axErr.message,
@@ -155,7 +156,7 @@ export class LLMChatAPIService implements ILLMChatAPIService {
       }
     }
 
-    console.error("[LLM] All retries exhausted");
+    this.loggerService.error("[LLM] All retries exhausted");
     return null;
   }
 

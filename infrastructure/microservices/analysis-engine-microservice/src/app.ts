@@ -18,6 +18,8 @@ import { Correlation } from './Domain/models/Correlation';
 import { Db } from './Database/DbConnectionPool';
 import { CorrelationEventMap } from './Domain/models/CorrelationEventMap';
 import { AnalysisEngineController } from './WebAPI/controllers/AnalysisEngineController';
+import { ILoggerService } from './Domain/Services/ILoggerService';
+import { LoggerService } from './Services/LoggerService';
 
 dotenv.config({ quiet: true });
 
@@ -43,20 +45,20 @@ const CorrelationRepo: Repository<Correlation> = Db.getRepository(Correlation);
 
 const CorrelationMapRepo: Repository<CorrelationEventMap> = Db.getRepository(CorrelationEventMap);
 
-const llmChatAPIService: ILLMChatAPIService = new LLMChatAPIService();
-const correlationService: ICorrelationService = new CorrelationService(CorrelationRepo, CorrelationMapRepo, llmChatAPIService);
-
+const loggerService: ILoggerService = new LoggerService();
+const llmChatAPIService: ILLMChatAPIService = new LLMChatAPIService(loggerService);
+const correlationService: ICorrelationService = new CorrelationService(CorrelationRepo, CorrelationMapRepo, llmChatAPIService, loggerService);
 
 const analysisEngineController = new AnalysisEngineController(correlationService, llmChatAPIService);
 
 app.use('/api/v1', analysisEngineController.getRouter());
 
 export function startRecurringJobs() {
-    const recurringCorrelationJob = new RecurringCorrelationJob(correlationService);
-    const intervalMs = 15 * 60 * 1000; // 15 minutes
+  const recurringCorrelationJob = new RecurringCorrelationJob(correlationService, loggerService);
+  const intervalMs = 15 * 60 * 1000; // 15 minutes
 
-    const intervalScheduler = new IntervalScheduler(recurringCorrelationJob, intervalMs);
-    intervalScheduler.start();
+  const intervalScheduler = new IntervalScheduler(recurringCorrelationJob, intervalMs);
+  intervalScheduler.start();
 }
 
 export default app;

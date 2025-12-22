@@ -7,6 +7,7 @@ import { CorrelationEventMap } from "../Domain/models/CorrelationEventMap";
 import { CorrelationDTO } from "../Domain/types/CorrelationDTO";
 import { createAxiosClient } from "../Infrastructure/helpers/axiosClient";
 import { extractNumericEventIds } from "../Infrastructure/helpers/extractNumericEventIds";
+import { ILoggerService } from "../Domain/Services/ILoggerService";
 
 export class CorrelationService implements ICorrelationService {
   private readonly alertClient: AxiosInstance;
@@ -21,16 +22,17 @@ export class CorrelationService implements ICorrelationService {
   constructor(
     private readonly correlationRepo: Repository<Correlation>,
     private readonly correlationEventMap: Repository<CorrelationEventMap>,
-    private readonly llmChatApiService: ILLMChatAPIService
+    private readonly llmChatApiService: ILLMChatAPIService,
+    private readonly loggerService: ILoggerService
   ) {
-    console.log(`[CorrelationService] started`);
+    this.loggerService.info(`[CorrelationService] started`);
 
     this.queryClient = createAxiosClient(process.env.QUERY_SERVICE_API ?? "");
     this.alertClient = createAxiosClient(process.env.ALERT_SERVICE_API ?? "");
   }
 
   async findCorrelations(): Promise<void> {
-    console.log(`[CorrelationService] Finding correlations`);
+    this.loggerService.info(`[CorrelationService] Finding correlations`);
 
     // 1. Fetch events (external → untrusted)
     let events: unknown;
@@ -38,7 +40,7 @@ export class CorrelationService implements ICorrelationService {
       const res = await this.queryClient.get(this.queryEventsPath);
       events = res.data;
     } catch (err) {
-      console.error(`[CorrelationService] Failed to fetch events`, err);
+      this.loggerService.error(`[CorrelationService] Failed to fetch events`, err);
       return;
     }
 
@@ -49,12 +51,12 @@ export class CorrelationService implements ICorrelationService {
         JSON.stringify(events, null, 2)
       );
     } catch (err) {
-      console.error(`[CorrelationService] LLM analysis failed`, err);
+      this.loggerService.error(`[CorrelationService] LLM analysis failed`, err);
       return;
     }
 
     if (candidates.length === 0) {
-      console.log(`[CorrelationService] No correlation candidates returned`);
+      this.loggerService.info(`[CorrelationService] No correlation candidates returned`);
       return;
     }
 
@@ -70,9 +72,9 @@ export class CorrelationService implements ICorrelationService {
 
         await this.sendCorrelationAlert(candidate);
 
-        console.log(`[CorrelationService] Correlation stored (ID=${correlationId})`);
+        this.loggerService.info(`[CorrelationService] Correlation stored (ID=${correlationId})`);
       } catch (err) {
-        console.error(`[CorrelationService] Failed to process candidate`, err);
+        this.loggerService.error(`[CorrelationService] Failed to process candidate`, err);
       }
     }
   }
