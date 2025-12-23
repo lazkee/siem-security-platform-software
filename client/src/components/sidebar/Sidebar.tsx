@@ -4,95 +4,115 @@ import { BsCalendarFill } from "react-icons/bs";
 import { VscGraph } from "react-icons/vsc";
 import { LuLayers3 } from "react-icons/lu";
 import { MdKeyboardArrowRight } from "react-icons/md";
-import { useState } from "react";
 import { BiError } from "react-icons/bi";
+import { useState } from "react";
+import { TbSquareLetterS } from "react-icons/tb";
+import { TbSquareLetterI } from "react-icons/tb";
+import { TbSquareLetterE } from "react-icons/tb";
+import { TbSquareLetterM } from "react-icons/tb";
 
 interface SidebarProps {
     setSideMenuPage: (page: number) => void;
 }
 
 export default function Sidebar({ setSideMenuPage }: SidebarProps) {
-
     const [isSidebarOpened, setIsSidebarOpened] = useState(false);
     const [hover, setHover] = useState<number | null>(null);
     const [selectedButton, setSelectedButton] = useState<number | null>(null);
-    // Inline styles for now, will be in CSS later
 
-    const sidebarStyle: React.CSSProperties = {
-        width: isSidebarOpened ? '200px' : '45px',
-        color: 'white',
-        padding: '16px 8px',
-        height: '100%',
-        backgroundColor: '#202020',
-        transition: 'width 0.3s ease',
-        overflow: 'hidden',
-    };
-
-    const sidebarItemStyle: React.CSSProperties = {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        marginTop: '20px'
-    };
-
-    const menuButtonStyle: React.CSSProperties = {
-        fontSize: '14px',
-        backgroundColor: '#202020',
-        color: 'white',
-        cursor: 'pointer',
-        padding: '0px',
-        border: 'none'//add hover when we move to css
-    };
-
-    const itemTextStyle = (index: number): React.CSSProperties => ({
-        fontSize: '14px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '10px',
-        backgroundColor: hover === index ? '#a1a1a1ff' : selectedButton === index ? '#a1a1a1ff' : '#202020',
-        color: 'white',
-        padding: '8px 2px',
-        border: 'none',
-        width: '100%',
-        cursor: 'pointer'
-    });
+    const itemClass = (index: number) =>
+        `flex items-center justify-between text-sm text-white cursor-pointer transition-colors p-2
+   ${hover === index || selectedButton === index ? "bg-gray-400" : "bg-[#202020]"}
+  `;
 
     return (
-        <div style={sidebarStyle}>
-            <button style={menuButtonStyle} onClick={() => setIsSidebarOpened(!isSidebarOpened)}>
-                <IoIosMenu size={30} />
-            </button>
+        <div
+            className={`h-full bg-[#202020] text-white transition-all duration-300 left-2 ${isSidebarOpened ? "w-[200px]" : "w-[45px]"}
+        `}>
+            <div className="flex items-center">
+                <button onClick={() => setIsSidebarOpened(!isSidebarOpened)}>
+                    <IoIosMenu size={30} style={{ marginLeft: '-2px' }} />
+                </button>
+
+                <TbSquareLetterS size={25} />
+                <TbSquareLetterI size={25} />
+                <TbSquareLetterE size={25} />
+                <TbSquareLetterM size={25} />
+            </div>
 
             {isSidebarOpened && (
-                <div style={sidebarItemStyle}>
-                    <button style={itemTextStyle(0)} onClick={() => {setSideMenuPage(0); setSelectedButton(0)}} onMouseEnter={() => setHover(0)} onMouseLeave={() => setHover(null)}>
-                        <TbLayoutDashboardFilled size={20} /> Dashboard <MdKeyboardArrowRight size={20} />
+                <div className="flex flex-col gap-3">
+                    <button
+                        className={itemClass(0)} style={{ marginLeft: '20px', borderRadius: '0.75rem' }}
+                        onClick={() => {
+                            setSideMenuPage(0);
+                            setSelectedButton(0);
+                        }}
+                        onMouseEnter={() => setHover(0)}
+                        onMouseLeave={() => setHover(null)}
+                    >
+                        <TbLayoutDashboardFilled size={20} />
+                        Dashboard
+                        <MdKeyboardArrowRight size={20} />
                     </button>
 
-                    <button style={itemTextStyle(1)} onClick={() => {setSideMenuPage(1); setSelectedButton(1)}} onMouseEnter={() => setHover(1)} onMouseLeave={() => setHover(null)}>
-                        <BsCalendarFill size={20} /> Events <MdKeyboardArrowRight size={20} />
+                    <button
+                        className={itemClass(1)} style={{ marginLeft: '20px', borderRadius: '0.75rem' }}
+                        onClick={() => {
+                            setSideMenuPage(1);
+                            setSelectedButton(1);
+                        }}
+                        onMouseEnter={() => setHover(1)}
+                        onMouseLeave={() => setHover(null)}
+                    >
+                        <BsCalendarFill size={20} />
+                        Events
+                        <MdKeyboardArrowRight size={20} />
                     </button>
 
-                    <button style={itemTextStyle(2)} onClick={() => {setSideMenuPage(2); setSelectedButton(2)}} onMouseEnter={() => setHover(2)} onMouseLeave={() => setHover(null)}>
-                        <VscGraph size={20} /> Statistics <MdKeyboardArrowRight size={20} />
+                    <button
+                        className={itemClass(2)} style={{ marginLeft: '20px', borderRadius: '0.75rem' }}
+                        onClick={() => {
+                            setSideMenuPage(2);
+                            setSelectedButton(2);
+                        }}
+                        onMouseEnter={() => setHover(2)}
+                        onMouseLeave={() => setHover(null)}
+                    >
+                        <VscGraph size={20} />
+                        Statistics
+                        <MdKeyboardArrowRight size={20} />
                     </button>
 
-                    <button style={itemTextStyle(3)} onClick={() => {setSideMenuPage(3); setSelectedButton(3)}} onMouseEnter={() => setHover(3)} onMouseLeave={() => setHover(null)}>
-                        <LuLayers3 size={20} /> Storage <MdKeyboardArrowRight size={20} />
+                    <button
+                        className={itemClass(3)} style={{ marginLeft: '20px', borderRadius: '0.75rem' }}
+                        onClick={() => {
+                            setSideMenuPage(3);
+                            setSelectedButton(3);
+                        }}
+                        onMouseEnter={() => setHover(3)}
+                        onMouseLeave={() => setHover(null)}
+                    >
+                        <LuLayers3 size={20} />
+                        Storage
+                        <MdKeyboardArrowRight size={20} />
                     </button>
 
-                    <button style={itemTextStyle(4)} onClick={() => {setSideMenuPage(4); setSelectedButton(4)}} onMouseEnter={() => setHover(4)} onMouseLeave={() => setHover(null)}>
-                        <BiError size={23}/> Alerts <MdKeyboardArrowRight size={20} />
+                    <button
+                        className={itemClass(4)} style={{ marginLeft: '20px', borderRadius: '0.75rem' }}
+                        onClick={() => {
+                            setSideMenuPage(4);
+                            setSelectedButton(4);
+                        }}
+                        onMouseEnter={() => setHover(4)}
+                        onMouseLeave={() => setHover(null)}
+                    >
+                        <BiError size={23} />
+                        Alerts
+                        <MdKeyboardArrowRight size={20} />
                     </button>
-
-
                 </div>
             )}
-
-
         </div>
-
     );
-
 }

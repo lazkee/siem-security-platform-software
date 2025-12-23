@@ -9,7 +9,6 @@ import { QueryAPI } from "../../api/query/QueryAPI";
 import { useAuth } from "../../hooks/useAuthHook";
 import { EventRow } from "../../types/events/EventRow";
 
-
 export default function Dashboard() {
     /* const events: EventRow[] = [
          { id: 1, source: "Auth Service", time: "01:23:33   22/11/2025", type: EventType.INFO, description: "User login successful" },
@@ -24,24 +23,7 @@ export default function Dashboard() {
     //const { token } = useAuth();
     const token = "token";      // TODO: DELETE AFTER TESTING!
 
-    // Inline styles for now, will be in CSS later
     // types, interfaces and classes will be moved too
-    const dashboardRectangleStyle: React.CSSProperties = {
-        border: "2px solid #282A28",
-        backgroundColor: "transparent",
-        borderRadius: "14px",
-        borderColor: "#282A28",
-
-    }
-    const dashboardDiv: React.CSSProperties = {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '20px',
-        height: '20%',
-        width: '100%',
-        padding: "10px"
-    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -74,21 +56,21 @@ export default function Dashboard() {
     }, [token]);
 
     return (
-        <div style={dashboardRectangleStyle}>
-            <h2 style={{ marginTop: '3px', padding: "5px", margin: "10px" }}>Analytics</h2>
-            <div style={dashboardDiv}>
-                <StatCard title="Total Raw Events" value={allEventsCount} icon={<BsDatabase />} iconColor="black" />
+        <div className="border-2 border-[#282A28] bg-transparent rounded-[14px]">
+            <h2 className="mt-[3px]! p-[5px]! m-[10px]!">Analytics</h2>
+            <div className="flex items-center gap-5 height-[20%] width-[100%] p-[10px]!">
+                <StatCard title="Total Raw Events" value={allEventsCount} icon={<BsDatabase />} iconColor="violet" />
                 <StatCard title="Errors" value={errorCount} icon={<BiError />} iconColor="red" />
                 <StatCard title="Warnings" value={warningCount} icon={<PiShieldWarningBold />} iconColor="yellow" />
-                <StatCard title="Notifications" value={infoCount} icon={<IoShieldCheckmark />} iconColor="blue" />
+                <StatCard title="Notifications" value={infoCount} icon={<IoShieldCheckmark />} iconColor="cyan" />
             </div>
-            <h2 style={{ marginTop: '10px', padding: "5px", margin: "10px" }}>Short review</h2>
-            <div style={dashboardDiv}>
+            <h2 className="mt-[10px]! p-[5px]! m-[10px]!">Short review</h2>
+            <div className="flex items-center gap-5 height-[20%] width-[100%] p-[10px]!">
                 <StatCard title="Top Event Source" subtitle="Auth Service" value={44} valueDescription="events" />
                 <StatCard title="Most Event Type" subtitle="Info" value={200} valueDescription="events" />
                 <StatCard title="Most weight archive" subtitle="logs_2025_11_06_22_00.tar" value={100} valueDescription="MB" />
             </div>
-            <h2 style={{ marginTop: '10px', padding: "5px", margin: "10px" }}>Recent Events</h2>
+            <h2 className="mt-[10px]! p-[5px]! m-[10px]!">Recent Events</h2>
             <RecentEventsTable events={eventsData} />
         </div>
     );

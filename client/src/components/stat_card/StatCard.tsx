@@ -7,71 +7,23 @@ type StatCardProps = {
     subtitle?: string;
 };
 
-// Inline styles for now, will be in CSS later
-
-const cardBaseStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "16px",
-    padding: "16px",
-    borderRadius: "12px",
-    boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.4)",
-    color: "#ffffff"
-};
-
-const standardCardStyle: React.CSSProperties = {
-    ...cardBaseStyle,
-    alignItems: "center",
-    background: "#313338",
-    width: "30%"
-};
-
-const secondaryCardStyle: React.CSSProperties = {
-    ...cardBaseStyle,
-    flexDirection: "column",
-    alignItems: "flex-start",
-    background: "#313338",
-    width: "40%"
-};
-
-const iconStyle: React.CSSProperties = {
-    fontSize: "38px"
-};
-
-const textContainerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column"
-};
-
-const titleStyle: React.CSSProperties = {
-    margin: 0,
-    fontSize: "14px",
-    color: "#c5c5c5"
-};
-
-const valueStyle: React.CSSProperties = {
-    margin: 0,
-    fontSize: "20px",
-    fontWeight: 700,
-    color: "#ffffff"
-};
-
 export default function StatCard({ title, value, valueDescription, icon, iconColor, subtitle }: StatCardProps) {
 
     if (subtitle) {
         return (
-            <div style={secondaryCardStyle}>
-                <h3 style={{ fontSize: 14, color: "#c5c5c5", margin: 0 }}>
+            <div className="flex flex-col items-start bg-[#313338] w-[40%] gap-4 rounded-[12px] shadow-[0_2px_8px_rgba(0,0,0,0.4)] text-white p-3!">
+                <h3 className="text-[14px] text-[#c5c5c5] m-0">
                     {title}
                 </h3>
 
-                <p style={{ fontSize: 18, margin: "-10px 0 0 0", color: "#ffffff" }}>
+                <p className="text-[18px] -mt-2 text-white">
                     {subtitle}
                 </p>
 
-                <p style={{ fontSize: 28, fontWeight: 700, margin: 0, color: "#ffffff" }}>
+                <p className="text-[28px] font-bold text-white">
                     {value}
                     {valueDescription && (
-                        <span style={{ fontSize: 18, fontWeight: 400, marginLeft: 6, color: "#c5c5c5" }}>
+                        <span className="text-[18px] font-normal text-[#c5c5c5] ml-1.5!">
                             {valueDescription}
                         </span>
                     )}
@@ -81,16 +33,16 @@ export default function StatCard({ title, value, valueDescription, icon, iconCol
     }
 
     return (
-        <div style={standardCardStyle}>
+        <div className="flex items-center gap-4 rounded-[12px] bg-[#313338] w-[30%] text-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] p-4!">
             {icon && (
-                <div style={{ ...iconStyle, color: iconColor }}>
+                <div style={{ color: iconColor }} className="text-[38px]">
                     {icon}
                 </div>
             )}
 
-            <div style={textContainerStyle}>
-                <h3 style={titleStyle}>{title}</h3>
-                <p style={valueStyle}>{value}</p>
+            <div className="flex flex-col">
+                <h3 className="m-0 text-[14px] text-[#c5c5c5]">{title}</h3>
+                <p className="m-0 text-[20px] font-bold text-white">{value}</p>
             </div>
         </div>
     );

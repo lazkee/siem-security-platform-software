@@ -1,95 +1,31 @@
-// Inline styles for now, will be in CSS later
-// types, interfaces and classes will be moved too
-
 import { EventRow } from "../../types/events/EventRow";
 
 export default function RecentEventsTable({ events }: { events: EventRow[] }) {
-    const containerStyle: React.CSSProperties = {
-        background: "#1f1f1f",
-        borderRadius: "14px",
-        overflow: "hidden",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-        marginTop: "12px",
-        border: "1px solid #333",
-        margin: "10px"
-    };
 
-    const tableStyle: React.CSSProperties = {
-        width: "100%",
-        borderCollapse: "collapse",
-        fontFamily: "Segoe UI, sans-serif",
-        fontSize: "14px",
-    };
-
-    const theadStyle: React.CSSProperties = {
-        background: "#2a2a2a",
-    };
-
-    const thStyle: React.CSSProperties = {
-        padding: "12px 16px",
-        textAlign: "left",
-        color: "#d0d0d0",
-        fontWeight: 600,
-        fontSize: "14px",
-        borderBottom: "1px solid #3a3a3a",
-    };
-
-    const tdStyle: React.CSSProperties = {
-        padding: "12px 16px",
-        borderBottom: "1px solid #2d2d2d",
-        color: "#dcdcdc",
-    };
-
-    const eventIdStyle: React.CSSProperties = {
-        ...tdStyle,
-        fontFamily: "Consolas, 'Courier New', monospace",
-        fontSize: "15px",
-        color: "#dcdcdc",
-    };
-
-    const badgeBase: React.CSSProperties = {
-        padding: "5px 10px",
-        borderRadius: "10px",
-        fontSize: "12px",
-        fontWeight: 600,
-    };
-
-    const badgeColors: Record<string, React.CSSProperties> = {
-        INFO: {
-            background: "rgba(59, 130, 246, 0.15)",
-            color: "#60a5fa",
-            border: "1px solid rgba(59, 130, 246, 0.3)",
-        },
-        WARNING: {
-            background: "rgba(234, 179, 8, 0.15)",
-            color: "#facc15",
-            border: "1px solid rgba(234, 179, 8, 0.3)",
-        },
-        ERROR: {
-            background: "rgba(239, 68, 68, 0.15)",
-            color: "#f87171",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
-        },
+    const badgeClasses: Record<string, string> = {
+        INFO: "bg-[rgba(59,130,246,0.15)] text-[#60a5fa] border border-[rgba(59,130,246,0.3)]",
+        WARNING: "bg-[rgba(234,179,8,0.15)] text-[#facc15] border border-[rgba(234,179,8,0.3)]",
+        ERROR: "bg-[rgba(239,68,68,0.15)] text-[#f87171] border border-[rgba(239,68,68,0.3)]",
     };
 
     return (
-        <div style={containerStyle}>
-            <table style={tableStyle}>
-                <thead style={theadStyle}>
+        <div className="bg-[#1f1f1f] rounded-[14px] overflow-hidden shadow-lg border border-[#333] m-2.5! mt-3!">
+            <table className="w-full border-collapse font-sans text-sm">
+                <thead className="bg-[#2a2a2a]">
                     <tr>
-                        <th style={thStyle}>Source</th>
-                        <th style={thStyle}>Time</th>
-                        <th style={thStyle}>Type</th>
+                        <th className="px-4! py-3! text-left text-[#d0d0d0] font-semibold text-sm border-b border-[#3a3a3a]">Source</th>
+                        <th className="px-4! text-left text-[#d0d0d0] font-semibold text-sm border-b border-[#3a3a3a]">Time</th>
+                        <th className="px-4! text-left text-[#d0d0d0] font-semibold text-sm border-b border-[#3a3a3a]">Type</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     {events.map((e, index) => (
                         <tr key={index}>
-                            <td style={eventIdStyle}>{e.source}</td>
-                            <td style={tdStyle}>{e.time}</td>
-                            <td style={tdStyle}>
-                                <span style={{ ...badgeBase, ...badgeColors[e.type] }}>
+                            <td className="px-4! py-3! border-b border-[#2d2d2d] text-[#dcdcdc] font-mono text-[15px]">{e.source}</td>
+                            <td className="px-4! py-3! border-b border-[#2d2d2d] text-[#dcdcdc]">{e.time}</td>
+                            <td className="px-4! py-3! border-b border-[#2d2d2d] text-[#dcdcdc]">
+                                <span className={`px-2.5! py-1! rounded-[10px] text-[12px] font-semibold ${badgeClasses[e.type]}`}>
                                     {e.type}
                                 </span>
                             </td>

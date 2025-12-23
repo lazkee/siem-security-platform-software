@@ -4,6 +4,7 @@
 
 /* CSS Variables */
 @import "tailwindcss";
+
 :root {
   /* Background Colors */
   --win11-bg: #202020;
@@ -97,8 +98,6 @@ h4 {
 
 p {
   color: var(--win11-text-secondary);
-  font-size: 14px;
-  margin-bottom: 12px;
 }
 
 strong {
