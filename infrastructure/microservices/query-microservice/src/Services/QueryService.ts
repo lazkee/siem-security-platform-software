@@ -55,7 +55,7 @@ export class QueryService implements IQueryService {
         const textQuery = filters["text"].trim().toLowerCase() || "";
         delete filters["text"];
 
-        const matchingIds = textQuery ? this.queryRepositoryService.getIdsForTokens(textQuery) : null;
+        const matchingIds = textQuery ? this.queryRepositoryService.findEvents(textQuery) : null;
 
         // filtriramo sve evente na osnovu dobijenih id-eva iz indeksa
         const filteredEvents = allEvents.filter(event => !matchingIds || matchingIds.has(event.id));
