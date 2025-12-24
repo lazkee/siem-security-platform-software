@@ -20,6 +20,7 @@ export class StorageLogController{
         this.router.get("/storageLog/file/:id", this.getArchiveFile.bind(this));
         this.router.get("/storageLog/top", this.getTopArchives.bind(this));
         this.router.get("/storageLog/volume", this.getArchiveVolume.bind(this));
+        this.router.get("/storageLog/largest", this.getLargestArchive.bind(this));
     }
 
     private async getAllArchives(req: Request, res: Response): Promise<void>{
@@ -105,6 +106,21 @@ export class StorageLogController{
             res.status(200).json(result);
         } catch(err) {
             res.status(500).json({message: (err as Error).message});
+        }
+    }
+
+    private async getLargestArchive(req: Request, res: Response): Promise<void> {
+        try {
+            const result = await this.storageLogService.getLargestArchive();
+
+            if(!result) {
+                res.status(404).json({ message: "No archives found"});
+                return;
+            }
+
+            res.status(200).json(result);
+        } catch (err) {
+            res.status(500).json({ message: (err as Error).message});
         }
     }
 

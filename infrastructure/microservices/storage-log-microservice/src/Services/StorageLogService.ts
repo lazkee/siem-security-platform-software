@@ -19,6 +19,7 @@ import { SortArchives } from "../Utils/Service/SortArchives";
 import { WriteGroupedFiles } from "../Utils/Service/WriteGroupedFiles";
 import { CleanUpFiles } from "../Utils/Service/CleanUpFiles";
 import { createAxiosClient } from "../Utils/Client/AxiosClient";
+import { LargestArchiveDTO } from "../Domain/DTOs/LargestArchiveDTO";
 const execSync = util.promisify(exec);
 
 export class StorageLogService implements IStorageLogService {
@@ -279,6 +280,25 @@ export class StorageLogService implements IStorageLogService {
         } catch (err) {
             await this.logger.log("ERROR calculating archive volume.");
             return []; //vracam opet prazan niz, jer se desila greska
+        }
+    }
+
+    public async getLargestArchive(): Promise<LargestArchiveDTO|null> {
+        try {
+            const archives = await this.storageRepo.find();
+
+            if(archives.length === 0)
+                return null;
+
+            const largest = archives.reduce((max, curr) => curr.fileSize > max.fileSize ? curr : max);
+
+            return {
+                archiveName: largest.fileName,
+                size: largest.fileSize
+            };
+        } catch (err) {
+            await this.logger.log("ERROR fetching largest archive");
+            return null;
         }
     }
 }
