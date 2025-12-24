@@ -3,6 +3,7 @@ import { serviceConfig } from "../../Infrastructure/config/ServiceConfig";
 import { defaultAxiosClient } from "../../Infrastructure/config/AxiosClient";
 import { EventDTO } from "../../Domain/DTOs/EventDTO";
 import { DistributionDTO } from "../../Domain/DTOs/DistributionDTO";
+import { TopSourceDTO } from "../../Domain/DTOs/TopSourceDTO";
 
 export class EventCollectorGatewayService{
     private readonly client: AxiosInstance;
@@ -56,4 +57,9 @@ export class EventCollectorGatewayService{
         return response.data
       }
 
-     
+      async getTopSourceEvent():Promise<TopSourceDTO>{
+        const response = await this.client.getTopSourceEvent<TopSourceDTO>("/events/topSource")
+
+        return response.data
+      }
+    }

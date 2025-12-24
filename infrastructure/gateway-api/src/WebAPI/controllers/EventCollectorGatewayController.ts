@@ -65,7 +65,12 @@ export class EventCollectorGatewayController{
             this.deleteEvent.bind(this)
           );
 
-          
+          this.router.get(
+             "/siem/events/topSource",
+             this.authenticate,
+             requireSysAdmin,
+             this.getTopSourceEvent.bind(this)
+          );
         }
 
 
@@ -171,6 +176,17 @@ export class EventCollectorGatewayController{
         try {
             const percentages = await this.gatewayService.getEventPercentagesByEvent()
             res.status(200).json(percentages)
+        }
+        catch (err) {
+            const message = (err as Error).message;
+            res.status(500).json({ message });
+        }
+    }
+
+    private async getTopSourceEvent(req: Request, res: Response): Promise<void>{
+        try {
+            const result = await this.gatewayService.getTopSourceEvent()
+            res.status(200).json(result)
         }
         catch (err) {
             const message = (err as Error).message;

@@ -12,6 +12,7 @@ import { PaginatedAlertsDTO } from "../DTOs/PaginatedAlertsDTO";
 import { ParserEventDto } from "../DTOs/ParserEventDTO";
 import { RegistrationUserDTO } from "../DTOs/RegistrationUserDTO";
 import { TopArchiveDTO } from "../DTOs/TopArchiveDTO";
+import { TopSourceDTO } from "../DTOs/TopSourceDTO";
 import { UserDTO } from "../DTOs/UserDTO";
 import { AuthResponseType } from "../types/AuthResponse";
 
@@ -85,4 +86,5 @@ export interface IGatewayService {
     getEventsFromId1ToId2(fromId: number, toId: number): Promise<EventDTO[]>
     getSortedEventsByDate(): Promise<EventDTO[]>
     getEventPercentagesByEvent(): Promise<DistributionDTO>
+    getTopSourceEvent():Promise<TopSourceDTO>
 }
