@@ -21,6 +21,7 @@ import { StorageGatewayService } from "../domains/StorageGatewayService";
 import { ParserGatewayService } from "../domains/ParserGatewayService";
 import { AnalysisGatewayService } from "../domains/AnalysisGatewayService";
 import { serviceConfig } from "../../Infrastructure/config/ServiceConfig";
+import { LargestArchiveDTO } from "../../Domain/DTOs/LargestArchiveDTO";
 
 /**
  * Facade that delegates to domain-specific gateway services.
@@ -174,6 +175,10 @@ export class GatewayService implements IGatewayService {
 
   async getArchiveVolume(period: "daily" | "monthly" | "yearly"): Promise<ArchiveVolumeDTO[]> {
     return this.storageService.getArchiveVolume(period);
+  }
+
+  async getLargestArchive(): Promise<LargestArchiveDTO | null> {
+    return this.storageService.getLargestArchive();
   }
 
   // Analysis Engine

@@ -4,6 +4,7 @@ import { ArchiveDTO } from "../DTOs/ArchiveDTO";
 import { ArchiveStatsDTO } from "../DTOs/ArchiveStatsDTO";
 import { ArchiveVolumeDTO } from "../DTOs/ArchiveVolumeDTO";
 import { EventDTO } from "../DTOs/EventDTO";
+import { LargestArchiveDTO } from "../DTOs/LargestArchiveDTO";
 import { LoginUserDTO } from "../DTOs/LoginUserDTO";
 import { NormalizedEventDTO } from "../DTOs/NormalizedEventDTO";
 import { PaginatedAlertsDTO } from "../DTOs/PaginatedAlertsDTO";
@@ -61,7 +62,7 @@ export interface IGatewayService {
   downloadArchive(id: string): Promise<ArrayBuffer>;
   getTopArchives(type: "events" | "alerts", limit: number): Promise<TopArchiveDTO[]>;
   getArchiveVolume(period: "daily" | "monthly" | "yearly"): Promise<ArchiveVolumeDTO[]>;
-
+  getLargestArchive(): Promise<LargestArchiveDTO|null>;
 
   //Parser
   getAllParserEvents():Promise<ParserEventDto[]>;
