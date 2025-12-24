@@ -10,7 +10,7 @@ export default function StorageTable({ archives }: Props) {
     const thClass = "px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]"
     
     return (
-        <div className="bg-[#1f1f1f] rounded-[14px] overflow-hidden shadow-md border border-[#333]">
+        <div className="bg-[#1f1f1f] rounded-[10px]! overflow-hidden shadow-md border border-[#333]">
             <table className="w-full border-collapse font-sans text-[14px]">
                 <thead className="bg-[#2a2a2a]">
                     <tr>

@@ -113,7 +113,7 @@ export default function Statistics() {
 
         border: "2px solid #282A28",
         backgroundColor: "transparent",
-        borderRadius: "14px",
+        borderRadius: "10px",
         borderColor: "#282A28",
   };
 

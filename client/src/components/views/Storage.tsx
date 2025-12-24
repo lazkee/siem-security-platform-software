@@ -15,6 +15,9 @@ export default function Storage() {
     const { token } = useAuth();
     const [archives, setArchives] = useState<ArchiveDTO[]>([]);
     const [stats, setStats] = useState<ArchiveStatsDTO | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [sortType, setSortType] = useState<number>(0);
     //const [isLoading, setIsLoading] = useState(true);
 
     const mockArchives: ArchiveDTO[] = [
@@ -60,29 +63,7 @@ export default function Storage() {
         }
     ];
 
-    useEffect(() => {
-        if (!token) return;
-
-        const fetchData = async () => {
-            //setIsLoading(true);
-
-            try {
-                const [archivesData, statsData] = await Promise.all([
-                    storageAPI.getAllArchives(),
-                    storageAPI.getStats()
-                ]);
-
-                setArchives(archivesData);
-                setStats(statsData);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                //setIsLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [token]);
+   
 
     useEffect(() => {
         setArchives(mockArchives);
@@ -118,10 +99,18 @@ export default function Storage() {
         }
     }
 
-    // if(isLoading) return <div>Loading storage...</div>
+    {isLoading &&
+        <div>Loading storage...</div>
+    }
+
+    {error && !isLoading && (
+        <div className="text-red">
+            {error}
+        </div>
+    )}
 
     return (
-        <div className="border-2 border-[#282A28] bg-transparent rounded-[14px]">
+        <div className="border-2 border-[#282A28] bg-transparent rounded-[10px]!">
             <h2 className="mt-[3px]! p-[5px]! m-[10px]!">Storage</h2>
 
             {stats && <StorageStats stats={stats} />}

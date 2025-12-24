@@ -90,9 +90,9 @@ export default function Dashboard() {
             <h2 className="mt-[3px]! p-[5px]! m-[10px]!">Analytics</h2>
             <div className="flex items-center gap-5 height-[20%] width-[100%] p-[10px]!">
                 <StatCard title="Total Raw Events" value={allEventsCount} icon={<BsDatabase />} iconColor="#60cdff" />
-                <StatCard title="Errors" value={errorCount} icon={<BiError />} iconColor="red" />
-                <StatCard title="Warnings" value={warningCount} icon={<PiShieldWarningBold />} iconColor="yellow" />
-                <StatCard title="Notifications" value={infoCount} icon={<IoShieldCheckmark />} iconColor="cyan" />
+                <StatCard title="Errors" value={errorCount} icon={<BiError />} iconColor="#ff4b4b" />
+                <StatCard title="Warnings" value={warningCount} icon={<PiShieldWarningBold />} iconColor="#ffa500" />
+                <StatCard title="Notifications" value={infoCount} icon={<IoShieldCheckmark />} iconColor="#4ade80" />
             </div>
             <h2 className="mt-[10px]! p-[5px]! m-[10px]!">Short review</h2>
             <div className="flex items-center gap-5 height-[20%] width-[100%] p-[10px]!">

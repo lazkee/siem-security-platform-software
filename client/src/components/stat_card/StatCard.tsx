@@ -33,7 +33,7 @@ export default function StatCard({ title, value, valueDescription, icon, iconCol
     }
 
     return (
-        <div className="flex items-center gap-4 rounded-[12px] bg-[#313338] flex-1 text-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] p-4!">
+        <div className="flex items-center gap-4 rounded-[10px] bg-[#313338] flex-1 text-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] p-4!">
             {icon && (
                 <div style={{ color: iconColor }} className="text-[38px]">
                     {icon}
