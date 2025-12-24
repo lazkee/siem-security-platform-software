@@ -9,7 +9,7 @@ type Props = {
 
 export default function StorageTableRow({archive}: Props){
 
-    const tdClass = "px-[16px] py-[20px] text-center text-[#dcdcdc] text-[14px] border-b-[1px] border-b-[#2d2d2d]"
+    const tdClass = "px-4! py-1! text-center text-[#dcdcdc] text-[14px] border-b-[1px] border-b-[#2d2d2d]"
 
     return (
         <tr className="transition-colors duration-200 cursor-pointer hover:bg-[#2a2a2a]">
