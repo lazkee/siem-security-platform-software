@@ -103,14 +103,19 @@ export default function Statistics() {
         fetchData();
     }, [token, archiveType, volumePeriod]);
 
-    const rectangleStyle: React.CSSProperties = {
+    const statisticsDivStyle: React.CSSProperties = {
+        padding: "16px",
+        marginBottom: "20px",
+        minHeight: "380px",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+
+        border: "2px solid #282A28",
         backgroundColor: "transparent",
-        border: "2px solid #d0d0d0",
         borderRadius: "14px",
-        borderColor: "#d0d0d0",
-        padding: "10px",
-        marginBottom: "20px"
-    };
+        borderColor: "#282A28",
+  };
 
     const headingStyle: React.CSSProperties = {
         marginTop: "10px",
@@ -121,11 +126,18 @@ export default function Statistics() {
     const sectionStyle: React.CSSProperties = {
         display: "flex",
         flexDirection: "row",
-        alignItems: "flex-start",
+        alignItems: "stretch",
         gap: "20px",
         width: "100%",
-        padding: "10px"
     };
+
+    const storageDivStyle: React.CSSProperties = {
+        border: "2px solid #282A28",
+        backgroundColor: "transparent",
+        borderRadius: "14px",
+        borderColor: "#282A28",
+    };
+
 /*
     if (isLoading){
         return (
@@ -137,22 +149,14 @@ export default function Statistics() {
 */
     return (
         <div>
-
-            <div style={rectangleStyle}>
-                <h3 style={headingStyle}>Statistics</h3>
-                <StatisticsChart
-                    eventData={testEvent}
-                    alertData={testAlert}/>
-            </div>
-
             <div style={sectionStyle}>
-                <div style={{flex: 1, ...rectangleStyle}}>
-                    <h3 style={headingStyle}>Event Distribution</h3>
-                    <EventDistribution data={testData}/>
+                <div style={{flex: 1, ...statisticsDivStyle}}>
+                    <StatisticsChart
+                        eventData={testEvent}
+                        alertData={testAlert}/>
                 </div>
-
-                <div style={{flex: 1, ...rectangleStyle}}>
-                    <h3 style={headingStyle}> Top 5 Archives</h3>
+                
+                <div style={{flex: 1, ...statisticsDivStyle}}>
                     <TopArchives
                         data={testTopArchives}
                         type={archiveType}
@@ -160,12 +164,16 @@ export default function Statistics() {
                 </div>
             </div>
 
-            <div>
-                <h3 style={headingStyle}>Daily Archive Volume (in MB)</h3>
-                <ArchiveVolume
-                    data={testArchiveVolume}
-                    period={volumePeriod}
-                    onPeriodChange={setVolumePeriod}/>
+            <div style={sectionStyle}>
+                <div style={{flex: 1, ...statisticsDivStyle}}>
+                    <EventDistribution data={testData}/>
+                </div>
+                <div style={{flex: 1, ...statisticsDivStyle}}>
+                    <ArchiveVolume
+                        data={testArchiveVolume}
+                        period={volumePeriod}
+                        onPeriodChange={setVolumePeriod}/>
+                </div>
             </div>
         </div>
     );

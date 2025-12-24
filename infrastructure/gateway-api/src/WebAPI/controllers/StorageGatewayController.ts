@@ -18,6 +18,7 @@ export class StorageGatewayController {
     this.router.post("/storageLog/run", this.authenticate, this.runArchiveProcess.bind(this));
     this.router.get("/storageLog/top", this.authenticate, this.getTopArchives.bind(this));
     this.router.get("/storageLog/volume", this.authenticate, this.getArchiveVolume.bind(this));
+    this.router.get("/storageLog/largest",  this.getLargestArchive.bind(this));
   }
 
   private async getAllArchives(req: Request, res: Response) {
@@ -95,6 +96,21 @@ export class StorageGatewayController {
     try {
       const period = req.query.period as "daily" | "monthly" | "yearly";
       const result = await this.gatewayService.getArchiveVolume(period);
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json({ message: (err as Error).message });
+    }
+  }
+
+  private async getLargestArchive(req: Request, res: Response) {
+    try {
+      const result = await this.gatewayService.getLargestArchive();
+
+      if (!result) {
+        res.status(404).json({ message: "No archives found" });
+        return;
+      }
+
       res.status(200).json(result);
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });

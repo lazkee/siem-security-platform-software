@@ -1,5 +1,6 @@
 import { EventDTO } from "../DTOs/EventDTO";
 import { DistributionDTO } from "../DTOs/DIstributionDTO";
+import { TopSourceDTO } from "../DTOs/TopSourceDTO";
 
 export interface IEventsService {
     createEvent(event: EventDTO): Promise<EventDTO>;
@@ -11,4 +12,5 @@ export interface IEventsService {
     getEventsFromId1ToId2(fromId: number, toId: number): Promise<EventDTO[]>
     getSortedEventsByDate(): Promise<EventDTO[]>
     getEventPercentagesByEvent(): Promise<DistributionDTO>
+    getTopSourceEvent(): Promise<TopSourceDTO>
 }

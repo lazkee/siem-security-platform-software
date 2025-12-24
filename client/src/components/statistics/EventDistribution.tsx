@@ -3,6 +3,7 @@ import { DistributionDTO } from "../../models/query/DistributionDTO"
 import React, { useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { FiDownload } from "react-icons/fi";
 
 type EventDistributionProps = {
     data: DistributionDTO;
@@ -10,9 +11,9 @@ type EventDistributionProps = {
 
 export default function EventDistribution({data}: EventDistributionProps){
     const chartData = [
-        {name: 'Notifications', value: data.notifications, color: 'green'},
-        {name: 'Warnings', value: data.warnings, color: 'orange'},
-        {name: 'Errors', value: data.errors, color: 'red'},
+        {name: 'Notifications', value: data.notifications, color: "#00d492"},
+        {name: 'Warnings', value: data.warnings, color: "#00bc7d"},
+        {name: 'Errors', value: data.errors, color: "#007a55"},
     ];
 
     const containerStyle: React.CSSProperties = {
@@ -20,20 +21,21 @@ export default function EventDistribution({data}: EventDistributionProps){
         flexDirection: "column",
         gap: "16px",
         width: "100%",
-        padding: "10px"
+        padding: "16px"
     };
 
     const headerStyle: React.CSSProperties = {
         display: "flex",
-        marginBottom: "8px"
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "12px",
     };
 
     const chartContainerStyle: React.CSSProperties = {
         width: "100%",
         height: "350px",
-        backgroundColor: "#2b2d31",
         borderRadius: "12px",
-        padding: "15px",
+        padding: "20px",
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
@@ -81,6 +83,14 @@ export default function EventDistribution({data}: EventDistributionProps){
         fontSize: "10px",
         color: "#c5c5c5",
         fontWeight: 700
+    }
+
+    const buttonStyle: React.CSSProperties = {
+        cursor: "pointer",
+        fontWeight: "bold",
+        padding: "8px 20px",
+        borderRadius: "10px",
+        backgroundColor: "#007a55"
     }
 
     const printRef = useRef<HTMLDivElement | null>(null);
@@ -146,8 +156,19 @@ export default function EventDistribution({data}: EventDistributionProps){
 
     return(
         <div style={containerStyle}>
+            <div style={headerStyle}>
+                <span style={{color: "#ffffff", fontSize: "18px", fontWeight: 600}}>
+                    Event distribution
+                </span>
+                <button
+                    onClick={handleDownload}
+                    style={buttonStyle}>
+                        <FiDownload size={20} />
+                </button> 
+            </div>
+
             <div ref={printRef} style={chartContainerStyle}>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
                             data={chartData}
@@ -175,21 +196,6 @@ export default function EventDistribution({data}: EventDistributionProps){
                     ))}
                 </div>
             </div>
-
-            <div>
-                    <button
-                        onClick={handleDownload}
-                        style={{
-                            padding: "6px 10px",
-                            borderRadius: 8,
-                            border: "none",
-                            background: "#0078d4",
-                            color: "#ffffff",
-                            cursor: "pointer"
-                        }}>
-                            Download PDF
-                    </button> 
-                </div>
         </div>
     );
 }

@@ -1,72 +1,36 @@
-//tabela arhiva
-import { ArchiveDTO } from "../../models/storage/ArchiveDTO"
+import { ArchiveDTO } from "../../models/storage/ArchiveDTO";
 import StorageTableRow from "./StorageTableRow";
 
 type Props = {
     archives: ArchiveDTO[];
-}
+};
 
 export default function StorageTable({ archives }: Props) {
-    const containerStyle: React.CSSProperties = {
-        background: "#1f1f1f",
-        border: "2px solid #333",
-        borderRadius: "14px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-        overflow: "hidden",
-        marginTop: "20px",
-        margin:"5px"
-    };
 
-    const tableStyle: React.CSSProperties = {
-        width: "100%",
-        borderCollapse: "collapse",
-        fontSize: "14px"
-    };
-
-    const theadStyle: React.CSSProperties = {
-        background: "#2a2a2a"
-    };
-
-    const thStyle: React.CSSProperties = {
-        textAlign: "center",
-        padding: "14px 16px",
-        borderBottom: "1px solid #3a3a3a",
-        color: "#d0d0d0",
-        fontSize: "13px",
-        textTransform: "uppercase",
-        letterSpacing: "0.5px"
-    };
-
+    const thClass = "px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]"
+    
     return (
-        <div style={containerStyle}>
-            <table style={tableStyle}>
-                <thead style={theadStyle}>
+        <div className="bg-[#1f1f1f] rounded-[14px] overflow-hidden shadow-md border border-[#333]">
+            <table className="w-full border-collapse font-sans text-[14px]">
+                <thead className="bg-[#2a2a2a]">
                     <tr>
-                        <th style={thStyle}></th>
-                        <th style={thStyle}>Archive name</th>
-                        <th style={thStyle}>Time</th>
-                        <th style={thStyle}>Size</th>
-                        <th style={thStyle}>Download</th>
+                        <th className={`${thClass} w-[40px]`}></th>
+                        <th className={thClass}>Archive name</th>
+                        <th className={thClass}>Time</th>
+                        <th className={thClass}>Size</th>
+                        <th className={thClass}>Download</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {
-                        archives.length === 0 ? (
-                            <tr>
-                                <td colSpan={4}
-                                    style={{
-                                        padding: "40px",
-                                        textAlign: "center",
-                                        color: "#a6a6a6"
-                                    }}>
-                                    No archives found
-                                </td>
-                            </tr>
-                        ) : (
-                            archives.map(a => (
-                                <StorageTableRow key={a.id} archive={a} />
-                            ))
-                        )}
+                    {archives.length === 0 ? (
+                        <tr>
+                            <td colSpan={5} className="px-10 py-10 text-center border-b border-[#2d2d2d] text-center text-[#a6a6a6]">
+                                No archives found
+                            </td>
+                        </tr>
+                    ) : (
+                        archives.map(a => <StorageTableRow key={a.id} archive={a} />)
+                    )}
                 </tbody>
             </table>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { AlertAPI } from "../../api/alerts/AlertAPI";
 import { useAlerts } from "../../hooks/useAlerts";
 import { AlertStatistics } from "../alerts/AlertStatistics";
@@ -7,18 +7,86 @@ import RecentAlertsTable from "../tables/RecentAlertsTable";
 import { AlertQueryDTO } from "../../models/alerts/AlertQueryDTO";
 import AlertDetailsPanel from "../alerts/AlertDetailsPanel";
 import AlertToast from "../alerts/AlertToast";
+import { Pagination } from "../common/Pagination";
 import { AlertSSEService } from "../../services/AlertSSEService";
+import { DesktopNotificationService } from "../../services/DesktopNotificationService";
 import { useAuth } from "../../hooks/useAuthHook";
 import { AlertDTO } from "../../models/alerts/AlertDTO";
 
 const alertAPI = new AlertAPI();
+const desktopNotification = new DesktopNotificationService();
 
 export default function Alerts() {
   const { token } = useAuth();
-  const { alerts, isLoading, searchAlerts, resolveAlert, updateStatus, addAlert, updateAlert } = useAlerts(alertAPI);
+  const { 
+    alerts, 
+    isLoading, 
+    pagination,
+    searchAlerts, 
+    resolveAlert, 
+    updateStatus, 
+    addAlert, 
+    updateAlert 
+  } = useAlerts(alertAPI);
+  
   const [selectedAlertId, setSelectedAlertId] = useState<number | null>(null);
   const [toastAlert, setToastAlert] = useState<AlertDTO | null>(null);
   const [sseConnected, setSseConnected] = useState(false);
+  const [sseService, setSseService] = useState<AlertSSEService | null>(null);
+  const [currentQuery, setCurrentQuery] = useState<AlertQueryDTO>({ page: 1, limit: 10 });
+
+    /*const testAlerts: AlertDTO[] = [
+    {
+      id: 1,
+      title: "Database Connection Lost",
+      description: "Cannot reach database.",
+      severity: AlertSeverity.CRITICAL,
+      status: AlertStatus.ACTIVE,
+      correlatedEvents: [],
+      source: "Database",
+      createdAt: new Date(),
+      resolvedAt: null,
+      resolvedBy: null,
+    },
+    {
+      id: 2,
+      title: "Multiple Login Failures",
+      description: "User attempted 5 wrong passwords.",
+      severity: AlertSeverity.HIGH,
+      status: AlertStatus.INVESTIGATING,
+      correlatedEvents: [],
+      source: "Auth Service",
+      createdAt: new Date(),
+      resolvedAt: null,
+      resolvedBy: null,
+    },
+    {
+      id: 3,
+      title: "New User Signup",
+      description: "User registered successfully.",
+      severity: AlertSeverity.LOW,
+      status: AlertStatus.RESOLVED,
+      correlatedEvents: [],
+      source: "Auth Service",
+      createdAt: new Date(),
+      resolvedAt: new Date(),
+      resolvedBy: "admin",
+    },
+  ]; TEST*/
+
+  //const activeAlerts = testAlerts; TEST
+
+
+  // Request desktop notification permission on mount
+  useEffect(() => {
+    desktopNotification.requestPermission().then((granted) => {
+      if (granted) {
+        console.log("Desktop notifications enabled");
+      } else {
+        console.warn("Desktop notifications denied");
+      }
+    });
+  }, []);
 
   // Initialize SSE connection
   useEffect(() => {
@@ -29,26 +97,32 @@ export default function Alerts() {
 
     // Register callbacks
     service.onNewAlert((alert) => {
-      console.log("New alert received:", alert);
+      console.log("🆕 New alert received:", alert);
       addAlert(alert);
       setToastAlert(alert);
+      
+      // Show desktop notification for critical/high alerts
+      desktopNotification.showAlertNotification(alert, () => {
+        setSelectedAlertId(alert.id);
+      });
     });
 
     service.onAlertUpdate((alert, updateType) => {
-      console.log(`Alert updated (${updateType}):`, alert);
+      console.log(`🔄 Alert updated (${updateType}):`, alert);
       updateAlert(alert);
     });
 
     service.onConnectionStatus((connected) => {
-      console.log(`SSE connection status: ${connected ? "Connected" : "Disconnected"}`);
+      console.log(`📡 SSE connection status: ${connected ? "Connected" : "Disconnected"}`);
       setSseConnected(connected);
     });
 
     service.onError((error) => {
-      console.error("SSE error:", error);
+      console.error("❌ SSE error:", error);
     });
 
     service.connect();
+    setSseService(service);
 
     // Cleanup on unmount
     return () => {
@@ -57,7 +131,21 @@ export default function Alerts() {
   }, [token]);
 
   const handleSearch = (query: AlertQueryDTO) => {
-    searchAlerts(query);
+    const fullQuery = { ...query, page: 1 };
+    setCurrentQuery(fullQuery);
+    searchAlerts(fullQuery);
+  };
+
+  const handlePageChange = (page: number) => {
+    const newQuery = { ...currentQuery, page };
+    setCurrentQuery(newQuery);
+    searchAlerts(newQuery);
+  };
+
+  const handlePageSizeChange = (limit: number) => {
+    const newQuery = { ...currentQuery, page: 1, limit };
+    setCurrentQuery(newQuery);
+    searchAlerts(newQuery);
   };
 
   const handleSelectAlert = (id: number) => {
@@ -87,105 +175,95 @@ export default function Alerts() {
   };
 
   const lastAlert = alerts.length > 0 ? alerts[0] : null;
-  const lastAlertTime = lastAlert 
+  //const lastAlert = activeAlerts.length > 0 ? activeAlerts[0] : null; // NEW - TEST
+
+  const lastAlertTime = lastAlert
     ? new Date(lastAlert.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     : "--:--";
 
   const selectedAlert = selectedAlertId 
     ? alerts.find(a => a.id === selectedAlertId) || null
     : null;
-
-  const containerStyle: React.CSSProperties = {
-    border: "2px solid #282A28",
-    backgroundColor: "transparent",
-    borderRadius: "14px",
-    padding: "24px",
-    position: "relative"
-  };
-
-  const headerStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "24px"
-  };
-
-  const connectionIndicatorStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    padding: "6px 12px",
-    borderRadius: "8px",
-    fontSize: "12px",
-    fontWeight: 600,
-    background: sseConnected ? "rgba(74, 222, 128, 0.15)" : "rgba(239, 68, 68, 0.15)",
-    color: sseConnected ? "#4ade80" : "#f87171",
-    border: `1px solid ${sseConnected ? "rgba(74, 222, 128, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
-  };
-
-  const indicatorDotStyle: React.CSSProperties = {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    background: sseConnected ? "#4ade80" : "#f87171",
-    animation: sseConnected ? "pulse 2s infinite" : "none",
-  };
+  
+    /*const selectedAlert = selectedAlertId
+    ? activeAlerts.find(a => a.id === selectedAlertId) || null
+    : null; // NEW - TEST */
 
   return (
-    <>
-      <style>
-        {`
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-          }
-        `}
-      </style>
-
-      <div style={containerStyle}>
-        <div style={headerStyle}>
-          <h2 style={{ margin: 0, color: "#fff" }}>Alert Dashboard</h2>
-          
-          <div style={connectionIndicatorStyle}>
-            <div style={indicatorDotStyle}></div>
+  <>
+    <div className="border-2 border-[#282A28] bg-transparent rounded-[14px] p-6! relative">
+      <div className="flex justify-between items-center mb-[24px]!">
+        <h2 className="m-0">Alert Dashboard</h2>
+        
+        <div className="flex items-center">
+          {/* SSE STATUS */}
+          <div className={`flex items-center gap-2 px-3! py-1.5! rounded-[8px] text-[12px] font-semibold
+            ${sseConnected
+              ? "bg-[rgba(74,222,128,0.15)] text-[#4ade80] border border-[rgba(74,222,128,0.3)]"
+              : "bg-[rgba(239,68,68,0.15)] text-[#f87171] border border-[rgba(239,68,68,0.3)]"
+            }`}>
+            <div
+              className={`w-2 h-2 rounded-full ${sseConnected ? "bg-[#4ade80] animate-pulse" : "bg-[#f87171] animate-none"}`}
+            ></div>
             {sseConnected ? "Live Updates Active" : "Connecting..."}
           </div>
+
+          {/* DESKTOP NOTIFICATIONS */}
+          {desktopNotification.canShowNotifications() && (
+            <div className="ml-3 flex items-center gap-2 rounded-[8px] border border-[rgba(96,165,250,0.3)] bg-[rgba(96,165,250,0.15)] px-3! py-1.5! text-[12px] text-[#60a5fa]">
+              🔔 Desktop Notifications Enabled
+            </div>
+          )}
         </div>
+      </div>
 
-        <AlertStatistics alerts={alerts} lastAlertTime={lastAlertTime} />
-        <AlertFilters onSearch={handleSearch} />
+      <AlertStatistics alerts={alerts} lastAlertTime={lastAlertTime} />
+      <AlertFilters onSearch={handleSearch} />
+      
+      {isLoading && (
+        <div className="text-center p-10">
+          <div className="spinner"></div>
+        </div>
+      )}
 
-        {isLoading && (
-          <div style={{ textAlign: "center", padding: "40px" }}>
-            <div className="spinner"></div>
-          </div>
-        )}
-
-        {!isLoading && (
-          <RecentAlertsTable 
+      {!isLoading && (
+        <>
+          <RecentAlertsTable
             alerts={alerts}
             onSelectAlert={handleSelectAlert}
             onResolve={handleResolve}
             onUpdateStatus={handleUpdateStatus}
           />
-        )}
 
-        {selectedAlert && (
-          <AlertDetailsPanel 
-            alert={selectedAlert}
-            onClose={handleCloseDetails}
-            onResolve={handleResolve}
-          />
-        )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              pageSize={pagination.limit}
+              totalItems={pagination.total}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          )}
+        </>
+      )}
 
-        {toastAlert && (
-          <AlertToast 
-            alert={toastAlert}
-            onClose={handleCloseToast}
-            onViewDetails={handleViewDetailsFromToast}
-          />
-        )}
-      </div>
-    </>
-  );
+      {selectedAlert && (
+        <AlertDetailsPanel
+          alert={selectedAlert}
+          onClose={handleCloseDetails}
+          onResolve={handleResolve}
+        />
+      )}
+
+      {toastAlert && (
+        <AlertToast
+          alert={toastAlert}
+          onClose={handleCloseToast}
+          onViewDetails={handleViewDetailsFromToast}
+        />
+      )}
+    </div>
+  </>
+);
 }

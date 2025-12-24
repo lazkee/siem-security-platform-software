@@ -1,6 +1,4 @@
 //jedan red u tabeli
-
-import React from "react";
 import { ArchiveDTO } from "../../models/storage/ArchiveDTO"
 import DownloadArchiveButton from "../storage/DownloadArchiveButton";
 import { AiOutlineFileZip } from "react-icons/ai";
@@ -11,32 +9,17 @@ type Props = {
 
 export default function StorageTableRow({archive}: Props){
 
-    const tdStyle: React.CSSProperties = {
-        padding: "14px 16px",
-        borderBottom: "1px solid #2d2d2d",
-        color: "#dcdcdc",
-        fontSize: "14px",
-        textAlign: "center"
-    };
-
-    const rowStyle: React.CSSProperties = {
-        transition: "backround 0.2s",
-        cursor: "pointer"
-    };
+    const tdClass = "px-4! py-1! text-center text-[#dcdcdc] text-[14px] border-b-[1px] border-b-[#2d2d2d]"
 
     return (
-        <tr
-            style={rowStyle}
-            onMouseEnter={e => (e.currentTarget.style.background = "#2a2a2a")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-        >
-            <td style={{...tdStyle, width: "40px"}}>
-                <AiOutlineFileZip size={25} color="#d0d0d0"/>
+        <tr className="transition-colors duration-200 cursor-pointer hover:bg-[#2a2a2a]">
+            <td className={`${tdClass} w-[40px]`}>
+                <AiOutlineFileZip size={28} className="text-[#d0d0d0]"/>
             </td>
-            <td style={tdStyle}>{archive.fileName}</td>
-            <td style={tdStyle}>{new Date(archive.createdAt).toLocaleDateString()}</td>
-            <td style={tdStyle}>{(archive.fileSize / 1024 / 1024).toFixed(2)} MB</td>
-            <td style={tdStyle}>
+            <td className={tdClass}>{archive.fileName}</td>
+            <td className={tdClass}>{new Date(archive.createdAt).toLocaleDateString()}</td>
+            <td className={tdClass}>{(archive.fileSize / 1024 / 1024).toFixed(2)} MB</td>
+            <td className={tdClass}>
                 <DownloadArchiveButton archiveId={archive.id} fileName={archive.fileName} />
             </td>
         </tr>

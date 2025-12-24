@@ -7,11 +7,17 @@ import { EventType } from "../Domain/enums/EventType";
 import { toDTO } from "../Utils/Converters/ConvertToDTO";
 import { ArraytoDTO } from "../Utils/Converters/ConvertEventArrayToDTOarray";
 import { DistributionDTO } from "../Domain/DTOs/DIstributionDTO";
+import { TopSourceDTO } from "../Domain/DTOs/TopSourceDTO";
 
 export class EventsService implements IEventsService {
     constructor(
         private readonly eventRepository: Repository<Event>,
     ) { }
+    async getTopSourceEvent(): Promise<TopSourceDTO> {
+        const result = await this.eventRepository.createQueryBuilder("event").select("event.source", "source").addSelect("COUNT(*)", "count").groupBy("event.source").orderBy("count", "DESC").limit(1).getRawOne();
+
+        return result
+    }
 
 
     async getSortedEventsByDate(): Promise<EventDTO[]> {

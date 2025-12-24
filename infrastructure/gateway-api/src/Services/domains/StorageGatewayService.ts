@@ -5,6 +5,7 @@ import { TopArchiveDTO } from "../../Domain/DTOs/TopArchiveDTO";
 import { ArchiveVolumeDTO } from "../../Domain/DTOs/ArchiveVolumeDTO";
 import { defaultAxiosClient } from "../../Infrastructure/config/AxiosClient";
 import { serviceConfig } from "../../Infrastructure/config/ServiceConfig";
+import { LargestArchiveDTO } from "../../Domain/DTOs/LargestArchiveDTO";
 
 export class StorageGatewayService {
   private readonly client: AxiosInstance;
@@ -63,6 +64,11 @@ export class StorageGatewayService {
     const response = await this.client.get<ArchiveVolumeDTO[]>("/storageLog/volume", {
       params: { period },
     });
+    return response.data;
+  }
+
+  async getLargestArchive(): Promise<LargestArchiveDTO|null> {
+    const response = await this.client.get<LargestArchiveDTO|null>("/storageLog/largest");
     return response.data;
   }
 }

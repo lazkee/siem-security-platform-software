@@ -1,6 +1,6 @@
 type StatCardProps = {
     title: string;
-    value?: number;
+    value?: number | string;
     valueDescription?: string;
     icon?: React.ReactNode;
     iconColor?: string;
@@ -33,7 +33,7 @@ export default function StatCard({ title, value, valueDescription, icon, iconCol
     }
 
     return (
-        <div className="flex items-center gap-4 rounded-[12px] bg-[#313338] w-[30%] text-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] p-4!">
+        <div className="flex items-center gap-4 rounded-[12px] bg-[#313338] flex-1 text-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] p-4!">
             {icon && (
                 <div style={{ color: iconColor }} className="text-[38px]">
                     {icon}
@@ -42,7 +42,14 @@ export default function StatCard({ title, value, valueDescription, icon, iconCol
 
             <div className="flex flex-col">
                 <h3 className="m-0 text-[14px] text-[#c5c5c5]">{title}</h3>
-                <p className="m-0 text-[20px] font-bold text-white">{value}</p>
+                <p className="text-[28px] font-bold text-white">
+                    {value}
+                    {valueDescription && (
+                        <span className="text-[18px] font-normal text-[#c5c5c5] ml-1.5!">
+                            {valueDescription}
+                        </span>
+                    )}
+                </p>
             </div>
         </div>
     );

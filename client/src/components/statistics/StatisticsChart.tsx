@@ -1,9 +1,10 @@
 import React, { useRef, useState } from "react";
 import { AlertStatisticsDTO } from "../../models/query/AlertStatisticsDTO";
 import { EventStatisticsDTO } from "../../models/query/EventStatisticsDTO"
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { FiDownload } from "react-icons/fi";
 
 type StatisticsChartProps = {
     eventData: EventStatisticsDTO[];
@@ -32,16 +33,23 @@ export default function StatisticsChart({eventData, alertData}: StatisticsChartP
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: "12px"
+        marginBottom: "12px",
     };
 
     const chartContainerStyle: React.CSSProperties = {
         width: "100%",
-        height: "400px",
-        backgroundColor: "#2b2d31",
+        height: "350px",
         borderRadius: "12px",
-        padding: "20px"
+        padding: "20px",
     };
+
+    const buttonStyle = (isActive: boolean): React.CSSProperties => ({
+        cursor: "pointer",
+        fontWeight: "bold",
+        borderRadius: "10px",
+        padding: "8px 20px",
+        backgroundColor: isActive ? "#007a55" : '#313338',
+    });
 
     const printRef = useRef<HTMLDivElement | null>(null);
 
@@ -106,73 +114,72 @@ export default function StatisticsChart({eventData, alertData}: StatisticsChartP
     return(
         <div style={containerStyle}>
             <div style={headerStyle}>
-                <span style={{color: "#c5c5c5", fontSize: "14px", fontWeight: 600}}>
+                <span style={{color: "#ffffff", fontSize: "18px", fontWeight: 600}}>
                     Events per day
                 </span>
 
                 <div style={{display: "flex", gap: 8}}>
                     <button
                         onClick={() => setShowEvents(!showEvents)}
-                        style={{
-                            padding: "6px 10px",
-                            borderRadius: 8,
-                            border: "none",
-                            background: showEvents ? "#0078d4" : "#313338",
-                            color: "#ffffff",
-                            cursor: "pointer"
-                        }}> Events</button>
+                        style={buttonStyle(showEvents)}> Events</button>
     
                     <button
                         onClick={() => setShowAlerts(!showAlerts)}
-                        style={{
-                            padding: "6px 10px",
-                            borderRadius: 8,
-                            border: "none",
-                            background: showAlerts ? "#0078d4" : "#313338",
-                            color: "#ffffff",
-                            cursor: "pointer"
-                        }}> Alerts</button>
+                        style={buttonStyle(showAlerts)}> Alerts</button>
 
                     <button
                         onClick={handleDownload}
-                        style={{
-                            padding: "6px 10px",
-                            borderRadius: 8,
-                            border: "none",
-                            background: "#0078d4",
-                            color: "#ffffff",
-                            cursor: "pointer" 
-                        }}
+                        style={buttonStyle(true)}
                         title="Download chart as pdf">
-                        Download PDF
+                        <FiDownload size={20} />
                     </button>
                 </div>
             </div>
 
             <div ref={printRef} style={chartContainerStyle}>
-                <ResponsiveContainer width="100%" height={350}>
-                    <LineChart
-                        data={combinedData}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                        data={combinedData}
+                        margin={{bottom: 20, right: 30}}>
+                            <defs>
+                                <linearGradient id="eventGradColor" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#007a55" stopOpacity={0.4}/>
+                                    <stop offset="75%" stopColor="#007a55" stopOpacity={0.05}/>
+                                </linearGradient>
+                                <linearGradient id="alertGradColor" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#4A9DAE" stopOpacity={0.4}/>
+                                    <stop offset="75%" stopColor="#4A9DAE" stopOpacity={0.05}/>
+                                </linearGradient>
+                            </defs>
 
-                            <CartesianGrid strokeDasharray="3 3" stroke="#313338"/>
-                            <XAxis dataKey="date" stroke="#c5c5c5" style={{fontSize: "12px"}} axisLine={false}/>
-                            <YAxis stroke="#c5c5c5" style={{fontSize: "12px"}} axisLine={false}/>
+                            <XAxis dataKey="date" style={{fontSize: "13px", fontWeight: "bold"}} axisLine={false} tickLine={false} tick={{fill: "#ffffff"}} tickMargin={10} />
+                            <YAxis style={{fontSize: "13px", fontWeight: "bold"}} axisLine={false} tickLine={false} tickCount={5} tick={{fill: "#ffffff"}} tickMargin={10} />
 
                             {showEvents && (
-                                <Line
+                                <Area
                                     type="monotone"
                                     dataKey="events"
-                                    stroke="#8b0000"
+                                    stroke="#007a55"
+                                    fill="url(#eventGradColor)"
+                                    strokeLinejoin="round"
+                                    strokeLinecap="round"
+                                    strokeWidth={5}
+                                    dot={false}
                                 />
                             )}
                             {showAlerts && (
-                                <Line
+                                <Area
                                     type="monotone"
                                     dataKey="alerts"
-                                    stroke="#6e008a"
+                                    stroke="#4A9DAE"
+                                    fill="url(#alertGradColor)"
+                                    strokeLinejoin="round"
+                                    strokeLinecap="round"
+                                    strokeWidth={5}
+                                    dot={false}
                                 />
                             )}
-                    </LineChart>
+                    </AreaChart>
                 </ResponsiveContainer>
             </div>
         </div>

@@ -66,15 +66,15 @@ process.on('SIGINT', async () => {
     loggerService.log("Saving query service state before shutdown...");
 
     // ako se inverted indeks struktura azurira => sacekaj da se zavrsi
-    while (queryRepositoryService.isIndexingInProgress()) {
+    while (queryRepositoryService.invertedIndexStructureForEvents.isIndexingInProgress()) {
       loggerService.log("Indexing in progress, waiting to save state...");
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     saveQueryState({
-      lastProcessedId: queryRepositoryService.getLastProcessedId(),
-      invertedIndex: queryRepositoryService.getInvertedIndex(),
-      eventTokenMap: queryRepositoryService.getEventIdToTokens(),
+      lastProcessedId: queryRepositoryService.invertedIndexStructureForEvents.getLastProcessedId(),
+      invertedIndex: queryRepositoryService.invertedIndexStructureForEvents.getInvertedIndex(),
+      eventTokenMap: queryRepositoryService.invertedIndexStructureForEvents.getEventIdToTokens(),
       eventCount: queryRepositoryService.getEventsCount(),
       infoCount: queryRepositoryService.getInfoCount(),
       warningCount: queryRepositoryService.getWarningCount(),

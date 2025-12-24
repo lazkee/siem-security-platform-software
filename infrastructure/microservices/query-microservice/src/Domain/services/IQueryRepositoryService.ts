@@ -7,9 +7,7 @@ export interface IQueryRepositoryService {
     addEntry(entry : CacheEntryDTO) : Promise<CacheEntry>;
     getAllEvents(): Promise<Event[]>
     getOldEvents(hours: number): Promise<Event[]>;
-    addEventToIndex(event: Event): void;
-    removeEventFromIndex(eventId: number): void;
-    getIdsForTokens(query: string): Set<number>;
+    findEvents(query: string): Set<number>;
     getMaxId(): Promise<number>;
     getEventsFromId1ToId2(fromId: number, toId: number): Promise<Event[]>;
     findByKey(key: string): Promise<CacheEntry>;

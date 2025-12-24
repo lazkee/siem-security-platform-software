@@ -20,7 +20,7 @@ export default function Storage() {
     const mockArchives: ArchiveDTO[] = [
         {
             id: 1,
-            fileName: "logs_2024-12-01.tar",
+            fileName: "alerts_2024-12-01.tar",
             eventCount: 1200,
             fileSize: 5242880,
             createdAt: "2024-12-01T10:15:00Z",
@@ -28,7 +28,7 @@ export default function Storage() {
         },
         {
             id: 2,
-            fileName: "logs_2024-12-02.tar",
+            fileName: "events_2024-12-02.tar",
             eventCount: 340,
             fileSize: 2097152,
             createdAt: "2024-12-02T12:40:00Z",
@@ -36,7 +36,7 @@ export default function Storage() {
         },
         {
             id: 3,
-            fileName: "logs_2024-12-03.tar",
+            fileName: "alerts_2024-12-03.tar",
             eventCount: 980,
             fileSize: 7340032,
             createdAt: "2024-12-03T09:05:00Z",
@@ -44,15 +44,15 @@ export default function Storage() {
         },
         {
             id: 4,
-            fileName: "logs_2024-12-04.tar",
+            fileName: "events_2024-12-04.tar",
             eventCount: 120,
             fileSize: 1048576,
             createdAt: "2024-12-04T18:22:00Z",
             downloadUrl: ""
-        },
+        }, 
         {
             id: 5,
-            fileName: "logs_2024-12-05.tar",
+            fileName: "events_2024-12-05.tar",
             eventCount: 1560,
             fileSize: 9437184,
             createdAt: "2024-12-05T07:50:00Z",
@@ -117,24 +117,22 @@ export default function Storage() {
             console.error(err);
         }
     }
-    const storageDivStyle: React.CSSProperties = {
-        border: "2px solid #282A28",
-        backgroundColor: "transparent",
-        borderRadius: "14px",
-        borderColor: "#282A28",
-    };
+
     // if(isLoading) return <div>Loading storage...</div>
 
     return (
-        <>
-            <div style={storageDivStyle}>
-                <h2 style={{ marginTop: '3px', padding: "5px", margin: "10px" }}>Storage</h2>
-                <div style={{padding:"5px"}}>
-                {stats && <StorageStats stats={stats} />}
+        <div className="border-2 border-[#282A28] bg-transparent rounded-[14px]">
+            <h2 className="mt-[3px]! p-[5px]! m-[10px]!">Storage</h2>
+
+            {stats && <StorageStats stats={stats} />}
+
+            <div className="my-4!">
                 <StorageToolBar onSearch={handleSearchArchives} onSort={handleSortArchives} />
-                <StorageTable archives={archives} />
-                </div>
             </div>
-        </>
+
+            <div className="p-[10px]!">
+                <StorageTable archives={archives} />
+            </div>
+        </div>
     );
 }

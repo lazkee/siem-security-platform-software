@@ -21,6 +21,7 @@ export class EventsController {
         this.router.get("/events", this.getAllEvents.bind(this));
         this.router.get("/events/sortedEventsByDate", this.getSortedEventsByDate.bind(this))
         this.router.get("/events/percentages", this.getEventPercentagesByEvent.bind(this))
+        this.router.get("/events/topSource",this.getTopSourceEvent.bind(this))
         this.router.get("/events/:id", this.getEventById.bind(this));
         this.router.get("/events/from/:fromId/to/:toId", this.getEventsFromId1ToId2.bind(this))
         this.router.post("/events", this.createEvent.bind(this));
@@ -31,7 +32,20 @@ export class EventsController {
     private async healthCheck(req: Request, res: Response): Promise<void> {
         res.status(200).json({ status: "OK" });
     }
-
+    private async getTopSourceEvent(req: Request,res: Response): Promise<void> {
+        try{
+            const result =await this.eventsService.getTopSourceEvent()
+            if(result != null){
+                res.status(200).json(result)
+            }
+                res.status(500).json("We couldnt get top event source")
+        }
+        catch(err){
+            const message = (err as Error).message;
+            await this.logger.log(`Error while creating event: ${message}`);
+            res.status(500).json({ message });
+        }
+    }
     private async createEvent(req: Request, res: Response): Promise<void> {
         try {
             const dto = req.body as EventDTO;

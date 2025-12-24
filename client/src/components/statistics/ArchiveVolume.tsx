@@ -16,24 +16,18 @@ export default function ArchiveVolume({ data, period, onPeriodChange }: ArchiveV
         width: '100%',
         padding: '16px'
     };
-
-    const headerStyle: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '12px'
-    };
-
+    
     const switchContainerStyle: React.CSSProperties = {
         display: 'flex',
-        gap: '12px'
+        justifyContent: 'space-between',
+        alignItems: "center"
     };
 
     const switchButtonStyle = (isActive: boolean): React.CSSProperties => ({
         padding: '8px 20px',
-        borderRadius: '8px',
+        borderRadius: '10px',
         border: 'none',
-        backgroundColor: isActive ? '#9978d4' : '#313338',
+        backgroundColor: isActive ? '#007a55' : '#313338',
         color: '#ffffff',
         cursor: 'pointer',
         fontWeight: 600,
@@ -43,14 +37,13 @@ export default function ArchiveVolume({ data, period, onPeriodChange }: ArchiveV
     const chartContainerStyle: React.CSSProperties = {
         width: '100%',
         height: '350px',
-        backgroundColor: '#2b2d31',
         borderRadius: '12px',
         padding: '20px'
     };
 
     const emptyStateStyle: React.CSSProperties = {
         textAlign: 'center',
-        padding: '64px',
+        padding: '32px',
         color: '#c5c5c5',
         fontSize: '14px'
     };
@@ -68,7 +61,7 @@ export default function ArchiveVolume({ data, period, onPeriodChange }: ArchiveV
                     <p style={{margin: 0, fontSize: '14px', fontWeight: 600}}>
                         {payload[0].payload.label}
                     </p>
-                    <p style={{margin: '4px 0 0 0', fontSize: '14px', fontWeight: '#0078d4'}}>
+                    <p style={{margin: '4px 0 0 0', fontSize: '14px', fontWeight: '#4A9DAE'}}>
                         {payload[0].value} MB
                     </p>
                 </div>
@@ -79,45 +72,42 @@ export default function ArchiveVolume({ data, period, onPeriodChange }: ArchiveV
 
     return (
         <div style={containerStyle}>
-            <div style={headerStyle}>
                 <div style={switchContainerStyle}>
-                    <button
-                        style={switchButtonStyle(period === "daily")}
-                        onClick={() => onPeriodChange("daily")}>
-                            Daily
-                    </button>
-                    <button
-                        style={switchButtonStyle(period === "monthly")}
-                        onClick={() => onPeriodChange("monthly")}>
-                            Monthly
-                    </button>
-                    <button
-                        style={switchButtonStyle(period === "yearly")}
-                        onClick={() => onPeriodChange("yearly")}>
-                            Yearly
-                    </button>
-                </div>
+                    <span style={{color: "#ffffff", fontSize: "18px", fontWeight: 600}}>
+                        Daily Archive Volume (in MB)
+                    </span>
+
+                    <div style={{display: "flex", gap: 8}}>
+                        <button
+                            style={switchButtonStyle(period === "daily")}
+                            onClick={() => onPeriodChange("daily")}>
+                                Daily
+                        </button>
+                        <button
+                            style={switchButtonStyle(period === "monthly")}
+                            onClick={() => onPeriodChange("monthly")}>
+                                Monthly
+                        </button>
+                        <button
+                            style={switchButtonStyle(period === "yearly")}
+                            onClick={() => onPeriodChange("yearly")}>
+                                Yearly
+                        </button>
+                    </div>
             </div>
 
             {data.length > 0 ? (
                 <div style={chartContainerStyle}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={data} margin={{ top: 10, right: 30, left: 10, bottom: 0}}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#313338"/>
-                            <XAxis
-                                dataKey="label"
-                                stroke="#c5c5c5"
-                                style={{fontSize: '12px'}}
-                            />
-                            <YAxis
-                                type="number"
-                                stroke="#c5c5c5"
-                                label={{value: 'MB', angle: -90, position: 'insideLeft', fill: '#c5c5c5'}}
-                            />
-                            <Tooltip content={<CustomTooltip/>} cursor={{fill: 'rgba(0, 120, 212, 0.1)'}}/>
+
+                            <XAxis dataKey="label" style={{fontSize: "13px", fontWeight: "bold"}} axisLine={false} tickLine={false} tick={{fill: "#ffffff"}} tickMargin={10} />
+                            <YAxis style={{fontSize: "13px", fontWeight: "bold"}} axisLine={false} tickLine={false} tickCount={5} tick={{fill: "#ffffff"}} tickMargin={10} />
+                            
+                            <Tooltip content={<CustomTooltip/>} cursor={{fill: 'rgba(34, 210, 99, 0.1)'}}/>
                             <Bar
                                 dataKey="size"
-                                fill="#0078d4"
+                                fill="#007a55"
                                 radius={[8, 8, 0, 0]}
                                 maxBarSize={80}
                             />

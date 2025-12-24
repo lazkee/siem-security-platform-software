@@ -1,12 +1,13 @@
-import { Between, MongoRepository, Repository } from "typeorm";
+import { Between, In, MongoRepository, Repository } from "typeorm";
 import { CacheEntry } from "../Domain/models/CacheEntry";
 import { IQueryRepositoryService } from "../Domain/services/IQueryRepositoryService";
-import axios, { all, AxiosInstance } from "axios";
+import axios, { all, AxiosInstance } from "axios";  // brise se
 import { Event } from "../Domain/models/Event";
 import { CacheEntryDTO } from "../Domain/DTOs/CacheEntryDTO";
-import { tokenize } from "../Utils/EventToTokensParser";
+import { tokenize } from "../Utils/EventToTokensParser";  // brise se
 import { ILoggerService } from "../Domain/services/ILoggerService";
-import { loadQueryState, saveQueryState } from "../Utils/StateManager";
+import { loadQueryState, saveQueryState } from "../Utils/StateManager";  // brise se
+import { InvertedIndexStructureForEvents } from "../Utils/InvertedIndexStructureForEvents";
 
 // princip pretrage:
 // imamo recnik koji mapira reci iz eventa na event id-eve
@@ -28,53 +29,15 @@ const emptyCacheEntry: CacheEntry = {
     cachedAt: new Date(0)
 };
 
-export class QueryRepositoryService implements IQueryRepositoryService {
-    private invertedIndex: Map<string, Set<number>> = new Map();
-    private eventIdToTokens: Map<number, string[]> = new Map();
-    private lastProcessedId: number = 0;
-    private eventCount: number = 0;
-    private infoCount: number = 0;
-    private warningCount: number = 0;
-    private errorCount: number = 0;
-    
-    private indexingInProgress: boolean = false;
-
-    //private readonly eventClient : AxiosInstance;
-
+export class QueryRepositoryService implements IQueryRepositoryService {    
+    public readonly invertedIndexStructureForEvents: InvertedIndexStructureForEvents = new InvertedIndexStructureForEvents(this);
     constructor(private readonly cacheRepository: MongoRepository<CacheEntry>, 
                 private readonly loggerService: ILoggerService,
-                private readonly eventRepository: Repository<Event>) 
+                private readonly eventRepository: Repository<Event>,
+            ) 
     {
-        /*
-        const eventUrl = process.env.EVENT_SERVICE_API;
-
-        this.eventClient = axios.create({
-            baseURL: eventUrl,
-            headers: { "Content-Type": "application/json" },
-            timeout: 5000,
-        });
-        */
-        const savedState = loadQueryState();
-        this.lastProcessedId = savedState.lastProcessedId;
-        this.invertedIndex = savedState.invertedIndex;
-        this.eventIdToTokens = savedState.eventTokenMap;
-        this.eventCount = savedState.eventCount;
-        this.infoCount = savedState.infoCount;
-        this.warningCount = savedState.warningCount;
-        this.errorCount = savedState.errorCount;
-
-        this.loggerService.log("Loaded query service state from file. Last processed ID: " + this.lastProcessedId);
-        //console.log("Inverted index size:", this.invertedIndex.size);
-        //console.log("Event ID to tokens map size:", this.eventIdToTokens.size);
-
-        if (this.invertedIndex.size === 0 || this.eventIdToTokens.size === 0 || this.lastProcessedId === 0
-            || this.eventCount === 0)
-        {
-            // pravi indeks od nule
-            this.bootstrapIndex();
-        }
-
-        this.startIndexingWorker();
+        this.loggerService.log("QueryRepositoryService initialized.");
+        this.loggerService.log("Inverted index structure for events initialized and " + this.invertedIndexStructureForEvents.getEventsCount() + " events indexed.");
     }
 
     async findByKey(key: string): Promise<CacheEntry> {
@@ -102,69 +65,14 @@ export class QueryRepositoryService implements IQueryRepositoryService {
         
         const oldEvents = allEvents.filter(event => new Date(event.timestamp) < xHoursAgo);
         oldEvents.forEach(event => {
-            this.removeEventFromIndex(event.id);
+            this.invertedIndexStructureForEvents.removeEventFromIndex(event.id);
         });
         
         return oldEvents;
     }
 
-    public addEventToIndex(event: Event): void {
-        const tokens = [
-            ...tokenize(event.description),
-            ...tokenize(event.source),
-            ...tokenize(event.type)
-        ];
-
-        this.eventIdToTokens.set(event.id, tokens);
-
-        for (const token of tokens) {
-            if (!this.invertedIndex.has(token)) {
-                this.invertedIndex.set(token, new Set());
-            }
-            this.invertedIndex.get(token)!.add(event.id);
-        }
-
-        this.eventCount += 1;
-        switch (event.type) {
-            case "INFO":
-                this.infoCount += 1;
-                break;
-            case "WARNING":
-                this.warningCount += 1;
-                break;
-            case "ERROR":
-                this.errorCount += 1;
-                break;
-        }
-    }
-
-    public removeEventFromIndex(eventId: number): void {
-        const tokens = this.eventIdToTokens.get(eventId);
-        if (!tokens) return;
-
-        for (const token of tokens) {
-            const idSet = this.invertedIndex.get(token);
-            if (idSet) {
-                idSet.delete(eventId);
-                if (idSet.size === 0) {
-                    this.invertedIndex.delete(token);
-                }
-            }
-        }
-        this.eventIdToTokens.delete(eventId);
-    }
-
-    public getIdsForTokens(query: string): Set<number> {
-        const tokens = tokenize(query);
-        const resultIds: Set<number> = new Set();
-
-        for (const token of tokens) {
-            token.trim().toLowerCase();
-            const ids = this.invertedIndex.get(token);
-            if (ids) {
-                ids.forEach(id => resultIds.add(id));
-            }
-        }
+    public findEvents(query: string): Set<number> {
+        const resultIds = this.invertedIndexStructureForEvents.getIdsForTokens(query);
         return resultIds;
     }
 
@@ -182,65 +90,20 @@ export class QueryRepositoryService implements IQueryRepositoryService {
         return await this.eventRepository.find({where: {id: Between(fromId, toId)}, order: { id: "ASC" }});
     }
 
-    // pokrece se na 10 sekundi
-    public startIndexingWorker(intervalMs: number = 10000): void {
-        setInterval(async () => {
-            if (this.indexingInProgress) return;
-            this.indexingInProgress = true;
-
-            try {
-                const maxId = await this.getMaxId();
-                if (maxId === 0) {
-                    this.indexingInProgress = false;
-                    return;
-                }
-
-                if (maxId > this.lastProcessedId) {
-                    const newEvents = await this.getEventsFromId1ToId2(this.lastProcessedId + 1, maxId);
-                    
-                    newEvents.forEach(event => this.addEventToIndex(event));
-                    
-                    this.lastProcessedId = maxId;
-                    this.loggerService.log(`Indexed ${newEvents.length} new events up to id ${maxId}`);
-                }
-            } catch (err) {
-                 this.loggerService.log(`Indexing worker error: ${err}`);
-            } finally {
-                this.indexingInProgress = false;
-            }
-        }, intervalMs);
-    }
-
-    public getInvertedIndex(): Map<string, Set<number>> {
-        return this.invertedIndex;
-    }
-
-    public getEventIdToTokens(): Map<number, string[]> {
-        return this.eventIdToTokens;
-    }
-
-    public getLastProcessedId(): number {
-        return this.lastProcessedId;
-    }
-
-    public isIndexingInProgress(): boolean {
-        return this.indexingInProgress;
-    }
-
     public getEventsCount(): number {
-        return this.eventCount;
+        return this.invertedIndexStructureForEvents.getEventsCount();
     }
 
     public getInfoCount(): number {
-        return this.infoCount;
+        return this.invertedIndexStructureForEvents.getInfoCount();
     }
 
     public getWarningCount(): number {
-        return this.warningCount;
+        return this.invertedIndexStructureForEvents.getWarningCount();
     }
 
     public getErrorCount(): number {
-        return this.errorCount;
+        return this.invertedIndexStructureForEvents.getErrorCount();
     }
 
     public async getLastThreeEvents(): Promise<Event[]> {
@@ -249,27 +112,5 @@ export class QueryRepositoryService implements IQueryRepositoryService {
             take: 3
         });
         return events;
-    }
-
-    private async bootstrapIndex(): Promise<void> {
-        const allEvents = await this.eventRepository.find();
-
-        if (allEvents.length === 0) return;
-
-        allEvents.forEach(event => this.addEventToIndex(event));
-
-        this.lastProcessedId = Math.max(...allEvents.map(e => e.id));
-
-        await this.loggerService.log(
-            `Bootstrap indexing completed. Indexed ${allEvents.length} events.`
-        );
-
-        /*
-        saveQueryState({
-            lastProcessedId: this.lastProcessedId,
-            invertedIndex: this.invertedIndex,
-            eventTokenMap: this.eventIdToTokens
-        });
-        */
     }
 }
