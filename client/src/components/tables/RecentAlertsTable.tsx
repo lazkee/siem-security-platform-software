@@ -1,8 +1,8 @@
 import { AlertDTO } from "../../models/alerts/AlertDTO";
 import { AlertSeverity } from "../../enums/AlertSeverity";
-import { AlertStatus } from "../../enums/AlertStatus";
 import { PiWarningOctagonFill, PiInfoBold } from "react-icons/pi";
 import { BiMessageRounded } from "react-icons/bi";
+import { getSeverityColor, getStatusColor } from "../../helpers/alertColorHelpers";
 
 interface RecentAlertsTableProps {
   alerts: AlertDTO[];
@@ -15,27 +15,6 @@ export default function RecentAlertsTable({
   alerts,
   onSelectAlert,
 }: RecentAlertsTableProps) {
-
-  const getSeverityColor = (severity: AlertSeverity) => {
-    switch (severity) {
-      case AlertSeverity.CRITICAL: return "#ff4b4b";
-      case AlertSeverity.HIGH: return "#ffa500";
-      case AlertSeverity.MEDIUM: return "#ffd700";
-      case AlertSeverity.LOW: return "#4ade80";
-      default: return "#60a5fa";
-    }
-  };
-
-  const getStatusColor = (status: AlertStatus) => {
-    switch (status) {
-      case AlertStatus.ACTIVE: return "#ffa500";
-      case AlertStatus.INVESTIGATING: return "#60a5fa";
-      case AlertStatus.RESOLVED: return "#4ade80";
-      case AlertStatus.DISMISSED: return "#a6a6a6";
-      case AlertStatus.ESCALATED: return "#ff4b4b";
-      default: return "#60a5fa";
-    }
-  };
 
   return (
     <div className="bg-[#1f1f1f] rounded-[14px] overflow-hidden shadow-md border border-[#333]">

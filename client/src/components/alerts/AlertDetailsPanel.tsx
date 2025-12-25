@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { AlertDTO } from "../../models/alerts/AlertDTO";
 import { AlertStatus } from "../../enums/AlertStatus";
-import { AlertSeverity } from "../../enums/AlertSeverity";
 import { IoClose } from "react-icons/io5";
+import { getSeverityColor, getStatusColor } from "../../helpers/alertColorHelpers";
 
 interface AlertDetailsPanelProps {
   alert: AlertDTO;
@@ -77,27 +77,6 @@ export default function AlertDetailsPanel({
   const valueStyle: React.CSSProperties = {
     fontSize: "15px",
     color: "#fff",
-  };
-
-  const getSeverityColor = (severity: AlertSeverity) => {
-    switch (severity) {
-      case AlertSeverity.CRITICAL: return "#ff4b4b";
-      case AlertSeverity.HIGH: return "#ffa500";
-      case AlertSeverity.MEDIUM: return "#ffd700";
-      case AlertSeverity.LOW: return "#4ade80";
-      default: return "#60a5fa";
-    }
-  };
-
-  const getStatusColor = (status: AlertStatus) => {
-    switch (status) {
-      case AlertStatus.ACTIVE: return "#ffa500";
-      case AlertStatus.INVESTIGATING: return "#60a5fa";
-      case AlertStatus.RESOLVED: return "#4ade80";
-      case AlertStatus.DISMISSED: return "#a6a6a6";
-      case AlertStatus.ESCALATED: return "#ff4b4b";
-      default: return "#60a5fa";
-    }
   };
 
   const badgeStyle = (color: string): React.CSSProperties => ({

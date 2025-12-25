@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { AlertDTO } from "../../models/alerts/AlertDTO";
-import { AlertSeverity } from "../../enums/AlertSeverity";
 import { PiWarningOctagonFill } from "react-icons/pi";
 import { IoClose } from "react-icons/io5";
+import { getSeverityColor } from "../../helpers/alertColorHelpers";
 
 interface AlertToastProps {
   alert: AlertDTO;
@@ -33,16 +33,6 @@ export default function AlertToast({ alert, onClose, onViewDetails }: AlertToast
 
     return () => clearInterval(progressTimer);
   }, [onClose]);
-
-  const getSeverityColor = (severity: AlertSeverity) => {
-    switch (severity) {
-      case AlertSeverity.CRITICAL: return "#ff4b4b";
-      case AlertSeverity.HIGH: return "#ffa500";
-      case AlertSeverity.MEDIUM: return "#ffd700";
-      case AlertSeverity.LOW: return "#4ade80";
-      default: return "#60a5fa";
-    }
-  };
 
   const severityColor = getSeverityColor(alert.severity);
 
