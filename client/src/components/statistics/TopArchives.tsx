@@ -1,4 +1,3 @@
-import React from 'react';
 import { TopArchiveDTO } from "../../models/storage/TopArchiveDTO";
 
 type TopArchivesProps = {
@@ -8,118 +7,60 @@ type TopArchivesProps = {
 };
 
 export default function TopArchives( {data, type, onTypeChange}: TopArchivesProps) {
-    const containerStyle: React.CSSProperties = {
-        background: "#1f1f1f",
-        border: "2px solid #333",
-        borderRadius: "12px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-        overflow: "hidden",
-        margin:"5px"
-    };
-
-    const switchContainerStyle: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: "center",
-        margin: '15px'
-    };
-
-    const switchButtonStyle = (isActive: boolean): React.CSSProperties => ({
-        padding: '8px 20px',
-        borderRadius: '10px',
-        border: 'none',
-        backgroundColor: isActive ? "#007a55" : '#313338',
-        color: '#ffffff',
-        cursor: 'pointer',
-        fontSize: '14px',
-        fontWeight: 600,
-        transition: 'all 0.2s ease'
-    });
-
-    const tableStyle: React.CSSProperties = {
-        width: "100%",
-        borderCollapse: "collapse",
-        fontSize: "14px"
-    };
-
-    const thStyle: React.CSSProperties = {
-        textAlign: "center",
-        padding: "14px 16px",
-        borderBottom: "1px solid #3a3a3a",
-        color: "#d0d0d0",
-        fontSize: "13px",
-        textTransform: "uppercase",
-        letterSpacing: "0.5px"
-    };
-
-    const tdStyle: React.CSSProperties = {
-        padding: "20px",
-        textAlign: "center",
-        color: "#a6a6a6"
-    };
-
-    const theadStyle: React.CSSProperties = {
-        background: "#2a2a2a"
-    };
-
-    const emptyStateStyle: React.CSSProperties = {
-        textAlign: 'center',
-        padding: '32px',
-        color: '#c5c5c5',
-        fontSize: '14px'
-    };
-    
-    
+    const thClass = "px-4! py-5! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]"
+    const tdClass = "px-4! py-5! text-center text-[#dcdcdc] text-[14px] border-b-[1px] border-b-[#2d2d2d]"
 
     return(
         <div>
-            <div style={switchContainerStyle}>
-                <span style={{color: "#ffffff", fontSize: "18px", fontWeight: 600}}>
+            <div className="flex justify-between items-center m-4!">
+                <span className="text-white text-lg font-semibold">
                     Top 5 Archives
                 </span>
 
-                <div style={{display: "flex", gap: 8}}>
+                <div className="flex gap-2">
                     <button
-                        style={switchButtonStyle(type === "events")}
+                        className={`px-5! py-2! rounded-[10px]! text-white text-sm font-semibold transition-all duration-200 ${
+                            type === "events" ? "bg-[#007a55]" : "bg-[#313338]"
+                        }`}
                         onClick={() => onTypeChange("events")}>
                             Events
                     </button>
                     <button
-                        style={switchButtonStyle(type === "alerts")}
+                        className={`px-5! py-2! rounded-[10px]! text-white text-sm font-semibold transition-all duration-200 ${
+                            type === "alerts" ? "bg-[#007a55]" : "bg-[#313338]"
+                        }`}
                         onClick={() => onTypeChange("alerts")}>
                             Alerts
                     </button>
                 </div>
             </div>
-            <div style={containerStyle}>
-                {data.length > 0 ? (
-                    <table style={tableStyle}>
-                        <thead style={theadStyle}>
+            <div className="bg-[#1f1f1f] border-2 border-[#333] rounded-[10px]! shadow-md overflow-hidden m-2!">
+                    <table className="w-full border-collapse text-sm">
+                        <thead className="bg-[#2a2a2a]">
                             <tr>
-                                <th style={{ ...thStyle, width: '10%'}}>ID</th>
-                                <th style={{ ...thStyle, width: '60%'}}>File name</th>
-                                <th style={{ ...thStyle, width: '30%', textAlign: 'right'}}>
+                                <th className={`${thClass} w-[10%]`}>ID</th>
+                                <th className={`${thClass} w-[10%]`}>File name</th>
+                                <th className={`${thClass} w-[10%]`}>
                                     {type === "events" ? "Event count" : "Alert count"}
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            {data.map((archive, index) => (
-                                <tr key={archive.id}>
-                                    <td style={tdStyle}>{index + 1}</td>
-                                    <td style={tdStyle}>{archive.fileName}</td>
-                                    <td style={{...tdStyle, textAlign: 'right', fontWeight: 600}}>
-                                        {archive.count}
-                                    </td>
+                            {data.length === 0 ? (
+                                <tr>
+                                    <td colSpan={3} className="px-10 py-10 text-center text-[#a6a6a6] border-b border-[#2d2d2d]">
+                                        No archives found
+                                    </td> 
                                 </tr>
-                            ))}
+                            ): (data.map((archive, index) => (
+                                <tr key={archive.id} className="transition-colors duration-200 hover:bg-[#2a2a2a] cursor-pointer">
+                                    <td className={tdClass}>{index + 1}</td>
+                                    <td className={tdClass}>{archive.fileName}</td>
+                                    <td className={`${tdClass} font-semibold`}>{archive.count}</td>
+                                </tr>
+                            )))}
                         </tbody>
                     </table>
-                ) : (
-                    <div style={emptyStateStyle}>
-                        No archives found
-                    </div>
-                )}
             </div>
         </div>  
     );
