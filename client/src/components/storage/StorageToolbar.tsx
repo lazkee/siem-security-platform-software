@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { AiOutlineSearch } from "react-icons/ai";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import { useState } from "react";
 import DropDownMenu from "../events/DropDownMenu";
 
 type Props = {

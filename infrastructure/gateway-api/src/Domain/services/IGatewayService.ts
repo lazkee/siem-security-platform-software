@@ -11,6 +11,7 @@ import { NormalizedEventDTO } from "../DTOs/NormalizedEventDTO";
 import { PaginatedAlertsDTO } from "../DTOs/PaginatedAlertsDTO";
 import { ParserEventDto } from "../DTOs/ParserEventDTO";
 import { RegistrationUserDTO } from "../DTOs/RegistrationUserDTO";
+import { StorageLogResponseDTO } from "../DTOs/StorageLogResponseDTO";
 import { TopArchiveDTO } from "../DTOs/TopArchiveDTO";
 import { TopSourceDTO } from "../DTOs/TopSourceDTO";
 import { UserDTO } from "../DTOs/UserDTO";
@@ -56,10 +57,10 @@ export interface IGatewayService {
   
 
   // Storage 
-  getAllArchives(): Promise<ArchiveDTO[]>;
-  runArchiveProcess(): Promise<ArchiveDTO>;
-  searchArchives(query: string): Promise<ArchiveDTO[]>;
-  sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<ArchiveDTO[]>;
+  getAllArchives(): Promise<StorageLogResponseDTO[]>;
+  runArchiveProcess(): Promise<StorageLogResponseDTO>;
+  searchArchives(query: string): Promise<StorageLogResponseDTO[]>;
+  sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<StorageLogResponseDTO[]>;
   getArchiveStats(): Promise<ArchiveStatsDTO>;
   downloadArchive(id: string): Promise<ArrayBuffer>;
   getTopArchives(type: "events" | "alerts", limit: number): Promise<TopArchiveDTO[]>;

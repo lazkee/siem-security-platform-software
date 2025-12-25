@@ -1,8 +1,8 @@
-export interface ArchiveDTO {
-    id: number;
+export interface StorageLogResponseDTO {
+    storageLogId: number;
     fileName: string;
     recordCount: number;
     fileSize: number;
     createdAt: string;
-    downloadUrl: string;
+    archiveType: string;
 }

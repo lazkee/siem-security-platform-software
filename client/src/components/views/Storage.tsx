@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { StorageAPI } from "../../api/storage/StorageAPI";
 import { useAuth } from "../../hooks/useAuthHook";
-import { ArchiveDTO } from "../../models/storage/ArchiveDTO";
+import { StorageLogResponseDTO } from "../../models/storage/StorageLogResponseDTO";
 import { ArchiveStatsDTO } from "../../models/storage/ArchiveStatsDTO";
 import StorageStats from "../storage/StorageStats";
 import StorageTable from "../tables/StorageTable";
 import StorageToolBar from "../storage/StorageToolbar";
+import { ArchiveDTO } from "../../models/storage/ArchiveDTO";
 
 
 const storageAPI = new StorageAPI();
@@ -17,10 +18,9 @@ export default function Storage() {
     const [stats, setStats] = useState<ArchiveStatsDTO | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [sortType, setSortType] = useState<number>(0);
     //const [isLoading, setIsLoading] = useState(true);
 
-    const mockArchives: ArchiveDTO[] = [
+    /*const mockArchives: ArchiveDTO[] = [
         {
             id: 1,
             fileName: "alerts_2024-12-01.tar",
@@ -76,13 +76,47 @@ export default function Storage() {
 
         //setIsLoading(false);
     }, []);
+*/
+    const mapToArchiveDTO = (data: StorageLogResponseDTO[]): ArchiveDTO[] =>
+        data.map(a => ({
+            id: a.storageLogId,
+            fileName: a.fileName,
+            recordCount: a.recordCount,
+            fileSize: a.fileSize,
+            createdAt: a.createdAt,
+            downloadUrl: `${import.meta.env.VITE_GATEWAY_URL}/storageLog/file/${a.storageLogId}`
+        }));
+
+    useEffect(() => {
+        if(!token)
+            return;
+
+        const fetchStorageData = async () => {
+            try {
+                setIsLoading(true);
+
+                const archivesResponse = await storageAPI.getAllArchives(token);
+                console.log("ARCHIVES RESPONSE: ", archivesResponse);
+                const statsResponse = await storageAPI.getStats(token);
+
+                setArchives(mapToArchiveDTO(archivesResponse));
+                setStats(statsResponse);
+            } catch(err) {
+                console.error(err);
+                setError("Failed to load storageData");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchStorageData();
+    }, [token]);
 
     const handleSearchArchives = async (query: string) => {
         if (!token) return;
 
         try {
-            const data = await storageAPI.searchArchives(query);
-            setArchives(data);
+            const data = await storageAPI.searchArchives(token, query);
+            setArchives(mapToArchiveDTO(data));
         } catch (err) {
             console.error(err);
         }
@@ -92,8 +126,8 @@ export default function Storage() {
         if (!token) return;
 
         try {
-            const data = await storageAPI.sortArchives(by, order);
-            setArchives(data);
+            const data = await storageAPI.sortArchives(token, by, order);
+            setArchives(mapToArchiveDTO(data));
         } catch (err) {
             console.error(err);
         }

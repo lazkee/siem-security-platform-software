@@ -6,6 +6,7 @@ import { ArchiveVolumeDTO } from "../../Domain/DTOs/ArchiveVolumeDTO";
 import { defaultAxiosClient } from "../../Infrastructure/config/AxiosClient";
 import { serviceConfig } from "../../Infrastructure/config/ServiceConfig";
 import { LargestArchiveDTO } from "../../Domain/DTOs/LargestArchiveDTO";
+import { StorageLogResponseDTO } from "../../Domain/DTOs/StorageLogResponseDTO";
 
 export class StorageGatewayService {
   private readonly client: AxiosInstance;
@@ -17,27 +18,27 @@ export class StorageGatewayService {
     });
   }
 
-  async getAllArchives(): Promise<ArchiveDTO[]> {
-    const response = await this.client.get<ArchiveDTO[]>("/storageLog");
+  async getAllArchives(): Promise<StorageLogResponseDTO[]> {
+    const response = await this.client.get<StorageLogResponseDTO[]>("/storageLog");
     return response.data;
   }
 
-  async searchArchives(query: string): Promise<ArchiveDTO[]> {
-    const response = await this.client.get<ArchiveDTO[]>("/storageLog/search", {
+  async searchArchives(query: string): Promise<StorageLogResponseDTO[]> {
+    const response = await this.client.get<StorageLogResponseDTO[]>("/storageLog/search", {
       params: { q: query },
     });
     return response.data;
   }
 
-  async sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<ArchiveDTO[]> {
-    const response = await this.client.get<ArchiveDTO[]>("/storageLog/sort", {
+  async sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<StorageLogResponseDTO[]> {
+    const response = await this.client.get<StorageLogResponseDTO[]>("/storageLog/sort", {
       params: { by, order },
     });
     return response.data;
   }
 
-  async runArchiveProcess(): Promise<ArchiveDTO> {
-    const response = await this.client.post<ArchiveDTO>("/storageLog/run");
+  async runArchiveProcess(): Promise<StorageLogResponseDTO> {
+    const response = await this.client.post<StorageLogResponseDTO>("/storageLog/run");
     return response.data;
   }
 

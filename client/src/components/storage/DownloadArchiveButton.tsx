@@ -15,7 +15,7 @@ export default function DownloadArchiveButton({ archiveId, fileName } : Props) {
     const handleDownload = async () => {
         if(!token) return;
         try{
-            const data = await storageAPI.downloadArchive(archiveId, token);
+            const data = await storageAPI.downloadArchive(token, archiveId);
             const blob = new Blob([data]);
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");

@@ -25,6 +25,7 @@ import { LargestArchiveDTO } from "../../Domain/DTOs/LargestArchiveDTO";
 import { DistributionDTO } from "../../Domain/DTOs/DistributionDTO";
 import { TopSourceDTO } from "../../Domain/DTOs/TopSourceDTO";
 import { EventCollectorGatewayService } from "../domains/EventCollectorGatewayService";
+import { StorageLogResponseDTO } from "../../Domain/DTOs/StorageLogResponseDTO";
 
 /**
  * Facade that delegates to domain-specific gateway services.
@@ -176,19 +177,19 @@ export class GatewayService implements IGatewayService {
   }
 
   // Storage
-  async getAllArchives(): Promise<ArchiveDTO[]> {
+  async getAllArchives(): Promise<StorageLogResponseDTO[]> {
     return this.storageService.getAllArchives();
   }
 
-  async searchArchives(query: string): Promise<ArchiveDTO[]> {
+  async searchArchives(query: string): Promise<StorageLogResponseDTO[]> {
     return this.storageService.searchArchives(query);
   }
 
-  async sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<ArchiveDTO[]> {
+  async sortArchives(by: "date" | "size" | "name", order: "asc" | "desc"): Promise<StorageLogResponseDTO[]> {
     return this.storageService.sortArchives(by, order);
   }
 
-  async runArchiveProcess(): Promise<ArchiveDTO> {
+  async runArchiveProcess(): Promise<StorageLogResponseDTO> {
     return this.storageService.runArchiveProcess();
   }
 
