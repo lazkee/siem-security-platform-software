@@ -74,6 +74,7 @@ export default function Dashboard() {
                 setMostWeightArchive(archive.archiveName);
                 setMostWeightArchiveValue(archive.size);       
                 const event=await api.getTopEventSource(token);
+                console.log("Top event ",event);
                 setTopEvent(event.source!);
                 setTopEventValue(event.count!);      
             } catch (error) {
@@ -88,11 +89,24 @@ export default function Dashboard() {
     return (
         <div className="border-2 border-[#282A28] bg-transparent rounded-[14px]">
             <h2 className="mt-[3px]! p-[5px]! m-[10px]!">Analytics</h2>
-            <div className="flex items-center gap-5 height-[20%] width-[100%] p-[10px]!">
-                <StatCard title="Total Raw Events" value={allEventsCount} icon={<BsDatabase />} iconColor="#60cdff" />
-                <StatCard title="Errors" value={errorCount} icon={<BiError />} iconColor="#ff4b4b" />
-                <StatCard title="Warnings" value={warningCount} icon={<PiShieldWarningBold />} iconColor="#ffa500" />
-                <StatCard title="Notifications" value={infoCount} icon={<IoShieldCheckmark />} iconColor="#4ade80" />
+             <div className="grid grid-cols-12 gap-5 p-2!">
+                <div className="col-span-3">
+                    <StatCard title="Total Raw Events" value={allEventsCount} icon={<BsDatabase />} iconColor="#60cdff" />
+                </div>
+
+                <div className="col-span-3">
+                    <StatCard title="Errors" value={errorCount} icon={<BiError />} iconColor="#ff4b4b" />
+                </div>
+
+                <div className="col-span-3">
+                    <StatCard title="Warnings" value={warningCount} icon={<PiShieldWarningBold />} iconColor="#ffa500" />
+
+                </div>
+
+                <div className="col-span-3">
+                    <StatCard title="Notifications" value={infoCount} icon={<IoShieldCheckmark />} iconColor="#4ade80" />
+
+                </div>
             </div>
             <h2 className="mt-[10px]! p-[5px]! m-[10px]!">Short review</h2>
             <div className="flex items-center gap-5 height-[20%] width-[100%] p-[10px]!">

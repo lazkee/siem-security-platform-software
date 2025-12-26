@@ -45,20 +45,20 @@ export default function StorageToolBar({ onSearch, onSort }: Props) {
     };
 
     return (
-        <div className="flex items-center w-full px-2! py-2 mb-6! gap-3 ">
-            <div className="flex gap-3 basis-[100%]">
+        <div className="flex justify-between items-center w-full px-2! py-2 mb-6! gap-3 ">
+            <div className="flex gap-3 ">
                 <input
                     type="text"
                     placeholder="Search by file name..."
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="flex-1 px-3! py-2! rounded-[10px]! border border-[rgba(255,255,255,0.12)] bg-[rgba(0,0,0,0.3)]! text-white text-[13px] outline-none"
+                    className="flex-1 px-3! py-2! w-[400px]! h-[40px]! rounded-[10px]! border border-[rgba(255,255,255,0.12)] bg-[rgba(0,0,0,0.3)]! text-white text-[13px] outline-none"
                 />
 
                 <button
                     onClick={handleSearch}
-                    className="px-6! py-2! rounded-[10px]! bg-[#007a55]! hover:bg-[#9ca3af]! text-white text-[13px] font-semibold cursor-pointer"
+                    className="px-3! py-2! rounded-[10px]! w-[200px]! h-[40px] bg-[#007a55]! hover:bg-[#9ca3af]! text-white text-[13px] font-semibold cursor-pointer"
                     >
                     Search
                 </button>

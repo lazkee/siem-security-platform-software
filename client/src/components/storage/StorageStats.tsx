@@ -15,7 +15,7 @@ export default function StorageStats({ stats }: Props) {
     const totalSizeGB = (stats.totalSize / (1024 ** 3)).toFixed(2);
 
     return (
-        <div className="grid grid-cols-12 gap-5 p-2!">
+        <div className="grid grid-cols-12 gap-5 p-[10px]!">
 
             <div className="col-span-3">
                 <StatCard

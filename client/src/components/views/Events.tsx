@@ -7,6 +7,8 @@ import { EventType } from "../../enums/EventType";
 import DropDownMenu from "../events/DropDownMenu";
 import { QueryAPI } from "../../api/query/QueryAPI";
 import { EventRow } from "../../types/events/EventRow";
+import { SearchToolBar } from "../events/SearchToolBar";
+import { SecondEventToolBar } from "../events/SecondEventToolBar";
 
 export default function Events() {
     /*const eventss: EventRow[] = [
@@ -141,68 +143,10 @@ export default function Events() {
                 </div>
 
             </div>
-            <div className="flex justify-start gap-[16px] ml-[10px]!">
-                <div className="flex gap-[20px]! items-center mt-[40px]!">
-                    <input
-                        className="flex-1 px-3! py-2! h-[40px]! rounded-[15px]! w-[400px] border border-[rgba(255,255,255,0.12)] bg-[#2d2d2d]! text-white text-[13px] outline-none"
-                        placeholder="Type..."
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                    />
-
-                </div>
-                <div className="grid grid-rows-2">
-                    <label>Type:</label>
-                    <select
-                        className="border border-[rgba(255,255,255,0.12)] bg-[#2d2d2d]! hover:bg-[#9ca3af]! text-white! w-[200px]! rounded-[15px]! p-[4px]! h-[40px]! font-semibold"
-                        value={eventType}
-                        onChange={(e) => setEventType(e.target.value)}
-                    >
-                        <option value="all">All types</option>
-                        <option value="info">Informations</option>
-                        <option value="warning">Warnings</option>
-                        <option value="error">Errors</option>
-                    </select>
-                </div>
-                <div className="grid grid-rows-2">
-                    <label >Date from:</label>
-                    <input
-                        className="border border-[rgba(255,255,255,0.12)] bg-[#2d2d2d]! text-white text-[#000] w-[200px] rounded-[15px] p-[4px]! h-[40px] font-semibold"
-                        type="date"
-                        value={dateFrom}
-                        onChange={(e) => setDateFrom(e.target.value)}
-                    />
-                </div>
-                <div className="grid grid-rows-2">
-                    <label >Date to:</label>
-                    <input
-                        className="border border-[rgba(255,255,255,0.12)] bg-[#2d2d2d]! text-white w-[200px] rounded-[15px] p-[4px]! h-[40px] font-semibold"
-                        type="date"
-                        value={dateTo}
-                        onChange={(e) => setDateTo(e.target.value)}
-                    />
-                </div>
-                <button
-                    className="bg-[#007a55] text-color w-[200px] rounded-[15px]! p-[4px] h-[40px] mt-[40px]! font-semibold hover:bg-[#9ca3af]"
-                    onClick={loadEventsWithQuery}
-                >
-                    Search
-                </button>
-
-            </div>
-            <div className="flex justify-end items-center mt-4! me-[10px]!">
-
-                <div className="flex gap-[16px] items-center">
-
-
-                    <DropDownMenu OnSortTypeChange={(value: number) => setSortType(value)} sortName1="Source" sortName2="Date and Time" sortName3="Type" />
-
-                    <button className="bg-[#007a55] text-white w-[200px] h-[40px] rounded-[15px]! font-semibold flex items-center justify-center gap-2 hover:bg-[#9ca3af]">
-                        Download report <FiDownload size={20} />
-                    </button>
-                </div>
-            </div>
-
+            <SearchToolBar value={searchText} onSearchText={setSearchText} value1={eventType} onEventType={setEventType} 
+                            value2={dateTo} onDateTo={setDateTo} value3={dateFrom} onDateFrom={setDateFrom} onSearchClick={loadEventsWithQuery}/>
+        
+            <SecondEventToolBar onSortType={setSortType}/>
 
             <div className="m-[10px]!">
                 {error && !isLoading && (

@@ -13,7 +13,7 @@ export default function MainLayout() {
         <div className='flex fixed top-10 left-0 right-5 bottom-10 gap-4'>
             <Sidebar setSideMenuPage={setSideMenuPage} />
 
-            <div className='flex-1 p-4 bg-[#202020] h-full overflow-auto'>
+            <div className='flex-1 p-4 bg-[#202020] h-full overflow-y-scroll'>
                 {sideMenuPage === 0 && <Dashboard />}
                 {sideMenuPage === 1 && <Events />}
                 {sideMenuPage === 2 && <Statistics />}
