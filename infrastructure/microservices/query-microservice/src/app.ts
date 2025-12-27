@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import 'reflect-metadata';
 import dotenv from 'dotenv';
-import { initialize_mongo_database, initialize_mysql_database } from './Database/InitializeConnection';
-import { MongoDb, MySQLDb } from './Database/DbConnectionPool';
+import { initialize_alert_database, initialize_mongo_database, initialize_mysql_database } from './Database/InitializeConnection';
+import { AlertDb, MongoDb, MySQLDb } from './Database/DbConnectionPool';
 import { CacheEntry } from './Domain/models/CacheEntry';
 import { Event } from './Domain/models/Event';
 import { MongoRepository, Repository } from 'typeorm';
@@ -12,6 +12,8 @@ import { QueryService } from './Services/QueryService';
 import { LoggerService } from './Services/LoggerService';
 import { QueryController } from './WebAPI/controllers/QueryController';
 import { saveQueryState } from './Utils/StateManager';
+import { Alert } from './Domain/models/Alert';
+import { QueryAlertRepositoryService } from './Services/QueryAlertRepositoryService';
 
 
 dotenv.config({ quiet: true });
@@ -37,15 +39,18 @@ app.use(
 );
 let loggerService: LoggerService;
 let queryRepositoryService: QueryRepositoryService;
+let queryAlertRepositoryService : QueryAlertRepositoryService; 
 
 // inicijalizacija baza i servisa
 void (async () => {
   await initialize_mongo_database();
   await initialize_mysql_database();
+  await initialize_alert_database();
 
   // ORM Repository
   const cacheRepository : MongoRepository<CacheEntry> = MongoDb.getMongoRepository(CacheEntry);
   const eventRepository : Repository<Event> = MySQLDb.getRepository(Event);
+  const alertRepository : Repository<Alert> = AlertDb.getRepository(Alert);
   //const test = await eventRepository.find();
   //console.log("EVENTS FROM DB:", test);
 
@@ -53,6 +58,9 @@ void (async () => {
   loggerService = new LoggerService();
   queryRepositoryService = new QueryRepositoryService(cacheRepository, loggerService, eventRepository);
   const queryService = new QueryService(queryRepositoryService);
+  queryAlertRepositoryService = new QueryAlertRepositoryService(alertRepository);
+  const alertovi = await queryAlertRepositoryService.getAllAlerts();
+  console.log("Alertovi iz baze:", alertovi);
 
   // WebAPI rute
   const queryController = new QueryController(queryService, queryRepositoryService);
