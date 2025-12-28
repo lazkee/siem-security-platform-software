@@ -59,8 +59,7 @@ void (async () => {
   queryRepositoryService = new QueryRepositoryService(cacheRepository, loggerService, eventRepository);
   const queryService = new QueryService(queryRepositoryService);
   queryAlertRepositoryService = new QueryAlertRepositoryService(alertRepository);
-  const alertovi = await queryAlertRepositoryService.getAllAlerts();
-  console.log("Alertovi iz baze:", alertovi);
+  
 
   // WebAPI rute
   const queryController = new QueryController(queryService, queryRepositoryService);

@@ -3,4 +3,6 @@ import { Alert } from "../models/Alert";
 
 export interface IQueryAlertRepositoryService{
     getAllAlerts(): Promise<Alert[]>
+    getMaxId(): Promise<number>;
+    getAlertsFromId1ToId2(fromId: number, toId: number): Promise<Alert[]>
 }
