@@ -1,5 +1,7 @@
 import { Alert } from "../../Domain/models/Alert";
 import { AlertDTO } from "../../Domain/DTOs/AlertDTO";
+import { AlertSeverity } from "../../Domain/enums/AlertSeverity";
+import { AlertStatus } from "../../Domain/enums/AlertStatus";
 
 export function toAlertDTO(alert: Alert): AlertDTO {
   return {
@@ -21,8 +23,8 @@ export function createEmptyAlertDTO(): AlertDTO {
     id: -1,
     title: "",
     description: "",
-    severity: "LOW" as any,
-    status: "ACTIVE" as any,
+    severity: AlertSeverity.LOW,
+    status: AlertStatus.ACTIVE,
     correlatedEvents: [],
     source: "",
     createdAt: new Date(),
