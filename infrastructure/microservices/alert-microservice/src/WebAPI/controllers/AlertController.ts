@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { IAlertService } from "../../Domain/services/IAlertService";
+import { ILoggerService } from "../../Domain/services/ILoggerService";
 import { AlertNotificationService } from "../../Services/AlertNotificationService";
 import { AlertSeverity } from "../../Domain/enums/AlertSeverity";
 import { AlertStatus } from "../../Domain/enums/AlertStatus";
@@ -7,19 +8,26 @@ import { CreateAlertDTO } from "../../Domain/DTOs/CreateAlertDTO";
 import { ResolveAlertDTO } from "../../Domain/DTOs/ResolveAlertDTO";
 import { CreateAlertFromCorrelationDTO } from "../../Domain/DTOs/CreateAlertFromCorrelationDTO";
 import { AlertQueryDTO } from "../../Domain/DTOs/AlertQueryDTO";
+import { 
+  validateAlertId, 
+  validateCreateAlertDTO, 
+  validateAlertStatus, 
+  validateAlertSeverity 
+} from "../validators/AlertValidators";
 
 export class AlertController {
-  private router: Router;
+  private readonly router: Router;
 
   constructor(
-    private alertService: IAlertService,
-    private notificationService: AlertNotificationService
+    private readonly alertService: IAlertService,
+    private readonly notificationService: AlertNotificationService,
+    private readonly logger: ILoggerService
   ) {
     this.router = Router();
     this.initializeRoutes();
   }
 
-  private initializeRoutes() {
+  private initializeRoutes(): void {
     this.router.get("/alerts/notifications/stream", this.streamNotifications.bind(this));
     this.router.get("/alerts/search", this.searchAlerts.bind(this));
     this.router.get("/alerts", this.getAllAlerts.bind(this));
@@ -31,11 +39,11 @@ export class AlertController {
     this.router.post("/alerts/correlation", this.createAlertFromCorrelation.bind(this));
   }
 
-  getRouter() {
+  public getRouter(): Router {
     return this.router;
   }
 
-  async streamNotifications(req: Request, res: Response) {
+  private async streamNotifications(req: Request, res: Response): Promise<void> {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -45,16 +53,23 @@ export class AlertController {
     const clientId = req.query.clientId as string || `client_${Date.now()}`;
     this.notificationService.registerClient(clientId, res);
 
+    await this.logger.log(`SSE client connected: ${clientId}`);
+
     const heartbeatInterval = setInterval(() => this.notificationService.sendHeartbeat(), 30000);
 
-    req.on("close", () => clearInterval(heartbeatInterval));
+    req.on("close", () => {
+      clearInterval(heartbeatInterval);
+      this.logger.log(`SSE client disconnected: ${clientId}`);
+    });
   }
 
-  async createAlertFromCorrelation(req: Request, res: Response) {
+  private async createAlertFromCorrelation(req: Request, res: Response): Promise<void> {
     try {
       const data: CreateAlertFromCorrelationDTO = req.body;
+      
       if (!data.correlationId || !data.description || !data.correlatedEventIds) {
-        return res.status(400).json({ error: "Missing required fields" });
+        res.status(400).json({ success: false, message: "Missing required fields" });
+        return;
       }
 
       const alertData: CreateAlertDTO = {
@@ -65,16 +80,25 @@ export class AlertController {
         source: "AnalysisEngine"
       };
 
+      const validation = validateCreateAlertDTO(alertData);
+      if (!validation.success) {
+        res.status(400).json({ success: false, message: validation.message });
+        return;
+      }
+
+      await this.logger.log(`Creating alert from correlation #${data.correlationId}`);
+
       const alert = await this.alertService.createAlert(alertData);
       await this.notificationService.broadcastNewAlert(alert);
 
       res.status(201).json({ success: true, alert });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      await this.logger.log(`Error creating alert from correlation: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to create alert from correlation." });
     }
   }
 
-  async searchAlerts(req: Request, res: Response) {
+  private async searchAlerts(req: Request, res: Response): Promise<void> {
     try {
       const query: AlertQueryDTO = {
         page: req.query.page ? Number(req.query.page) : undefined,
@@ -87,73 +111,161 @@ export class AlertController {
         sortBy: req.query.sortBy as 'createdAt' | 'severity' | 'status',
         sortOrder: req.query.sortOrder as 'ASC' | 'DESC'
       };
-      res.json(await this.alertService.getAlertsWithFilters(query));
+
+      await this.logger.log(`Searching alerts with filters`);
+
+      const result = await this.alertService.getAlertsWithFilters(query);
+      res.status(200).json(result);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      await this.logger.log(`Error searching alerts: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to search alerts." });
     }
   }
 
-  async getAllAlerts(req: Request, res: Response) {
-    try { res.json(await this.alertService.getAllAlerts()); }
-    catch (err: any) { res.status(500).json({ error: err.message }); }
+  private async getAllAlerts(req: Request, res: Response): Promise<void> {
+    try {
+      await this.logger.log("Fetching all alerts");
+      
+      const alerts = await this.alertService.getAllAlerts();
+      res.status(200).json(alerts);
+    } catch (err: any) {
+      await this.logger.log(`Error fetching all alerts: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to fetch alerts." });
+    }
   }
 
-  async getAlertById(req: Request, res: Response) {
-    try { 
-      const alert = await this.alertService.getAlertById(Number(req.params.id));
-    
-      if (alert.id === 0) {
-        return res.status(404).json({ error: `Alert ${req.params.id} not found` });
+  private async getAlertById(req: Request, res: Response): Promise<void> {
+    try {
+      const id = Number(req.params.id);
+
+      const validation = validateAlertId(id);
+      if (!validation.success) {
+        res.status(400).json({ success: false, message: validation.message });
+        return;
       }
-    
-      res.json(alert);
-    }
-    catch (err: any) { 
-      res.status(500).json({ error: err.message });
-    }
-  }
 
-  async getAlertsBySeverity(req: Request, res: Response) {
-    try {
-      const severity = req.params.severity.toUpperCase() as AlertSeverity;
-      res.json(await this.alertService.getAlertsBySeverity(severity));
-    } catch { res.status(400).json({ error: "Invalid severity value" }); }
-  }
+      await this.logger.log(`Fetching alert with ID: ${id}`);
 
-  async getAlertsByStatus(req: Request, res: Response) {
-    try {
-      const status = req.params.status.toUpperCase() as AlertStatus;
-      res.json(await this.alertService.getAlertsByStatus(status));
-    } catch { res.status(400).json({ error: "Invalid status value" }); }
-  }
+      const alert = await this.alertService.getAlertById(id);
 
-  async resolveAlert(req: Request, res: Response) {
-    try {
-      const updated = await this.alertService.resolveAlert(Number(req.params.id), req.body);
-    
-      if (updated.id === 0) {
-        return res.status(404).json({ error: `Alert ${req.params.id} not found` });
+      if (alert.id === -1) {
+        res.status(404).json({ message: `Alert with id=${id} not found` });
+        return;
       }
-    
+
+      res.status(200).json(alert);
+    } catch (err: any) {
+      await this.logger.log(`Error fetching alert by ID: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to fetch alert." });
+    }
+  }
+
+  private async getAlertsBySeverity(req: Request, res: Response): Promise<void> {
+    try {
+      const severity = req.params.severity.toUpperCase();
+
+      const validation = validateAlertSeverity(severity);
+      if (!validation.success) {
+        res.status(400).json({ success: false, message: validation.message });
+        return;
+      }
+
+      await this.logger.log(`Fetching alerts with severity: ${severity}`);
+
+      const alerts = await this.alertService.getAlertsBySeverity(severity as AlertSeverity);
+      res.status(200).json(alerts);
+    } catch (err: any) {
+      await this.logger.log(`Error fetching alerts by severity: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to fetch alerts by severity." });
+    }
+  }
+
+  private async getAlertsByStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const status = req.params.status.toUpperCase();
+
+      const validation = validateAlertStatus(status);
+      if (!validation.success) {
+        res.status(400).json({ success: false, message: validation.message });
+        return;
+      }
+
+      await this.logger.log(`Fetching alerts with status: ${status}`);
+
+      const alerts = await this.alertService.getAlertsByStatus(status as AlertStatus);
+      res.status(200).json(alerts);
+    } catch (err: any) {
+      await this.logger.log(`Error fetching alerts by status: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to fetch alerts by status." });
+    }
+  }
+
+  private async resolveAlert(req: Request, res: Response): Promise<void> {
+    try {
+      const id = Number(req.params.id);
+
+      const validation = validateAlertId(id);
+      if (!validation.success) {
+        res.status(400).json({ success: false, message: validation.message });
+        return;
+      }
+
+      const resolveData: ResolveAlertDTO = req.body;
+
+      if (!resolveData.resolvedBy || !resolveData.status) {
+        res.status(400).json({ success: false, message: "Missing required fields: resolvedBy and status" });
+        return;
+      }
+
+      await this.logger.log(`Resolving alert ${id}`);
+
+      const updated = await this.alertService.resolveAlert(id, resolveData);
+
+      if (updated.id === -1) {
+        res.status(404).json({ message: `Alert with id=${id} not found` });
+        return;
+      }
+
       await this.notificationService.broadcastAlertUpdate(updated, "RESOLVED");
-      res.json(updated);
-    } catch (err: any) { 
-      res.status(500).json({ error: err.message }); 
+      res.status(200).json(updated);
+    } catch (err: any) {
+      await this.logger.log(`Error resolving alert: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to resolve alert." });
     }
   }
 
-  async updateAlertStatus(req: Request, res: Response) {
+  private async updateAlertStatus(req: Request, res: Response): Promise<void> {
     try {
-      const updated = await this.alertService.updateAlertStatus(Number(req.params.id), req.body.status);
-    
-      if (updated.id === 0) {
-        return res.status(404).json({ error: `Alert ${req.params.id} not found` });
+      const id = Number(req.params.id);
+
+      const validation = validateAlertId(id);
+      if (!validation.success) {
+        res.status(400).json({ success: false, message: validation.message });
+        return;
       }
-    
+
+      const { status } = req.body;
+
+      const statusValidation = validateAlertStatus(status);
+      if (!statusValidation.success) {
+        res.status(400).json({ success: false, message: statusValidation.message });
+        return;
+      }
+
+      await this.logger.log(`Updating alert ${id} status to ${status}`);
+
+      const updated = await this.alertService.updateAlertStatus(id, status as AlertStatus);
+
+      if (updated.id === -1) {
+        res.status(404).json({ message: `Alert with id=${id} not found` });
+        return;
+      }
+
       await this.notificationService.broadcastAlertUpdate(updated, "STATUS_CHANGED");
-      res.json(updated);
-    } catch (err: any) { 
-      res.status(400).json({ error: err.message }); 
+      res.status(200).json(updated);
+    } catch (err: any) {
+      await this.logger.log(`Error updating alert status: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to update alert status." });
     }
   }
 }
