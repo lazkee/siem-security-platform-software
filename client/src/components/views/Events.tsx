@@ -106,7 +106,12 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
             <SearchToolBar value={searchText} onSearchText={setSearchText} value1={eventType} onEventType={setEventType}
                 value2={dateTo} onDateTo={setDateTo} value3={dateFrom} onDateFrom={setDateFrom} onSearchClick={loadEventsWithQuery} />
 
-            <SecondEventToolBar onSortType={setSortType} />
+           <SecondEventToolBar 
+            onSortType={setSortType} 
+            dateFrom={dateFrom} 
+             dateTo={dateTo} 
+             eventType={eventType} 
+            />
 
             <div className="m-[10px]!">
                 {error && !isLoading && (
