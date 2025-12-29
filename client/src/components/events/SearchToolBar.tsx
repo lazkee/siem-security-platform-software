@@ -16,14 +16,8 @@ export function SearchToolBar({ value, onSearchText, value1, onEventType, value2
                     />
                 </div>
 
-<<<<<<< HEAD
                 <div className="flex flex-col gap-[4px] w-[15%]">
                     <label className="text-white text-[14px]">Type:</label>
-=======
-                {/* Type Select */}
-                <div className="flex flex-col gap-[4px]">
-                    <label className="text-[#a6a6a6] font-medium uppercase mb-[3px]! text-[13px]!">Type</label>
->>>>>>> 324d845ccbdcb6284398e580036eb34fff099c5e
                     <select
                         className="border border-[rgba(255,255,255,0.12)] bg-[#2d2d2d] hover:bg-[#3d3d3d] text-white rounded-[10px] py-[4px] h-[40px] font-semibold outline-none w-full"
                         value={value1}
@@ -36,14 +30,8 @@ export function SearchToolBar({ value, onSearchText, value1, onEventType, value2
                     </select>
                 </div>
 
-<<<<<<< HEAD
                 <div className="flex flex-col gap-[4px] w-[15%]">
                     <label className="text-white text-[14px]">Date from:</label>
-=======
-                {/* Date From */}
-                <div className="flex flex-col gap-[4px]">
-                    <label className="text-[#a6a6a6] font-medium uppercase mb-[3px]! text-[13px]!">Date from</label>
->>>>>>> 324d845ccbdcb6284398e580036eb34fff099c5e
                     <input
                         className="border border-[rgba(255,255,255,0.12)] bg-[#2d2d2d] text-white rounded-[10px] px-[8px] h-[40px] font-semibold outline-none w-full"
                         type="date"
@@ -52,14 +40,8 @@ export function SearchToolBar({ value, onSearchText, value1, onEventType, value2
                     />
                 </div>
 
-<<<<<<< HEAD
                 <div className="flex flex-col gap-[4px] w-[15%]">
                     <label className="text-white text-[14px]">Date to:</label>
-=======
-                {/* Date To */}
-                <div className="flex flex-col gap-[4px]">
-                    <label className="text-[#a6a6a6] font-medium uppercase mb-[3px]! text-[13px]!">Date to</label>
->>>>>>> 324d845ccbdcb6284398e580036eb34fff099c5e
                     <input
                         className="border border-[rgba(255,255,255,0.12)] bg-[#2d2d2d] text-white rounded-[10px] px-[8px] h-[40px] font-semibold outline-none w-full"
                         type="date"
