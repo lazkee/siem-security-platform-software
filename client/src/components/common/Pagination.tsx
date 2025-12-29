@@ -2,7 +2,6 @@ import React from "react";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { PaginationProps } from "../../types/props/alerts/PaginationProps";
 
-
 export const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
@@ -11,80 +10,6 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   onPageSizeChange,
 }) => {
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "16px 20px",
-    background: "#2a2a2a",
-    borderTop: "1px solid #3a3a3a",
-    borderRadius: "0 0 14px 14px",
-  };
-
-  const leftSectionStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    fontSize: "13px",
-    color: "#d0d0d0",
-  };
-
-  const selectStyle: React.CSSProperties = {
-    padding: "6px 10px",
-    borderRadius: "6px",
-    border: "1px solid #444",
-    background: "#1f1f1f",
-    color: "#fff",
-    fontSize: "13px",
-    cursor: "pointer",
-    outline: "none",
-  };
-
-  const centerSectionStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  };
-
-  const pageButtonStyle = (active: boolean): React.CSSProperties => ({
-    padding: "6px 12px",
-    borderRadius: "6px",
-    border: active ? "1px solid #60a5fa" : "1px solid #444",
-    background: active ? "rgba(96, 165, 250, 0.15)" : "#1f1f1f",
-    color: active ? "#60a5fa" : "#d0d0d0",
-    fontSize: "13px",
-    fontWeight: active ? 600 : 400,
-    cursor: active ? "default" : "pointer",
-    transition: "all 0.2s",
-    minWidth: "36px",
-    textAlign: "center",
-  });
-
-  const navButtonStyle: React.CSSProperties = {
-    padding: "6px 10px",
-    borderRadius: "6px",
-    border: "1px solid #444",
-    background: "#1f1f1f",
-    color: "#d0d0d0",
-    fontSize: "13px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    transition: "all 0.2s",
-  };
-
-  const disabledNavButtonStyle: React.CSSProperties = {
-    ...navButtonStyle,
-    opacity: 0.4,
-    cursor: "not-allowed",
-  };
-
-  const infoStyle: React.CSSProperties = {
-    fontSize: "13px",
-    color: "#a6a6a6",
-  };
-
   const generatePageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 5;
@@ -94,14 +19,12 @@ export const Pagination: React.FC<PaginationProps> = ({
         pages.push(i);
       }
     } else {
-      // Always show first page
       pages.push(1);
 
       if (currentPage > 3) {
         pages.push("...");
       }
 
-      // Show current page and neighbors
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
 
@@ -113,7 +36,6 @@ export const Pagination: React.FC<PaginationProps> = ({
         pages.push("...");
       }
 
-      // Always show last page
       if (totalPages > 1) {
         pages.push(totalPages);
       }
@@ -126,14 +48,14 @@ export const Pagination: React.FC<PaginationProps> = ({
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
   return (
-    <div style={containerStyle}>
+    <div className="flex justify-between items-center px-5 py-4 bg-[#2a2a2a] border-t border-[#3a3a3a] rounded-b-[14px]">
       {/* Left section: Page size selector */}
-      <div style={leftSectionStyle}>
+      <div className="flex items-center gap-3 text-[13px] text-[#d0d0d0]">
         <span>Show</span>
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          style={selectStyle}
+          className="px-2.5 py-1.5 rounded-[3px] border border-[#444] bg-[#1f1f1f] text-white text-[13px] cursor-pointer outline-none"
         >
           <option value={10}>10</option>
           <option value={25}>25</option>
@@ -144,23 +66,15 @@ export const Pagination: React.FC<PaginationProps> = ({
       </div>
 
       {/* Center section: Page navigation */}
-      <div style={centerSectionStyle}>
+      <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          style={currentPage === 1 ? disabledNavButtonStyle : navButtonStyle}
-          onMouseEnter={(e) => {
-            if (currentPage !== 1) {
-              e.currentTarget.style.background = "#2a2a2a";
-              e.currentTarget.style.borderColor = "#60a5fa";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (currentPage !== 1) {
-              e.currentTarget.style.background = "#1f1f1f";
-              e.currentTarget.style.borderColor = "#444";
-            }
-          }}
+          className={`px-2.5 py-1.5 rounded-[3px] border text-[13px] flex items-center gap-1.5 transition-all ${
+            currentPage === 1
+              ? "opacity-40 cursor-not-allowed border-[#444] bg-[#1f1f1f] text-[#d0d0d0]"
+              : "border-[#444] bg-[#1f1f1f] text-[#d0d0d0] cursor-pointer hover:bg-[#2a2a2a] hover:border-[#60a5fa]"
+          }`}
         >
           <IoChevronBack size={14} />
           Previous
@@ -169,7 +83,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         {generatePageNumbers().map((page, index) => {
           if (page === "...") {
             return (
-              <span key={`ellipsis-${index}`} style={{ color: "#a6a6a6", padding: "0 4px" }}>
+              <span key={`ellipsis-${index}`} className="text-[#a6a6a6] px-1">
                 ...
               </span>
             );
@@ -179,19 +93,11 @@ export const Pagination: React.FC<PaginationProps> = ({
             <button
               key={page}
               onClick={() => onPageChange(page as number)}
-              style={pageButtonStyle(page === currentPage)}
-              onMouseEnter={(e) => {
-                if (page !== currentPage) {
-                  e.currentTarget.style.background = "#2a2a2a";
-                  e.currentTarget.style.borderColor = "#60a5fa";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (page !== currentPage) {
-                  e.currentTarget.style.background = "#1f1f1f";
-                  e.currentTarget.style.borderColor = "#444";
-                }
-              }}
+              className={`px-3 py-1.5 rounded-[3px] border text-[13px] min-w-[36px] text-center transition-all ${
+                page === currentPage
+                  ? "border-[#60a5fa] bg-[rgba(96,165,250,0.15)] text-[#60a5fa] font-semibold cursor-default"
+                  : "border-[#444] bg-[#1f1f1f] text-[#d0d0d0] cursor-pointer hover:bg-[#2a2a2a] hover:border-[#60a5fa]"
+              }`}
             >
               {page}
             </button>
@@ -201,19 +107,11 @@ export const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          style={currentPage === totalPages ? disabledNavButtonStyle : navButtonStyle}
-          onMouseEnter={(e) => {
-            if (currentPage !== totalPages) {
-              e.currentTarget.style.background = "#2a2a2a";
-              e.currentTarget.style.borderColor = "#60a5fa";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (currentPage !== totalPages) {
-              e.currentTarget.style.background = "#1f1f1f";
-              e.currentTarget.style.borderColor = "#444";
-            }
-          }}
+          className={`px-2.5 py-1.5 rounded-[3px] border text-[13px] flex items-center gap-1.5 transition-all ${
+            currentPage === totalPages
+              ? "opacity-40 cursor-not-allowed border-[#444] bg-[#1f1f1f] text-[#d0d0d0]"
+              : "border-[#444] bg-[#1f1f1f] text-[#d0d0d0] cursor-pointer hover:bg-[#2a2a2a] hover:border-[#60a5fa]"
+          }`}
         >
           Next
           <IoChevronForward size={14} />
@@ -221,7 +119,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       </div>
 
       {/* Right section: Info */}
-      <div style={infoStyle}>
+      <div className="text-[13px] text-[#a6a6a6]">
         Showing {startItem}-{endItem} of {totalItems}
       </div>
     </div>
