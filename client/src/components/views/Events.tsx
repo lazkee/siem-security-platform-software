@@ -22,11 +22,15 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    const [page, setPage] = useState<number>(1);
+    const [totalResults, setTotalResults] = useState<number>(0);
+    const limit = 50;
+
     const mapEventDTOToRow = (e: EventDTO): EventRow => {
         return mapEventDTO(e);
     };
 
-    const loadEventsWithQuery = async () => {
+    const loadEventsWithQuery = async (targetPage: number = 1) => {
         if (!token) {
             console.error("No auth token available.");
             return;
@@ -59,11 +63,13 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
             if (eventType && eventType !== "all") {
                 query += query ? `|type=${eventType.toUpperCase()}` : `type=${eventType.toUpperCase()}`;
             }
-
-            const data: EventDTO[] = await queryApi.getEventsByQuery(query, token);
-            const mapped = data.map(mapEventDTOToRow);
+            
+            const response = await queryApi.getEventsByQuery(query, token, targetPage, limit);
+            const mapped = response.data.map(mapEventDTOToRow);
 
             setEvents(mapped);
+            setTotalResults(response.total);
+            setPage(response.page);
         } catch (err) {
             console.error(err);
             setError("Search failed.");
@@ -72,27 +78,24 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
         }
     };
 
+    const handleNextPage = () => {
+        const nextPage = page + 1;
+        if (nextPage <= Math.ceil(totalResults / limit)) {
+            loadEventsWithQuery(nextPage);
+        }
+    };
+
+    const handlePrevPage = () => {
+        const prevPage = page - 1;
+        if (prevPage >= 1) {
+            loadEventsWithQuery(prevPage);
+        }
+    };
+
     useEffect(() => {
         //if (!token) return;       // TODO: DELETE COMMENT AFTER TESTING!
-
-        const loadAllEvents = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-
-                const data: EventDTO[] = await queryApi.getAllEvents(token);
-                const mapped = data.map(mapEventDTOToRow);
-                setEvents(mapped);
-            } catch (err) {
-                console.error(err);
-                setError("Failed to load events.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        void loadAllEvents();
+        
+        void loadEventsWithQuery(1);
     }, [token]);
 
     return (
@@ -123,7 +126,34 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
                     </div>
                 )}
 
-                <AllEventsTable events={events} sortType={sortType} searchText={searchText} parserApi={parserApi} />
+                <AllEventsTable events={events} sortType={sortType} searchText={searchText} parserApi={parserApi}/>
+                <div className="flex justify-between items-center m-[10px]! p-[10px]! border-t border-[#282A28]">
+                    <div className="text-[12px] text-gray-400">
+                        Showing {events.length} of {totalResults} events
+                    </div>
+                    
+                    <div className="flex gap-4 items-center">
+                        <button 
+                            onClick={handlePrevPage}
+                            disabled={page === 1 || isLoading}
+                            className="px-3 py-1 bg-[#282A28] rounded disabled:opacity-50 text-[13px]"
+                        >
+                            Previous
+                        </button>
+                        
+                        <span className="text-[13px]">
+                            Page {page} of {Math.ceil(totalResults / limit) || 1}
+                        </span>
+                        
+                        <button 
+                            onClick={handleNextPage}
+                            disabled={page >= Math.ceil(totalResults / limit) || isLoading}
+                            className="px-3 py-1 bg-[#282A28] rounded disabled:opacity-50 text-[13px]"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
