@@ -3,10 +3,14 @@ import { LoginUserDTO } from "../../Domain/DTOs/LoginUserDTO";
 import { AuthResponseType } from "../../Domain/types/AuthResponse";
 import { defaultAxiosClient } from "../../Infrastructure/config/AxiosClient";
 import { serviceConfig } from "../../Infrastructure/config/ServiceConfig";
+<<<<<<< HEAD
 import { OTPVerificationDTO } from "../../Domain/DTOs/OtpVerificationDTO";
 import { AuthJwtResponse } from "../../Domain/types/AuthJwtResponse";
+=======
+import { IAuthGatewayService } from "../interfaces/IAuthGatewayService";
+>>>>>>> efda8c03efe3416fcc9270a76823bb688555fa70
 
-export class AuthGatewayService {
+export class AuthGatewayService implements IAuthGatewayService {
   private readonly client: AxiosInstance;
   private readonly siemAuthClient: AxiosInstance;
 

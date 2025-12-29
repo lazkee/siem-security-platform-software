@@ -10,6 +10,7 @@ import { AlertController } from "./WebAPI/controllers/AlertController";
 import { AlertRepositoryService } from "./Services/AlertRepositoryService";
 import { AlertService } from "./Services/AlertService";
 import { AlertNotificationService } from "./Services/AlertNotificationService";
+import { LoggerService } from "./Services/LoggerService";
 
 dotenv.config();
 
@@ -36,16 +37,17 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Repositories
+// Repository
 const typeormAlertRepo: Repository<Alert> = Db.getRepository(Alert);
 
 // Services
-const alertRepository = new AlertRepositoryService(typeormAlertRepo);
-const alertService = new AlertService(alertRepository);
+const logger = new LoggerService();
+const alertRepository = new AlertRepositoryService(typeormAlertRepo, logger);
+const alertService = new AlertService(alertRepository, logger);
 const alertNotificationService = new AlertNotificationService();
 
 // Controller
-const alertController = new AlertController(alertService, alertNotificationService);
+const alertController = new AlertController(alertService, alertNotificationService, logger);
 app.use("/api/v1", alertController.getRouter());
 
 export default app;
