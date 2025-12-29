@@ -6,6 +6,7 @@ import { serviceConfig } from "../../Domain/constants/ServiceConfig";
 import { OTPVerificationDTO } from "../../Domain/DTOs/OtpVerificationDTO";
 import { AuthJwtResponse } from "../../Domain/types/AuthJwtResponse";
 import { IAuthGatewayService } from "../../Domain/services/IAuthGatewayService";
+import { OTPResendDTO } from "../../Domain/DTOs/OTPResendDTO";
 
 export class AuthGatewayService implements IAuthGatewayService {
   private readonly client: AxiosInstance;
@@ -26,6 +27,7 @@ export class AuthGatewayService implements IAuthGatewayService {
   async login(data: LoginUserDTO): Promise<AuthResponseType> {
     try {
       const response = await this.client.post<AuthResponseType>("/login", data);
+      console.log("AM I REACHING THIS???????");
       return response.data;
     } catch (error: any) {
       return {
@@ -54,6 +56,20 @@ export class AuthGatewayService implements IAuthGatewayService {
     }
   }
 
+  async resendOtp(data: OTPResendDTO): Promise<AuthResponseType> {
+    try {
+      const response = await this.client.post<AuthResponseType>("/resend-otp", data);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        otp_required: false,
+        message:
+          error?.response?.data?.message ??
+          "Unable to login. Please try again later."
+      }
+    }
+  }
 
   async validateToken(token: string): Promise<{
     valid: boolean;

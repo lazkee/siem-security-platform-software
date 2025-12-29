@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { LoginUserDTO } from "../../Domain/DTOs/LoginUserDTO";
 import { IGatewayService } from "../../Domain/services/IGatewayService";
 import { OTPVerificationDTO } from "../../Domain/DTOs/OtpVerificationDTO";
+import { OTPResendDTO } from "../../Domain/DTOs/OTPResendDTO";
 
 export class AuthGatewayController {
   private readonly router: Router;
@@ -14,6 +15,7 @@ export class AuthGatewayController {
   private initializeRoutes(): void {
     this.router.post("/login", this.login.bind(this));
     this.router.post("/verify-otp", this.verifyOtp.bind(this));
+    this.router.post("/resend-otp", this.resendOtp.bind(this));
   }
 
   private async login(req: Request, res: Response): Promise<void> {
@@ -25,6 +27,12 @@ export class AuthGatewayController {
   private async verifyOtp(req: Request, res: Response): Promise<void> {
     const data: OTPVerificationDTO = req.body;
     const result = await this.gatewayService.verifyOtp(data);
+    res.status(200).json(result);
+  }
+
+  private async resendOtp(req: Request, res: Response): Promise<void> {
+    const data: OTPResendDTO = req.body;
+    const result = await this.gatewayService.resendOtp(data);
     res.status(200).json(result);
   }
 

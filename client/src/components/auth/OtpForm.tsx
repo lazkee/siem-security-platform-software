@@ -4,11 +4,12 @@ import { IAuthAPI } from "../../api/auth/IAuthAPI";
 type OtpFormProps = {
     authAPI: IAuthAPI;
     sessionId: string;
+    setSessionId: React.Dispatch<React.SetStateAction<string | null>>;
     userId: number;
     onSuccess: (token: string) => void;
 };
 
-export const OtpForm: React.FC<OtpFormProps> = ({ authAPI, sessionId, userId, onSuccess }) => {
+export const OtpForm: React.FC<OtpFormProps> = ({ authAPI, sessionId, setSessionId, userId, onSuccess }) => {
     const [otp, setOtp] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -43,27 +44,53 @@ export const OtpForm: React.FC<OtpFormProps> = ({ authAPI, sessionId, userId, on
         }
     };
 
+    const handleResendOtp = async () => {
+        setIsLoading(true);
+        setError("");
+        try {
+            const response = await authAPI.resendOtp({
+                session_id: sessionId,
+                user_id: userId
+            });
+
+            if (response.session?.session_id) {
+                setSessionId(response.session?.session_id);
+            } else {
+                setError(response.message || "Resending OTP failure. Please try again.");
+            }
+        } catch (err: any) {
+            setError(err?.message || "An error occurred. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-                <label htmlFor="otp">OTP Code</label>
-                <input
-                    type="text"
-                    id="otp"
-                    name="otp"
-                    value={otp}
-                    onChange={handleChange}
-                    placeholder="Enter OTP code"
-                    required
-                    disabled={isLoading}
-                />
-            </div>
+        <div className="flex flex-col">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div>
+                    <label htmlFor="otp" className="block mb-2! text-sm font-semibold"
+                    >OTP Code</label>
+                    <input
+                        type="text"
+                        id="otp"
+                        name="otp"
+                        value={otp}
+                        onChange={handleChange}
+                        placeholder="Enter OTP code"
+                        required
+                        disabled={isLoading}
+                    />
+                </div>
 
-            {error && <div className="text-red-600 text-sm">{error}</div>}
+                {error && <div className="text-red-600 text-sm">{error}</div>}
 
-            <button type="submit" disabled={isLoading} className="btn btn-accent">
-                {isLoading ? "Verifying..." : "Verify OTP"}
-            </button>
-        </form>
+                <button type="submit" disabled={isLoading} className="btn btn-accent">
+                    {isLoading ? "Verifying..." : "Verify OTP"}
+                </button>
+
+            </form>
+            <a href="#" onClick={(e) => { e.preventDefault(); handleResendOtp(); }} className="block text-center text-blue-600 underline hover:text-blue-800 cursor-pointer mt-2!">Resend OTP</a>
+        </div>
     );
 };

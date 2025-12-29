@@ -4,6 +4,7 @@ import { IAuthAPI } from "./IAuthAPI";
 import { AuthResponseType } from "../../types/auth/AuthResponseType";
 import { OTPVerificationDTO } from "../../models/auth/OtpVerificationDTO";
 import { AuthJwtResponseType } from "../../types/auth/AuthJwtResponseType";
+import { OtpResendDTO } from "../../models/auth/OtpResendDTO";
 
 export class AuthAPI implements IAuthAPI {
   private readonly axiosInstance: AxiosInstance;
@@ -15,6 +16,7 @@ export class AuthAPI implements IAuthAPI {
   async login(data: LoginUserDTO): Promise<AuthResponseType> {
     const response: AxiosResponse = await this.axiosInstance.post("/login", data);
 
+    console.log(response);
     //const typedResponse = response.data;
     //console.log(typedResponse);
 
@@ -23,6 +25,12 @@ export class AuthAPI implements IAuthAPI {
 
   async verifyOtp(data: OTPVerificationDTO): Promise<AuthJwtResponseType> {
     const response: AxiosResponse = await this.axiosInstance.post("/verify-otp", data);
+
+    return response.data;
+  }
+
+  async resendOtp(data: OtpResendDTO): Promise<AuthResponseType> {
+    const response: AxiosResponse = await this.axiosInstance.post("/resend-otp", data);
 
     return response.data;
   }

@@ -8,4 +8,5 @@ export type AuthResponseType = {
         exp: number; // expiration (timestamp)
     };
     message: string;
+    token?: string;
 }

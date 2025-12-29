@@ -26,6 +26,7 @@ import { IStorageGatewayService } from "../../Domain/services/IStorageGatewaySer
 import { IParserGatewayService } from "../../Domain/services/IParserGatewayService";
 import { IAnalysisGatewayService } from "../../Domain/services/IAnalysisGatewayService";
 import { IEventCollectorGatewayService } from "../../Domain/services/IEventCollectorGatewayService";
+import { OTPResendDTO } from "../../Domain/DTOs/OTPResendDTO";
 
 /**
  * Facade that delegates to domain-specific gateway services.
@@ -99,6 +100,10 @@ export class GatewayService implements IGatewayService {
 
   async verifyOtp(data: OTPVerificationDTO): Promise<AuthJwtResponse> {
     return this.authService.verifyOtp(data);
+  }
+
+  async resendOtp(data: OTPResendDTO): Promise<AuthResponseType> {
+    return this.authService.resendOtp(data);
   }
 
   async validateToken(token: string): Promise<{

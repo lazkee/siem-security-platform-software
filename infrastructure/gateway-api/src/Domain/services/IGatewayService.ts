@@ -9,6 +9,7 @@ import { EventsResultDTO } from "../DTOs/EventsResultDTO";
 import { LargestArchiveDTO } from "../DTOs/LargestArchiveDTO";
 import { LoginUserDTO } from "../DTOs/LoginUserDTO";
 import { NormalizedEventDTO } from "../DTOs/NormalizedEventDTO";
+import { OTPResendDTO } from "../DTOs/OTPResendDTO";
 import { OTPVerificationDTO } from "../DTOs/OtpVerificationDTO";
 import { PaginatedAlertsDTO } from "../DTOs/PaginatedAlertsDTO";
 import { ParserEventDto } from "../DTOs/ParserEventDTO";
@@ -23,6 +24,7 @@ export interface IGatewayService {
   // Auth
   login(data: LoginUserDTO): Promise<AuthResponseType>;
   verifyOtp(data: OTPVerificationDTO): Promise<AuthJwtResponse>;
+  resendOtp(data: OTPResendDTO): Promise<AuthResponseType>;
   validateToken(
     token: string
   ): Promise<{

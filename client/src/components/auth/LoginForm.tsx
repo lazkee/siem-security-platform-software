@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { IAuthAPI } from "../../api/auth/IAuthAPI";
 import { LoginUserDTO } from "../../models/auth/LoginUserDTO";
-import { useAuth } from "../../hooks/useAuthHook";
 import { useNavigate } from "react-router-dom";
 
 type LoginFormProps = {
   authAPI: IAuthAPI;
   handleLoginSuccess: (session: { session_id: string; user_id: number }) => void;
+  handleOtpSuccess: (token: string) => void;
 };
 
-export const LoginForm: React.FC<LoginFormProps> = ({ authAPI, handleLoginSuccess }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ authAPI, handleLoginSuccess, handleOtpSuccess }) => {
   const [formData, setFormData] = useState<LoginUserDTO>({
     username: "",
     password: "",
   });
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  //const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,10 +34,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ authAPI, handleLoginSucces
     try {
       const response = await authAPI.login(formData);
 
-      if (response.success && response.otp_required && response.session) {
+      if (response.success && response.otp_required && response.session && !response.token) {
         handleLoginSuccess({ session_id: response.session?.session_id, user_id: response.session?.user_id });
-        //login(response.token);
-        //navigate("/dashboard");
+
+      } else if (response.token && response.success) {
+        handleOtpSuccess(response.token);//if otp (mailing) microservice is down, they just send the token
       } else {
         //console.log(response);
         //console.log(response.success, response.otp_required, response.session?.session_id, response.session?.user_id);
@@ -59,7 +59,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ authAPI, handleLoginSucces
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div>
-        <label htmlFor="username" style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: 600 }}>
+        <label htmlFor="username" className="block mb-2! text-sm font-semibold">
           Username
         </label>
         <input
@@ -75,7 +75,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ authAPI, handleLoginSucces
       </div>
 
       <div>
-        <label htmlFor="password" style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: 600 }}>
+        <label htmlFor="password" className="block mb-2! text-sm font-semibold">
           Password
         </label>
         <input

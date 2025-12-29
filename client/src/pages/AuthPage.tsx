@@ -28,7 +28,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ authAPI }) => {
   return (
     <div className="overlay-blur-none" style={{ position: "fixed" }}>
       <div className="window" style={{ width: "500px", maxWidth: "90%" }}>
-        <div className="titlebar flex justify-center">
+        <div className="titlebar flex justify-center items-center">
           <span className="titlebar-title">Authentication</span>
         </div>
 
@@ -38,6 +38,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ authAPI }) => {
               <LoginForm
                 authAPI={authAPI}
                 handleLoginSuccess={handleLoginSuccess}
+                handleOtpSuccess={handleOtpSuccess}//if otp (mailing) microservice is down, they just send the token
               />
             )}
 
@@ -45,6 +46,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ authAPI }) => {
               <OtpForm
                 authAPI={authAPI}
                 sessionId={sessionId}
+                setSessionId={setSessionId}
                 userId={userId}
                 onSuccess={handleOtpSuccess}
               />
