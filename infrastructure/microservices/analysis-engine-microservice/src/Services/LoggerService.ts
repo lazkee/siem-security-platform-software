@@ -1,4 +1,4 @@
-import { ILoggerService } from "../Domain/Services/ILoggerService";
+import { ILoggerService } from "../Domain/services/ILoggerService";
 
 export class LoggerService implements ILoggerService {
     constructor() {

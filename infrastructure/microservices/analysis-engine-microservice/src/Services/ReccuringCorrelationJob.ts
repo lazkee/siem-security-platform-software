@@ -1,6 +1,6 @@
 import { IRecurringJob } from "../Domain/contracts/IRecurringJob";
 import { ICorrelationService } from "../Domain/Services/ICorrelationService";
-import { ILoggerService } from "../Domain/Services/ILoggerService";
+import { ILoggerService } from "../Domain/services/ILoggerService";
 
 export class RecurringCorrelationJob implements IRecurringJob {
 
