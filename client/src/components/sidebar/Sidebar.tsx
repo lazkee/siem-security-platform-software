@@ -20,7 +20,7 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
 
     const itemClass = (index: number) =>
         `flex items-center justify-between text-sm text-white cursor-pointer transition-colors p-2
-   ${hover === index || selectedButton === index ? "bg-gray-400" : "bg-[#202020]"}
+   ${hover === index || selectedButton === index ? "bg-[#007a55]" : "bg-[#202020]"}
   `;
 
     return (

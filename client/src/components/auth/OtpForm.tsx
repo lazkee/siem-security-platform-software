@@ -85,7 +85,7 @@ export const OtpForm: React.FC<OtpFormProps> = ({ authAPI, sessionId, setSession
 
                 {error && <div className="text-red-600 text-sm">{error}</div>}
 
-                <button type="submit" disabled={isLoading} className="btn btn-accent">
+                <button type="submit" disabled={isLoading} className="px-6! py-2! rounded-[10px]! bg-[#007a55]! hover:bg-[#9ca3af]! text-white text-[13px] font-semibold cursor-pointer">
                     {isLoading ? "Verifying..." : "Verify OTP"}
                 </button>
 

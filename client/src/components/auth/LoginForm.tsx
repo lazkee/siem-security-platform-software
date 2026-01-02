@@ -110,7 +110,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ authAPI, handleLoginSucces
 
       <button
         type="submit"
-        className="btn btn-accent"
+        className="px-6! py-2! rounded-[10px]! bg-[#007a55]! hover:bg-[#9ca3af]! text-white text-[13px] font-semibold cursor-pointer"
         disabled={isLoading}
         style={{ marginTop: "8px" }}
       >
