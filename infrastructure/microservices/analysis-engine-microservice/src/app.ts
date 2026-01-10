@@ -4,10 +4,10 @@ import "reflect-metadata";
 import { initialize_database } from './Database/InitializeConnection';
 import dotenv from 'dotenv';
 
-import { ICorrelationService } from './Domain/Services/ICorrelationService';
+import { ICorrelationService } from './Domain/services/ICorrelationService';
 import { CorrelationService } from './Services/CorrelationService';
 
-import { ILLMChatAPIService } from './Domain/Services/ILLMChatAPIService';
+import { ILLMChatAPIService } from './Domain/services/ILLMChatAPIService';
 import { LLMChatAPIService } from './Services/LLMChatAPIService';
 
 import { RecurringCorrelationJob } from './Services/ReccuringCorrelationJob';
@@ -18,7 +18,7 @@ import { Correlation } from './Domain/models/Correlation';
 import { Db } from './Database/DbConnectionPool';
 import { CorrelationEventMap } from './Domain/models/CorrelationEventMap';
 import { AnalysisEngineController } from './WebAPI/controllers/AnalysisEngineController';
-import { ILoggerService } from './Domain/Services/ILoggerService';
+import { ILoggerService } from './Domain/services/ILoggerService';
 import { LoggerService } from './Services/LoggerService';
 
 dotenv.config({ quiet: true });
