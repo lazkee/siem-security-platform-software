@@ -18,7 +18,7 @@ export default function DropDownMenu({ OnSortTypeChange,sortName1,sortName2,sort
         <div>
             <button
                 type="button"
-                className="inline-flex items-center justify-between border! border-[rgba(255,255,255,0.12)]! bg-[#2d2d2d] hover:bg-[#9ca3af]! text-white rounded-[10px]! w-[185px]! h-[40px]! cursor-pointer outline-none"
+                className="inline-flex items-center justify-between border! border-[rgba(255,255,255,0.12)]! bg-[#2d2d2d] hover:bg-[#9ca3af]! text-white rounded-[10px]! w-[180px]! h-[40px]! cursor-pointer outline-none"
                 onClick={() => setOpen(!open)}>
                 <span  className="inline-flex items-center gap-2">
                     {sortText}

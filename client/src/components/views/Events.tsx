@@ -17,6 +17,7 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
     const [dateFrom, setDateFrom] = useState<string>("");
     const [dateTo, setDateTo] = useState<string>("");
     const [eventType, setEventType] = useState<string>("all");
+    const [reset,setReset]=useState(false);
 
     const [sortType, setSortType] = useState(0);
     const [events, setEvents] = useState<EventRow[]>([]);
@@ -85,7 +86,14 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
         //if (!token) return;       // TODO: DELETE COMMENT AFTER TESTING!
 
         void loadEventsWithQuery(1);
-    }, [token]);
+    }, [token,reset]);
+    const handleReset = () => {
+        setSearchText("");
+        setDateFrom("");
+        setDateTo("");
+        setEventType("all");
+       setReset(p=>!p);
+    };
 
     return (
         <div className="bg-transparent border-2 border-solid rounded-[14px] border-[#282A28]">
@@ -104,7 +112,7 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
 
             </div>
             <SearchToolBar value={searchText} onSearchText={setSearchText} value1={eventType} onEventType={setEventType}
-                value2={dateTo} onDateTo={setDateTo} value3={dateFrom} onDateFrom={setDateFrom} onSearchClick={loadEventsWithQuery} />
+                value2={dateTo} onDateTo={setDateTo} value3={dateFrom} onDateFrom={setDateFrom} onSearchClick={loadEventsWithQuery} onReset={handleReset} />
 
             <SecondEventToolBar
                 onSortType={setSortType}

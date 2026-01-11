@@ -26,8 +26,8 @@ export default function SearchBar({
 };
 
   return (
-    <div className="col-span-4 w-full">
-      <label className="block text-[11px] text-gray-400 mb-1 uppercase tracking-wider font-semibold">
+    <div className="flex flex-col gap-[4px] col-span-4 w-full">
+      <label className="px-1! block text-[11px] text-gray-400 mb-1 uppercase tracking-wider font-semibold">
         Search Source
       </label>
       

@@ -5,20 +5,20 @@ import { AlertQueryDTO } from "../models/alerts/AlertQueryDTO";
 import { useAuth } from "./useAuthHook";
 
 export const useAlerts = (alertAPI: IAlertAPI) => {
-  const { token } = useAuth();
+ // const { token } = useAuth();
   const [alerts, setAlerts] = useState<AlertDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+ const token = "token"; 
   // Initial load - fetch all alerts
   useEffect(() => {
-    if (token) {
+    //if (token) {
       loadAlerts();
-    }
+   // }
   }, [token]);
 
   const loadAlerts = async () => {
-    if (!token) return;
+    //if (!token) return;
     
     setIsLoading(true);
     setError(null);
@@ -34,7 +34,7 @@ export const useAlerts = (alertAPI: IAlertAPI) => {
   };
 
   const searchAlerts = async (query: AlertQueryDTO) => {
-    if (!token) return;
+    //if (!token) return;
     
     setIsLoading(true);
     setError(null);
@@ -51,7 +51,7 @@ export const useAlerts = (alertAPI: IAlertAPI) => {
   };
 
   const resolveAlert = async (id: number, resolvedBy: string, status: string) => {
-    if (!token) return;
+    //if (!token) return;
     
     try {
       const updatedAlert = await alertAPI.resolveAlert(id, resolvedBy, status, token);
@@ -68,7 +68,7 @@ export const useAlerts = (alertAPI: IAlertAPI) => {
   };
 
   const updateStatus = async (id: number, status: string) => {
-    if (!token) return;
+   // if (!token) return;
     
     try {
       const updatedAlert = await alertAPI.updateAlertStatus(id, status, token);

@@ -8,4 +8,5 @@ export interface SearchToolBarProps {
     value3: string;
     onDateFrom: (dateFrom: string) => void;
     onSearchClick: () => void;
+    onReset: () => void;
 }

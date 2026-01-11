@@ -16,7 +16,8 @@ import { AlertsProps } from "../../types/props/alerts/AlertsProps";
 
 
 export default function Alerts({ alertsApi, desktopNotification }: AlertsProps) {
-  const { token } = useAuth();
+  //const { token } = useAuth(); TO DO LATER WHEN FINISH LOG IN
+  const token="token";
   const {
     alerts,
     isLoading,
@@ -47,7 +48,7 @@ export default function Alerts({ alertsApi, desktopNotification }: AlertsProps) 
 
   // Initialize SSE connection
   useEffect(() => {
-    if (!token) return;
+    //if (!token) return;
 
     const gatewayUrl = import.meta.env.VITE_GATEWAY_URL;
     const service = new AlertSSEService(gatewayUrl);
@@ -137,12 +138,12 @@ export default function Alerts({ alertsApi, desktopNotification }: AlertsProps) 
     : null;
 
   return (
-    <div className="border-2 border-[#282A28] bg-transparent rounded-[14px] p-6! relative">
+    <div className="border-2 border-[#282A28] bg-transparent rounded-[14px] p-3! relative">
       <div className="flex justify-between items-center mb-[24px]!">
         <h2 className="m-0">Alert Dashboard</h2>
         <div className="flex items-center gap-3">
           <div
-            className={`flex items-center gap-2 px-9.5! py-1.5! rounded-[8px] text-[12px] font-semibold ${sseConnected
+            className={`flex w-[150px]! items-center gap-2 px-3! py-1.5! rounded-[8px] text-[12px] font-semibold ${sseConnected
                 ? "bg-[rgba(74,222,128,0.15)] text-[#4ade80] border border-[rgba(74,222,128,0.3)]"
                 : "bg-[rgba(239,68,68,0.15)] text-[#f87171] border border-[rgba(239,68,68,0.3)]"
               }`}
@@ -154,7 +155,7 @@ export default function Alerts({ alertsApi, desktopNotification }: AlertsProps) 
             {sseConnected ? "Live Updates Active" : "Connecting..."}
           </div>
           {desktopNotification.canShowNotifications() && (
-            <div className="flex items-center gap-2 rounded-[8px] border border-[rgba(96,165,250,0.3)] bg-[rgba(96,165,250,0.15)] px-6.5! py-1.5! text-[12px] text-[#60a5fa]">
+            <div className=" border border-[rgba(96,165,250,0.3)] bg-[rgba(96,165,250,0.15)] px-3! py-1.5! rounded-[8px]! text-[12px] text-[#60a5fa]">
               Notifications Enabled
             </div>
           )}

@@ -24,9 +24,9 @@ export function SecondEventToolBar({ onSortType, dateFrom, dateTo, eventType }: 
                 <DropDownMenu OnSortTypeChange={(value: number) => onSortType(value)} sortName1="Source" sortName2="Date and Time" sortName3="Type" />
                 <button 
                     onClick={handleDownloadPdf}
-                    className="bg-[#007a55] text-white w-[185px] h-[40px] rounded-[10px]! font-semibold flex items-center justify-center gap-2 hover:bg-[#009166]"
+                    className="bg-[#007a55] text-white w-[177px] h-[40px] rounded-[10px]! font-semibold flex items-center justify-center gap-2 hover:bg-[#009166]"
                 >
-                    Download report <FiDownload size={20} />
+                    PDF <FiDownload size={20} />
                 </button>
             </div>
         </div>
