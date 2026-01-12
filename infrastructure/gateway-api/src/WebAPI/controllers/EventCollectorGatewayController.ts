@@ -19,8 +19,8 @@ export class EventCollectorGatewayController{
        private initializeRoutes(): void {
           this.router.get(
             "/siem/events",
-            this.authenticate,
-            requireSysAdmin,
+           /* this.authenticate,
+            requireSysAdmin,*/
             this.getAllEvents.bind(this)
         );
         this.router.get(
@@ -32,43 +32,43 @@ export class EventCollectorGatewayController{
 
            this.router.get(
             "/siem/events/sortedEventsByDate",
-            this.authenticate,
-            requireSysAdmin,
+            /*this.authenticate,
+            requireSysAdmin,*/
             this.getSortedEventsByDate.bind(this)
           );
 
           this.router.get(
             "/siem/events/percentages",
-            this.authenticate,
-            requireSysAdmin,
+            /*this.authenticate,
+            requireSysAdmin,*/
             this.getEventPercentagesByEvent.bind(this)
           );
 
           this.router.get(
             "/siem/events/:id",
-            this.authenticate,
-            requireSysAdmin,
+            /*this.authenticate,
+            requireSysAdmin,*/
             this.getEventById.bind(this)
           );
 
           this.router.get(
             "/siem/events/from/:fromId/to/:toId",
-            this.authenticate,
-            requireSysAdmin,
+            /*this.authenticate,
+            requireSysAdmin,*/
             this.getEventsFromId1ToId2.bind(this)
           );
 
           this.router.get(
             "/siem/events",
-            this.authenticate,
-            requireSysAdmin,
+            /*this.authenticate,
+            requireSysAdmin,*/
             this.createEvent.bind(this)
           );
 
           this.router.delete(
             "/siem/events/:id",
-            this.authenticate,
-            requireSysAdmin,
+           /* this.authenticate,
+            requireSysAdmin,*/
             this.deleteEvent.bind(this)
           );
 

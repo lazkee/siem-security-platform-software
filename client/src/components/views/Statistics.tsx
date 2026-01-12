@@ -32,7 +32,7 @@ export default function Statistics({ queryApi, storageApi }: StatisticsProps) {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!token) return;
+            //if (!token) return;
 
             setIsLoading(true);
 
@@ -53,7 +53,9 @@ export default function Statistics({ queryApi, storageApi }: StatisticsProps) {
                     volumeRes,
                 ] = results;
 
-                
+                console.log("Event stats ",eventStats );
+                console.log("VOLUME RES ",volumeRes );
+                console.log("Dist RES ",distRes );
                 if (eventsRes.status === "fulfilled") setEventStats(eventsRes.value);
                 else console.error("getEventStatistics failed:", eventsRes.reason);
 

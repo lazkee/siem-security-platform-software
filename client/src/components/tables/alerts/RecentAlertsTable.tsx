@@ -8,16 +8,16 @@ export default function RecentAlertsTable({alerts,onSelectAlert,onResolve,onUpda
 
   return (
     <div className="bg-[#1f1f1f] rounded-[14px] overflow-hidden shadow-md border border-[#333]">
-      <table className="w-full border-collapse font-sans text-[14px]">
+      <table className="w-full border-collapse text-center font-sans text-[14px]">
         <thead className="bg-[#2a2a2a]">
           <tr>
-            <th className="px-4 py-3 text-left text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]"></th>
-            <th className="px-4! py-3! text-left text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Title</th>
-            <th className="px-4! py-3! text-left text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Severity</th>
-            <th className="px-4! py-3! text-left text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Status</th>
-            <th className="px-4! py-3! text-left text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Source</th>
-            <th className="px-4! py-3! text-left text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Created At</th>
-            <th className="px-4! py-3! text-left text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Actions</th>
+            <th className="px-4 py-3 text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]"></th>
+            <th className="px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Title</th>
+            <th className="px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Severity</th>
+            <th className="px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Status</th>
+            <th className="px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Source</th>
+            <th className="px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Created At</th>
+            <th className="px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]">Actions</th>
           </tr>
         </thead>
 

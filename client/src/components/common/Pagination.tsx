@@ -14,14 +14,14 @@ export default function Pagination({
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
   return (
-    <div className="flex justify-between items-center px-5 py-4 bg-[#2a2a2a] border-t border-[#3a3a3a] rounded-b-[14px]">
+    <div className="flex justify-between items-center px-5! py-4 bg-[#2a2a2a] border-t border-[#3a3a3a] rounded-b-[14px]">
       {/* Left section: Page size selector */}
       <div className="flex items-center gap-3 text-[13px] text-[#d0d0d0]">
         <span>Show</span>
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="px-2.5 py-1.5 rounded-[3px] border border-[#444] bg-[#1f1f1f] text-white text-[13px] cursor-pointer outline-none"
+          className="px-2.5 py-1.5! rounded-[3px] border border-[#444] bg-[#1f1f1f] text-white text-[13px] cursor-pointer outline-none"
         >
           <option value={10}>10</option>
           <option value={25}>25</option>

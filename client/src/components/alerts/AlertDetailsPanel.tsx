@@ -24,7 +24,7 @@ export default function AlertDetailsPanel({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[1000]"
+      className="fixed inset-0 bg-black/30 backdrop-blur-lg flex justify-center items-center z-[1000]"
       onClick={onClose}
     >
       <div

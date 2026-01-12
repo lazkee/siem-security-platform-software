@@ -70,7 +70,8 @@ export default function Events({ queryApi, parserApi }: EventsProps) {
 
             const response = await queryApi.getEventsByQuery(query, token, targetPage, currentLimit);
             const mapped = response.data.map(mapEventDTOToRow);
-
+            console.log(response.data);
+            console.log(mapped);
             setEvents(mapped);
             setTotalItems(response.total);
             setPage(response.page);
