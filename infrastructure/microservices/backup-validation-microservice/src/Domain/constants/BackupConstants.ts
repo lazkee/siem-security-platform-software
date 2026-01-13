@@ -8,4 +8,6 @@ export const PROD_DB_NAME = process.env.PROD_DB_NAME || "main_db";
 
 export const SHADOW_DB_NAME = process.env.SHADOW_DB_NAME || "backup_validation_db";
 
-export const BACKUP_TABLES = ["events", "alerts"];
+export const BACKUP_TABLES = ["event", "alerts"];
+
+export const ALERT_SERVICE_URL = process.env.ALERT_SERVICE_URL || "http://alerts-service/api/alerts";
