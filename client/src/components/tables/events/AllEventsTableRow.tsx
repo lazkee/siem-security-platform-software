@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { IoIosArrowDown } from "react-icons/io";
-import { ExpandedRow } from "./ExpandedRow";
 import React from "react";
 import { EventTableRowProps } from "../../../types/props/events/EventTableRowProps";
 import { badgeClasses } from "../../../constants/badgeClasses";
+import { PiInfoBold } from "react-icons/pi";
+import EventDetailsPanel from "../../events/EventDetailsPanel";
 
-export default function EventTableRow({ e, index, parserApi }: EventTableRowProps) {
-    const [rotateArrow, setRotateArrow] = useState<number | null>(null);
-
+export default function EventTableRow({ e,index, parserApi,onSelect }: EventTableRowProps) {
+    const [openDialog, setOpenDialog] = useState(false);
+  
     return (
         <React.Fragment>
             <tr className="transition-colors duration-200 cursor-pointer hover:bg-[#2a2a2a]">
@@ -18,16 +18,25 @@ export default function EventTableRow({ e, index, parserApi }: EventTableRowProp
                         {e.type}
                     </span>
                 </td>
-                <td>
-                    <IoIosArrowDown className={`cursor-pointer transition-transform duration-300 ease-in-out ${rotateArrow === index ? "rotate-180" : "rotate-0"
-                        }`}
-                        onClick={() => { setRotateArrow(rotateArrow === index ? null : index) }}
-                        size={20} />
+                <td className="px-4! py-3! border-b border-[#2d2d2d] text-[#dcdcdc] text-center">
+                    <button
+                        onClick={() =>onSelect()}
+                        className="bg-transparent border! border-blue-400 text-blue-400 px-3! py-1.5! rounded-[6px]! cursor-pointer text-[12px]! font-semibold transition-all duration-200"
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "#60a5fa22";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                        }}
+                    >
+                        <PiInfoBold size={14} className="mr-1 align-middle" />
+                        Details
+                    </button>
                 </td>
             </tr>
-
-            {/* Expanded details row */}
-            <ExpandedRow expanded={rotateArrow === index} e={e} parserApi={parserApi} />
+            {/* Expanded details row 
+            <ExpandedRow expanded={rotateArrow === index} e={e} parserApi={parserApi} />*/}
+        
         </React.Fragment>
     );
 }

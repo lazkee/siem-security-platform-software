@@ -42,6 +42,7 @@ let loggerService: LoggerService;
 let queryRepositoryService: QueryRepositoryService;
 let queryAlertRepositoryService : QueryAlertRepositoryService; 
 
+
 // inicijalizacija baza i servisa
 void (async () => {
   await initialize_mongo_database();

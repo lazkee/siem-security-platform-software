@@ -1,11 +1,15 @@
 import { Router, Request, Response } from "express";
-import { IStorageLogService } from "../../Domain/services/IStorageLogService";
+import { IArchiveProcessService } from "../../Domain/services/IArchiveProcessService";
+import { IArchiveQueryService } from "../../Domain/services/IArchiveQueryService";
+import { IArchiveStatsService } from "../../Domain/services/IArchiveStatsService";
 
 export class StorageLogController{
     private readonly router: Router;
 
     constructor(
-        private readonly storageLogService: IStorageLogService
+        private readonly archiveProcessService: IArchiveProcessService,
+        private readonly archiveQueryService: IArchiveQueryService,
+        private readonly archiveStatsService: IArchiveStatsService
     ){
         this.router = Router();
         this.initializeRoutes();
@@ -23,7 +27,7 @@ export class StorageLogController{
 
     private async getAllArchives(req: Request, res: Response): Promise<void>{
         try{
-            const archives = await this.storageLogService.getArchives();
+            const archives = await this.archiveQueryService.getArchives();
             res.status(200).json(archives);
         } catch (err){
             res.status(500).json({ message: (err as Error).message });
@@ -32,7 +36,7 @@ export class StorageLogController{
 
     private async runArchiveProcess(req: Request, res: Response): Promise<void>{
         try{
-            const response = await this.storageLogService.runArchiveProcess();
+            const response = await this.archiveProcessService.runArchiveProcess();
             res.status(200).json(response);
         } catch (err){
             res.status(500).json({ message: (err as Error).message });
@@ -41,7 +45,7 @@ export class StorageLogController{
 
     private async getStats(req: Request, res: Response): Promise<void> {
         try{
-            const result = await this.storageLogService.getStats();
+            const result = await this.archiveStatsService.getStats();
             res.status(200).json(result);
         }catch (err){
             res.status(500).json({message: (err as Error).message});
@@ -51,7 +55,7 @@ export class StorageLogController{
     private async getArchiveFile(req: Request, res: Response): Promise<void>{ 
         try{
             const id = Number(req.params.id);
-            const filePath = await this.storageLogService.getArchiveFilePath(id);
+            const filePath = await this.archiveQueryService.getArchiveFilePath(id);
 
             if(!filePath) {
                 res.status(404).json({error: "Archive not found"});
@@ -68,7 +72,7 @@ export class StorageLogController{
         try {
             const type = req.query.type as "events" | "alerts";
             const limit = Number(req.query.limit) || 5;
-            const result = await this.storageLogService.getTopArchives(type, limit);
+            const result = await this.archiveQueryService.getTopArchives(type, limit);
             res.status(200).json(result);
         } catch(err) {
             res.status(500).json({message: (err as Error).message});
@@ -78,7 +82,7 @@ export class StorageLogController{
     private async getArchiveVolume(req: Request, res: Response): Promise<void> {
         try {
             const period = req.query.period as "daily" | "monthly" | "yearly";
-            const result = await this.storageLogService.getArchiveVolume(period);
+            const result = await this.archiveQueryService.getArchiveVolume(period);
             res.status(200).json(result);
         } catch(err) {
             res.status(500).json({message: (err as Error).message});
@@ -87,7 +91,7 @@ export class StorageLogController{
 
     private async getLargestArchive(req: Request, res: Response): Promise<void> {
         try {
-            const result = await this.storageLogService.getLargestArchive();
+            const result = await this.archiveQueryService.getLargestArchive();
 
             if(!result) {
                 res.status(404).json({ message: "No archives found"});

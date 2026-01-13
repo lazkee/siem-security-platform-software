@@ -3,14 +3,27 @@ import EventTableRow from "./AllEventsTableRow";
 import { EventRow } from "../../../types/events/EventRow";
 import { EventsTableProps } from "../../../types/props/events/EventsTableProps";
 import { sortEvents } from "../../../helpers/sortEvents";
+import EventDetailsPanel from "../../events/EventDetailsPanel";
 
 
 export default function AllEventsTable({ events, sortType, searchText, parserApi }: EventsTableProps) {
     const [sortedEvents, setSortedEvents] = useState<EventRow[]>(events);
     // const [rotateArrow, setRotateArrow] = useState<number | null>(null);
+    const [openDialog, setOpenDialog] = useState(false);
+    const onSelectEvent = () => {
+        setOpenDialog(!openDialog);
+    }
+    const closeDialog = () => {
+        setOpenDialog(!openDialog);
+    }
+    const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+
+    const handleSelectEvent = () => {
+        onSelectEvent();
+    };
 
     useEffect(() => {
-        const sort=sortEvents(events,sortType!);
+        const sort = sortEvents(events, sortType!);
         setSortedEvents(sort);
     }, [searchText, sortType, events]);
 
@@ -37,10 +50,17 @@ export default function AllEventsTable({ events, sortType, searchText, parserApi
                             key={e.id}
                             e={e}
                             index={index}
-                            parserApi={parserApi} />
+                            parserApi={parserApi} onSelect={handleSelectEvent} />
                     )))}
                 </tbody>
             </table>
+            {openDialog && (
+                <EventDetailsPanel
+                   // e={sortedEvents.find(ev => ev.id === selectedEventId)!} // ! jer sigurno postoji
+                    parserApi={parserApi}
+                    onClose={closeDialog}
+                />
+            )}
         </div>
     );
 }

@@ -5,4 +5,5 @@ export interface EventTableRowProps {   //at the end,move into a right folders(t
     e: EventRow;
     index: number;
     parserApi: IParserAPI;
+    onSelect: () => void;
 }
