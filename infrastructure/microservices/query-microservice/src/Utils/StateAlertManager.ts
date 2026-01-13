@@ -11,20 +11,14 @@ export function loadQueryAlertState(): {
     lastProcessedId: number;
     invertedIndex: Map<string, Set<number>>,
     alertTokenMap: Map<number, string[]>,
-    alertCount: number,
-    infoCount: number,
-    warningCount: number,
-    errorCount: number
+    alertCount: number
 } {
     if (!fs.existsSync(STATE_FILE_PATH)) {
         return {
             lastProcessedId: 0,
             invertedIndex: new Map<string, Set<number>>(),
             alertTokenMap: new Map<number, string[]>(),
-            alertCount: 0,
-            infoCount: 0,
-            warningCount: 0,
-            errorCount: 0
+            alertCount: 0
         };
     }
 
@@ -45,10 +39,7 @@ export function loadQueryAlertState(): {
         lastProcessedId: parsedData.lastProcessedId || 0,
         invertedIndex,
         alertTokenMap,
-        alertCount: parsedData.eventCount || 0,
-        infoCount: parsedData.infoCount || 0,
-        warningCount: parsedData.warningCount || 0,
-        errorCount: parsedData.errorCount || 0
+        alertCount: parsedData.eventCount || 0
     };
 }
 
@@ -56,21 +47,15 @@ export function saveQueryAlertState(state: {
     lastProcessedId: number;
     invertedIndex: Map<string, Set<number>>,
     alertTokenMap: Map<number, string[]>,
-    alertCount: number,
-    infoCount: number,
-    warningCount: number,
-    errorCount: number
+    alertCount: number
 }) {
     const serialized = {
         lastProcessedId: state.lastProcessedId,
         invertedIndex: Object.fromEntries(
             Array.from(state.invertedIndex.entries())
                 .map(([key, value]) => [key, Array.from(value)])),
-        eventTokenMap: Object.fromEntries(state.alertTokenMap),
-        eventCount: state.alertCount,
-        infoCount: state.infoCount,
-        warningCount: state.warningCount,
-        errorCount: state.errorCount   
+        alertTokenMap: Object.fromEntries(state.alertTokenMap),
+        alertCount: state.alertCount  
     };
 
     fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(serialized, null, 2), 'utf-8');

@@ -15,6 +15,8 @@ import { saveQueryState } from './Utils/StateManager';
 import { Alert } from './Domain/models/Alert';
 import { QueryAlertRepositoryService } from './Services/QueryAlertRepositoryService';
 import { CacheAlertEntry } from './Domain/models/CacheAlertEntry';
+import { QueryAlertService } from './Services/QueryAlertService';
+import { saveQueryAlertState } from './Utils/StateAlertManager';
 
 
 dotenv.config({ quiet: true });
@@ -54,14 +56,15 @@ void (async () => {
   const cacheAlertRepository : MongoRepository<CacheAlertEntry> = MongoDb.getMongoRepository(CacheAlertEntry);
   const eventRepository : Repository<Event> = MySQLDb.getRepository(Event);
   const alertRepository : Repository<Alert> = AlertDb.getRepository(Alert);
-  //const test = await eventRepository.find();
+  //const test = await alertRepository.find();
   //console.log("EVENTS FROM DB:", test);
 
   // Servisi
   loggerService = new LoggerService();
   queryRepositoryService = new QueryRepositoryService(cacheRepository, loggerService, eventRepository);
   queryAlertRepositoryService = new QueryAlertRepositoryService(cacheAlertRepository, loggerService, alertRepository);
-const queryService = new QueryService(queryRepositoryService, queryAlertRepositoryService);  
+  const queryService = new QueryService(queryRepositoryService, queryAlertRepositoryService);  
+  const queryAlertService = new QueryAlertService(queryAlertRepositoryService);
 
   // WebAPI rute
 
@@ -90,7 +93,19 @@ process.on('SIGINT', async () => {
       warningCount: queryRepositoryService.getWarningCount(),
       errorCount: queryRepositoryService.getErrorCount()
     });
+    while (queryAlertRepositoryService.invertedIndexStructureForAlerts.isIndexingInProgress()) {
+      loggerService.log("Indexing in progress, waiting to save state...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  
+    saveQueryAlertState({
+      lastProcessedId: queryRepositoryService.invertedIndexStructureForEvents.getLastProcessedId(),
+      invertedIndex: queryRepositoryService.invertedIndexStructureForEvents.getInvertedIndex(),
+      alertTokenMap: queryRepositoryService.invertedIndexStructureForEvents.getEventIdToTokens(),
+      alertCount: queryRepositoryService.getEventsCount()
+    });
     loggerService.log("State saved. Exiting...");
+    
     /*OVDE DODATI CUVANJE STANJA INVERTED INDEX STRUKTURE SA ALERTOVIMA NAKON DODAVANJA U qureyAlertRepoService-u
     saveQueryAlertState({
       
