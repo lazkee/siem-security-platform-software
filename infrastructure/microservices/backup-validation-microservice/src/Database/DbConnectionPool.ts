@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import dotenv from "dotenv";
+import { BackupValidationLog } from "../Domain/models/BackupValidationLog";
 
 dotenv.config();
 
@@ -14,5 +15,5 @@ export const Db = new DataSource({
   ssl: { rejectUnauthorized: false },
   synchronize: true, // automatsko kreiranje tabela u bazi
   logging: false, // debug sql gresaka
-  entities: [],
+  entities: [BackupValidationLog],
 });

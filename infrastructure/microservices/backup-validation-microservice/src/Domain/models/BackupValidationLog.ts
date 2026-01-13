@@ -10,7 +10,7 @@ export class BackupValidationLog {
     status!: BackupValidationStatus;
     
     @Column({name: "error_message", type: "varchar", length: 500, nullable: true})
-    errorMessage!: string;
+    errorMessage!: string | null;
 
     @Column({name: "created_at", type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     createdAt!: Date;
