@@ -1,11 +1,13 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import dotenv from "dotenv";
-import { Plant } from "../Domain/models/Plant";
+import { Event } from "../Domain/models/Event";
+import { Alert } from "../Domain/models/Alert";
+
 
 dotenv.config();
 
-export const Db = new DataSource({
+export const MySQLDb = new DataSource({
   type: "mysql",
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
@@ -13,7 +15,20 @@ export const Db = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   ssl: { rejectUnauthorized: false },
-  synchronize: true, // automatsko kreiranje tabela u bazi
-  logging: false, // debug sql gresaka
-  entities: [Plant],
+  synchronize: true,
+  logging: false,
+  entities: [Event],
+});
+
+export const AlertDb = new DataSource({
+  type: "mysql",
+  host: process.env.ALERT_DB_HOST,
+  port: Number(process.env.ALERT_DB_PORT),
+  username: process.env.ALERT_DB_USER,
+  password: process.env.ALERT_DB_PASSWORD,
+  database: process.env.ALERT_DB_NAME,
+  ssl: { rejectUnauthorized: false },
+  synchronize: true,
+  logging: false,
+  entities: [Alert],
 });

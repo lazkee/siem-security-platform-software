@@ -3,14 +3,11 @@ import cors from "cors";
 import "reflect-metadata";
 import dotenv from "dotenv";
 import { Repository } from "typeorm";
-import { initialize_database } from "./Database/InitializeConnection";
-import { Db } from "./Database/DbConnectionPool";
-import { ILogerService } from "./Domain/services/ILogerService";
-import { LogerService } from "./Services/LogerService";
-import { Plant } from "./Domain/models/Plant";
-import { IPlantsService } from "./Domain/services/IPlantsService";
-import { PlantsService } from "./Services/PlantsService";
-import { PlantsController } from "./WebAPI/controllers/PlantController";
+import { initialize_mysql_database, initialize_alert_database } from "./Database/InitializeConnection";
+import { MySQLDb } from "./Database/DbConnectionPool";
+import { ILoggerService } from "./Domain/services/ILoggerService";
+import { LoggerService } from "./Services/LoggerService";
+import { RiskScoringController } from "./WebAPI/controllers/RiskScoringController";
 
 dotenv.config({ quiet: true });
 
@@ -25,19 +22,18 @@ app.use(cors({ origin: corsOrigin, methods: corsMethods }));
 app.use(express.json());
 
 // Database Initialization
-initialize_database();
+initialize_mysql_database();
+initialize_alert_database();
 
 // Repository
-const plantRepository: Repository<Plant> = Db.getRepository(Plant);
 
 // Services
-const loggerService: ILogerService = new LogerService();
-const plantsService: IPlantsService = new PlantsService(plantRepository);
+const loggerService: ILoggerService = new LoggerService();
 
 // Controllers
-const plantsController = new PlantsController(plantsService, loggerService);
+const riskScoringController = new RiskScoringController(loggerService);
 
 // Routing
-app.use("/api/v1", plantsController.getRouter());
+app.use("/api/v1", riskScoringController.getRouter());
 
 export default app;
