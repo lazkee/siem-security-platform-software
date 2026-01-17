@@ -77,7 +77,8 @@ export class InvertedIndexStructureForEvents {
         const tokens = [
             ...tokenize(event.description),
             ...tokenize(event.source),
-            ...tokenize(event.type)
+            ...tokenize(event.type),
+            ...tokenize(event.ipAddress || "")
         ];
 
         this.eventIdToTokens.set(event.id, tokens);

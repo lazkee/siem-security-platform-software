@@ -27,6 +27,7 @@ export class ParserController {
         try {
             const rawMessage = req.body.message as string;  // Team 2 sends JSON with event message and event source (microservice which called log)
             const source = req.body.source as string;
+            const ipAddress = req.body.ipAddress as string | undefined;   // they also send ipAddress optionally
 
             const validate = ValidateInputParameters(rawMessage, source);
             if (!validate.success) {
@@ -36,7 +37,7 @@ export class ParserController {
 
             await this.logger.log(`Raw log message from "${source}": ${rawMessage}`)
 
-            const response = await this.parserService.normalizeAndSaveEvent(rawMessage, source);
+            const response = await this.parserService.normalizeAndSaveEvent(rawMessage, source, ipAddress);
             if (response.id === -1) {
                 res.status(500).json({ message: "Service error: Failed to log event." });
                 return;

@@ -75,6 +75,7 @@ export class EventsService implements IEventsService {
             type: eventDto.type,
             description: eventDto.description,
             timestamp,
+            ipAddress: eventDto.ipAddress
         });
 
         const saved = await this.eventRepository.save(entity);

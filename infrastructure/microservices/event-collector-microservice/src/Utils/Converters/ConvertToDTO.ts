@@ -8,5 +8,6 @@ export function toDTO(event: EventEntity): EventDTO {
     type: event.type,
     description: event.description,
     timestamp: event.timestamp,
+    ipAddress: event.ipAddress
   };
 }

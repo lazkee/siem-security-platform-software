@@ -5,5 +5,6 @@ export function toDTO(parserEvent: any): ParserEventDTO {
     parser_id: parserEvent.parserId,
     event_id: parserEvent.eventId,
     text_before_parsing: parserEvent.textBeforeParsing,
+    ipAddress: parserEvent.ipAddress,
   };
 }

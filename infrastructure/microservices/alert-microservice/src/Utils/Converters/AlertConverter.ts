@@ -14,7 +14,8 @@ export function toAlertDTO(alert: Alert): AlertDTO {
     source: alert.source,
     createdAt: alert.createdAt,
     resolvedAt: alert.resolvedAt,
-    resolvedBy: alert.resolvedBy
+    resolvedBy: alert.resolvedBy,
+    ipAddress: alert.ipAddress
   };
 }
 
@@ -29,6 +30,7 @@ export function createEmptyAlertDTO(): AlertDTO {
     source: "",
     createdAt: new Date(),
     resolvedAt: null,
-    resolvedBy: null
+    resolvedBy: null,
+    ipAddress: undefined
   };
 }

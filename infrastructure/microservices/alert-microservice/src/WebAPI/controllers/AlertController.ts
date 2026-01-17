@@ -81,7 +81,8 @@ export class AlertController {
         severity: data.severity || AlertSeverity.HIGH,
         correlatedEvents: data.correlatedEventIds,
         source: "AnalysisEngine",
-        detectionRule: `correlation_${data.correlationId}` 
+        detectionRule: `correlation_${data.correlationId}`,
+        ipAddress: data.ipAddress
       };
 
       const alertValidation = validateCreateAlertDTO(alertData);

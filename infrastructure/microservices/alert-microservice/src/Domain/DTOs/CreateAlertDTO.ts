@@ -7,4 +7,5 @@ export interface CreateAlertDTO {
   correlatedEvents: number[];
   source: string;
   detectionRule?: string; 
+  ipAddress?: string;
 }

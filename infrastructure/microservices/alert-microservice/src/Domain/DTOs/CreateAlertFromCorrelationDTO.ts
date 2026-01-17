@@ -6,4 +6,5 @@ export interface CreateAlertFromCorrelationDTO {
   description: string;
   severity: AlertSeverity;
   correlatedEventIds: number[];
+  ipAddress?: string;
 }

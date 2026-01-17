@@ -6,4 +6,5 @@ export interface CorrelationDTO {
     confidence: number;
     severity: "CRITICAL"|"HIGH" | "MEDIUM" | "LOW";
     correlatedEventIds: number[];
+    ipAddress?: string;
 }

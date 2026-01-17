@@ -1,13 +1,13 @@
 import { In, Repository } from "typeorm";
 import axios, { AxiosInstance } from "axios";
 import { ICorrelationService } from "../Domain/services/ICorrelationService";
-import { ILLMChatAPIService } from "../Domain/services/ILLMChatAPIService";
+import { ILLMChatAPIService } from "../Domain/Services/ILLMChatAPIService";
 import { Correlation } from "../Domain/models/Correlation";
 import { CorrelationEventMap } from "../Domain/models/CorrelationEventMap";
 import { CorrelationDTO } from "../Domain/types/CorrelationDTO";
 import { createAxiosClient } from "../Infrastructure/helpers/axiosClient";
 import { extractNumericEventIds } from "../Infrastructure/helpers/extractNumericEventIds";
-import { ILoggerService } from "../Domain/services/ILoggerService";
+import { ILoggerService } from "../Domain/Services/ILoggerService";
 
 export class CorrelationService implements ICorrelationService {
   private readonly alertClient: AxiosInstance;
@@ -66,7 +66,10 @@ export class CorrelationService implements ICorrelationService {
       if (!this.passesPolicy(candidate, inputEventIds)) continue;
 
       try {
-        const correlationId = await this.saveCorrelation(candidate);
+        const firstEventId = candidate.correlatedEventIds[0];
+        const relatedEvent = (events as any[]).find(e => e.id === firstEventId);        const correlationId = await this.saveCorrelation(candidate);
+        candidate.ipAddress = relatedEvent?.ipAddress ?? "unknown";
+
         candidate.id = correlationId;
 
         await this.sendCorrelationAlert(candidate);
