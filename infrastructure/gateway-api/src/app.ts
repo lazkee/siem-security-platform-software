@@ -18,6 +18,7 @@ import { EventCollectorGatewayController } from './WebAPI/controllers/EventColle
 import { GatewayServiceFactory } from "./Services/gateway/GatewayServiceFactory";
 import { SimulatorGatewayService } from "./Services/domains/SimulatorGatewayService";
 import { SimulatorGatewayController } from "./WebAPI/controllers/SimulatorGatewayController";
+import { BackupGatewayController } from './WebAPI/controllers/BackupGatewayController';
 
 
 const app = express();
@@ -61,5 +62,6 @@ app.use('/api/v1', new EventCollectorGatewayController(gatewayService, authentic
 app.use('/api/v1', new ParserGatewayController(gatewayService).getRouter());
 app.use('/api/v1', new AnalysisGatewayController(gatewayService, authenticate,loggerService).getRouter());
 app.use('/api/v1', new SimulatorGatewayController(simulatorService, authenticate).getRouter());
+app.use('/api/v1', new BackupGatewayController(gatewayService, authenticate).getRouter());
 
 export default app;

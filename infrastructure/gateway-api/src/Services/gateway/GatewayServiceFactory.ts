@@ -7,6 +7,7 @@ import { StorageGatewayService } from "../domains/StorageGatewayService";
 import { ParserGatewayService } from "../domains/ParserGatewayService";
 import { AnalysisGatewayService } from "../domains/AnalysisGatewayService";
 import { EventCollectorGatewayService } from "../domains/EventCollectorGatewayService";
+import { BackupGatewayService } from "../domains/BackupGatewayService";
 
 /**
  * Factory for creating GatewayService instances with all dependencies.
@@ -21,7 +22,8 @@ export class GatewayServiceFactory {
       new StorageGatewayService(),
       new ParserGatewayService(),
       new AnalysisGatewayService(),
-      new EventCollectorGatewayService()
+      new EventCollectorGatewayService(),
+      new BackupGatewayService()
     );
   }
 }

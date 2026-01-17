@@ -2,6 +2,8 @@ import { AlertDTO } from "../DTOs/AlertDTO";
 import { AlertQueryDTO } from "../DTOs/AlertQueryDTO";
 import { ArchiveStatsDTO } from "../DTOs/ArchiveStatsDTO";
 import { ArchiveVolumeDTO } from "../DTOs/ArchiveVolumeDTO";
+import { BackupValidationLogDTO } from "../DTOs/BackupValidationLogDTO";
+import { BackupValidationResultDTO } from "../DTOs/BackupValidationResultDTO";
 import { DistributionDTO } from "../DTOs/DistributionDTO";
 import { EventDTO } from "../DTOs/EventDTO";
 import { EventsResultDTO } from "../DTOs/EventsResultDTO";
@@ -88,4 +90,10 @@ export interface IGatewayService {
   getSortedEventsByDate(): Promise<EventDTO[]>
   getEventPercentagesByEvent(): Promise<DistributionDTO>
   getTopSourceEvent(): Promise<TopSourceDTO>
+
+  //Backup
+  runValidation(): Promise<boolean>;
+  getAllLogs(): Promise<BackupValidationLogDTO[]>;
+  getLastValidation(): Promise<BackupValidationLogDTO | null>;
+  getSummary(): Promise<BackupValidationResultDTO>;
 }

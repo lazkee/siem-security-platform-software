@@ -27,6 +27,9 @@ import { IAnalysisGatewayService } from "../../Domain/services/IAnalysisGatewayS
 import { IEventCollectorGatewayService } from "../../Domain/services/IEventCollectorGatewayService";
 import { OTPResendDTO } from "../../Domain/DTOs/OTPResendDTO";
 import { HourlyStatisticsDTO } from "../../Domain/DTOs/HourlyStatisticsDTO";
+import { IBackupGatewayService } from "../../Domain/services/IBackupGatewayService";
+import { BackupValidationLogDTO } from "../../Domain/DTOs/BackupValidationLogDTO";
+import { BackupValidationResultDTO } from "../../Domain/DTOs/BackupValidationResultDTO";
 
 /**
  * Facade that delegates to domain-specific gateway services.
@@ -40,7 +43,8 @@ export class GatewayService implements IGatewayService {
     private readonly storageService: IStorageGatewayService,
     private readonly parserService: IParserGatewayService,
     private readonly analysisService: IAnalysisGatewayService,
-    private readonly eventService: IEventCollectorGatewayService
+    private readonly eventService: IEventCollectorGatewayService,
+    private readonly backupService: IBackupGatewayService
   ) { }
 
   // Event Collector
@@ -215,5 +219,22 @@ export class GatewayService implements IGatewayService {
 
   async analysisEngineDeleteCorrelationsByEventIds(eventIds: number[]): Promise<number> {
     return this.analysisService.deleteCorrelationsByEventIds(eventIds);
+  }
+
+  // Backup
+  async runValidation(): Promise<boolean> {
+    return this.backupService.runValidation();
+  }
+
+  async getAllLogs(): Promise<BackupValidationLogDTO[]> {
+    return this.backupService.getAllLogs();
+  }
+
+  async getLastValidation(): Promise<BackupValidationLogDTO | null> {
+    return this.backupService.getLastValidation();
+  }
+
+  async getSummary(): Promise<BackupValidationResultDTO> {
+    return this.backupService.getSummary();
   }
 }

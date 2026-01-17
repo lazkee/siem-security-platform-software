@@ -8,4 +8,5 @@ export const serviceConfig = {
   parser: process.env.PARSER_SERVICE_API!,
   analysisEngine: process.env.ANALYSIS_ENGINE_SERVICE_API!,
   event:process.env.EVENT_SERVICE_API!,
+  backup: process.env.BACKUP_SERVICE_API!
 } as const;
