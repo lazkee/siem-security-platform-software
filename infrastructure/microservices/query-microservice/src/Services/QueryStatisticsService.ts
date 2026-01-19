@@ -32,7 +32,7 @@ export class QueryStatisticsService implements IQueryStatisticsService {
         return 0;
     }
 
-    async getErrorEventCount(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
+    async getErrorEventCount(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
         const where: any = {
             type: EventType.ERROR
         };
@@ -43,18 +43,18 @@ export class QueryStatisticsService implements IQueryStatisticsService {
             where.ipAddress = entityId;
         }
 
-        if (durationMinutes) {
+        if (hours) {
             const now = new Date();
-            const past = new Date(now.getTime() - durationMinutes * 60000);
+            const past = new Date(now.getTime() - hours * 60000);
             where.timestamp = Between(past, now);
         }
 
         return this.eventRepository.count({ where });
     }
 
-    async getEventRate(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
+    async getEventRate(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
         const now = new Date();
-        const pastTime = new Date(now.getTime() - durationMinutes * 60000);
+        const pastTime = new Date(now.getTime() - hours * 60000);
 
         let count: number = 0;
         if (entityType === RiskEntityType.SERVICE) {
@@ -73,7 +73,7 @@ export class QueryStatisticsService implements IQueryStatisticsService {
             });
         }
 
-        return count / durationMinutes;
+        return count / hours;
     }
 
     async getAlertsCountBySeverity(entityType: RiskEntityType, entityId: string): Promise<Map<string, number>> {
@@ -105,11 +105,11 @@ export class QueryStatisticsService implements IQueryStatisticsService {
         return severityMap.get(AlertSeverity.CRITICAL) ?? 0;
     }
     
-    async getAnomalyRate(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
+    async getAnomalyRate(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
         const now = new Date();
 
-        // poredimo aktivnost u poslednjih durationMinutes sa aktivnoscu u prethodnih 60 minuta
-        const recentStart = new Date(now.getTime() - durationMinutes * 60000);
+        // poredimo aktivnost u poslednjih hours sa aktivnoscu u prethodnih 60 minuta
+        const recentStart = new Date(now.getTime() - hours * 60000);
         const baselineStart = new Date(now.getTime() - 60 * 60000);
 
         const recentWhere: any = {
@@ -132,16 +132,16 @@ export class QueryStatisticsService implements IQueryStatisticsService {
         const baselineCount = await this.eventRepository.count({ where: baselineWhere });
 
         const baselineRate = baselineCount / 60; // dogadjaji po minutu pre
-        const recentRate = recentCount / durationMinutes; // dogadjaji po minutu sad
+        const recentRate = recentCount / hours; // dogadjaji po minutu sad
 
         if (baselineRate === 0) return recentRate > 0 ? 5 : 1;
 
         return recentRate / baselineRate;
     }
     
-    async getBurstAnomaly(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<boolean> {
+    async getBurstAnomaly(entityType: RiskEntityType, entityId: string, hours: number): Promise<boolean> {
         const now = new Date();
-        const start = new Date(now.getTime() - durationMinutes * 60000);
+        const start = new Date(now.getTime() - hours * 60000);
 
         const where: any = {
             timestamp: Between(start, now)
@@ -155,7 +155,7 @@ export class QueryStatisticsService implements IQueryStatisticsService {
 
         const count = await this.eventRepository.count({ where });
 
-        const threshold = 50 * durationMinutes; // gornja granica dogadjaja za burst anomaliju
+        const threshold = 50 * hours; // gornja granica dogadjaja za burst anomaliju
         return count >= threshold;
     }
     

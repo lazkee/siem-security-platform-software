@@ -40,9 +40,9 @@ export class QueryStatisticsController {
         try {
             const entityType = req.query.entityType as RiskEntityType;
             const entityId = req.query.entityId as string;
-            const durationMinutes = Number(req.query.durationMinutes);
+            const hours = Number(req.query.hours);
 
-            const result = await this.queryStatisticsService.getErrorEventCount(entityType, entityId, durationMinutes);
+            const result = await this.queryStatisticsService.getErrorEventCount(entityType, entityId, hours);
             res.status(200).json(result);
         } catch (err) {
             res.status(500).json({ message: "Error while retrieving error event count for statistics." });
@@ -54,7 +54,7 @@ export class QueryStatisticsController {
             const eventRate = await this.queryStatisticsService.getEventRate(
                 req.query.entityType as RiskEntityType,
                 req.query.entityId as string, 
-                Number(req.query.durationMinutes)
+                Number(req.query.hours)
             );
             res.status(200).json(eventRate);
         } catch (err) {
@@ -90,9 +90,9 @@ export class QueryStatisticsController {
         try {
             const entityType = req.query.entityType as RiskEntityType;
             const entityId = req.query.entityId as string;
-            const durationMinutes = Number(req.query.durationMinutes);
+            const hours = Number(req.query.hours);
 
-            const result = await this.queryStatisticsService.getAnomalyRate(entityType, entityId, durationMinutes);
+            const result = await this.queryStatisticsService.getAnomalyRate(entityType, entityId, hours);
             res.status(200).json(result);
         } catch (err) {
             res.status(500).json({ message: "Error while retrieving anomaly rate for statistics." });
@@ -103,9 +103,9 @@ export class QueryStatisticsController {
         try {
             const entityType = req.query.entityType as RiskEntityType;
             const entityId = req.query.entityId as string;
-            const durationMinutes = Number(req.query.durationMinutes);
+            const hours = Number(req.query.hours);
 
-            const result = await this.queryStatisticsService.getBurstAnomaly(entityType, entityId, durationMinutes);
+            const result = await this.queryStatisticsService.getBurstAnomaly(entityType, entityId, hours);
             res.status(200).json(result);
         } catch (err) {
             res.status(500).json({ message: "Error while retrieving burst anomaly for statistics." });

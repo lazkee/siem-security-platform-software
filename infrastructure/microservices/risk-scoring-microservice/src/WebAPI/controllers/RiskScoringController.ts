@@ -21,9 +21,7 @@ export class RiskScoringController {
 
   private async calculateScore(req: Request, res: Response): Promise<void> {
     try {
-      const entityType = req.query.entityType as RiskEntityType;
-      const entityId = req.query.entityId as string;
-      const hours = Number(req.query.hours);
+      const { entityType, entityId, hours } = req.body;
 
       const result = await this.riskScoreService.calculateScore(
         entityType as RiskEntityType,
@@ -31,7 +29,7 @@ export class RiskScoringController {
         Number(hours)
       );
 
-      res.status(201).json({ score: result });
+      res.status(201).json(result);
     } catch (err) {
       res.status(500).json({ message: "Error while calculating risk score." });
     }

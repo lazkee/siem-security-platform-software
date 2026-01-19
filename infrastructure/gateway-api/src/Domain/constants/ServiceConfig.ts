@@ -9,6 +9,6 @@ export const serviceConfig = {
   analysisEngine: process.env.ANALYSIS_ENGINE_SERVICE_API!,
   event:process.env.EVENT_SERVICE_API!,
   backup: process.env.BACKUP_SERVICE_API!,
-  insiderThreat: process.env.INSIDER_THREAT_SERVICE_API!
-
+  insiderThreat: process.env.INSIDER_THREAT_SERVICE_API!,
+  riskScore: process.env.RISK_SCORE_API!
 } as const;

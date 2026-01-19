@@ -83,16 +83,16 @@ export class QueryGatewayService implements IQueryGatewayService {
     return response.data;
   }
 
-  async getErrorEventCount(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
+  async getErrorEventCount(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
     const response = await this.client.get<number>("/query/statistics/errorEventCount", {
-      params: { entityType: entityType, entityId: entityId, durationMinutes: durationMinutes },
+      params: { entityType: entityType, entityId: entityId, hours: hours },
     });
     return response.data;
   }
   
-  async getEventRate(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
+  async getEventRate(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
     const response = await this.client.get<number>("/query/statistics/eventRate", {
-      params: { entityType: entityType, entityId: entityId, durationMinutes: durationMinutes },
+      params: { entityType: entityType, entityId: entityId, hours: hours },
     });
     return response.data;
   }
@@ -112,16 +112,16 @@ export class QueryGatewayService implements IQueryGatewayService {
     return response.data;
   }
   
-  async getAnomalyRate(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
+  async getAnomalyRate(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
     const response = await this.client.get<number>("/query/statistics/anomalyRate", {
-      params: { entityType: entityType, entityId: entityId, durationMinutes: durationMinutes },
+      params: { entityType: entityType, entityId: entityId, hours: hours },
     });
     return response.data;
   }
   
-  async getBurstAnomaly(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<boolean> {
+  async getBurstAnomaly(entityType: RiskEntityType, entityId: string, hours: number): Promise<boolean> {
     const response = await this.client.get<boolean>("/query/statistics/burstAnomaly", {
-      params: { entityType: entityType, entityId: entityId, durationMinutes: durationMinutes },
+      params: { entityType: entityType, entityId: entityId, hours: hours },
     });
     return response.data;
   }

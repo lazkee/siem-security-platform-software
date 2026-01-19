@@ -262,8 +262,8 @@ export class QueryGatewayController {
     try {
       const entityType = req.query.entityType as string;
       const entityId = req.query.entityId as string;
-      const durationMinutes = Number(req.query.durationMinutes);
-      const count = await this.gatewayService.getErrorEventCount(entityType as any, entityId, durationMinutes);
+      const hours = Number(req.query.hours);
+      const count = await this.gatewayService.getErrorEventCount(entityType as any, entityId, hours);
       res.status(200).json({ count });
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
@@ -274,8 +274,8 @@ export class QueryGatewayController {
     try {
       const entityType = req.query.entityType as string;
       const entityId = req.query.entityId as string;
-      const durationMinutes = Number(req.query.durationMinutes);
-      const rate = await this.gatewayService.getEventRate(entityType as any, entityId, durationMinutes);
+      const hours = Number(req.query.hours);
+      const rate = await this.gatewayService.getEventRate(entityType as any, entityId, hours);
       res.status(200).json({ rate });
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
@@ -308,8 +308,8 @@ export class QueryGatewayController {
     try {
       const entityType = req.query.entityType as string;
       const entityId = req.query.entityId as string;
-      const durationMinutes = Number(req.query.durationMinutes);
-      const rate = await this.gatewayService.getAnomalyRate(entityType as any, entityId, durationMinutes);
+      const hours = Number(req.query.hours);
+      const rate = await this.gatewayService.getAnomalyRate(entityType as any, entityId, hours);
       res.status(200).json({ rate });
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });
@@ -320,8 +320,8 @@ export class QueryGatewayController {
     try {
       const entityType = req.query.entityType as string;
       const entityId = req.query.entityId as string;
-      const durationMinutes = Number(req.query.durationMinutes);
-      const isBurst = await this.gatewayService.getBurstAnomaly(entityType as any, entityId, durationMinutes);
+      const hours = Number(req.query.hours);
+      const isBurst = await this.gatewayService.getBurstAnomaly(entityType as any, entityId, hours);
       res.status(200).json({ isBurst });
     } catch (err) {
       res.status(500).json({ message: (err as Error).message });

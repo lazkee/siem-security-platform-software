@@ -18,7 +18,7 @@ export class RiskScoreService implements IRiskScoreService {
         this.queryClient = createAxiosClient(process.env.QUERY_SERVICE_API ?? "");
     }
 
-    public async calculateScore(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
+    public async calculateScore(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
         if (!this.metricsRepo) return 0;    
 
         try {
@@ -33,11 +33,11 @@ export class RiskScoreService implements IRiskScoreService {
                 uniqueIpsResp
             ] = await Promise.all([
                 this.queryClient.get<number>("/query/statistics/totalEventCount", { params: { entityType, entityId } }),
-                this.queryClient.get<number>("/query/statistics/errorEventCount", { params: { entityType, entityId, durationMinutes } }),
-                this.queryClient.get<number>("/query/statistics/eventRate", { params: { entityType, entityId, durationMinutes } }),
+                this.queryClient.get<number>("/query/statistics/errorEventCount", { params: { entityType, entityId, hours } }),
+                this.queryClient.get<number>("/query/statistics/eventRate", { params: { entityType, entityId, hours } }),
                 this.queryClient.get<Record<string, number>>("/query/statistics/alertsCountBySeverity", { params: { entityType, entityId } }),
-                this.queryClient.get<number>("/query/statistics/anomalyRate", { params: { entityType, entityId, durationMinutes } }),
-                this.queryClient.get<boolean>("/query/statistics/burstAnomaly", { params: { entityType, entityId, durationMinutes } }),
+                this.queryClient.get<number>("/query/statistics/anomalyRate", { params: { entityType, entityId, hours } }),
+                this.queryClient.get<boolean>("/query/statistics/burstAnomaly", { params: { entityType, entityId, hours } }),
                 this.queryClient.get<number>("/query/statistics/uniqueServicesCount", { params: { entityType, entityId } }),
                 this.queryClient.get<number>("/query/statistics/uniqueIpsCount", { params: { entityType, entityId } })
             ]);

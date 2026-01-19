@@ -20,6 +20,7 @@ import { SimulatorGatewayService } from "./Services/domains/SimulatorGatewayServ
 import { SimulatorGatewayController } from "./WebAPI/controllers/SimulatorGatewayController";
 import { BackupGatewayController } from './WebAPI/controllers/BackupGatewayController';
 import { InsiderThreatGatewayController } from './WebAPI/controllers/InsiderThreatGatewayController';
+import { RiskScoreGatwayController } from './WebAPI/controllers/RiskScoreGatewayController';
 
 const app = express();
 
@@ -64,5 +65,6 @@ app.use('/api/v1', new AnalysisGatewayController(gatewayService, authenticate,lo
 app.use('/api/v1', new SimulatorGatewayController(simulatorService, authenticate).getRouter());
 app.use('/api/v1', new BackupGatewayController(gatewayService, authenticate).getRouter());
 app.use('/api/v1', new InsiderThreatGatewayController(gatewayService, authenticate, loggerService).getRouter());
+app.use('/api/v1', new RiskScoreGatwayController(gatewayService, authenticate).getRouter());
 
 export default app;

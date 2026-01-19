@@ -36,6 +36,7 @@ import { PaginatedThreatsDTO, ThreatQueryDTO } from "../../Domain/DTOs/ThreatQue
 import { UserRiskProfileDTO } from "../../Domain/DTOs/UserRiskProfileDTO";
 import { UserRiskAnalysisDTO } from "../../Domain/DTOs/UserRiskAnalysisDTO";
 import { RiskEntityType } from "../../Domain/enums/RiskEntityType";
+import { IRiskScoreGatewayService } from "../../Domain/services/IRiskScoreGatewayService";
 
 /**
  * Facade that delegates to domain-specific gateway services.
@@ -51,7 +52,8 @@ export class GatewayService implements IGatewayService {
     private readonly analysisService: IAnalysisGatewayService,
     private readonly eventService: IEventCollectorGatewayService,
     private readonly backupService: IBackupGatewayService,
-    private readonly insiderThreatService: IInsiderThreatGatewayService
+    private readonly insiderThreatService: IInsiderThreatGatewayService,
+    private readonly riskScoreService: IRiskScoreGatewayService
   ) { }
 
   // Event Collector
@@ -195,12 +197,12 @@ export class GatewayService implements IGatewayService {
     return this.queryService.getTotalEventCount(entityType, entityId);
   }
 
-  async getErrorEventCount(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
-    return this.queryService.getErrorEventCount(entityType, entityId, durationMinutes);
+  async getErrorEventCount(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
+    return this.queryService.getErrorEventCount(entityType, entityId, hours);
   }
 
-  async getEventRate(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
-    return this.queryService.getEventRate(entityType, entityId, durationMinutes);
+  async getEventRate(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
+    return this.queryService.getEventRate(entityType, entityId, hours);
   }
 
   async getAlertsCountBySeverity(entityType: RiskEntityType, entityId: string): Promise<Map<string, number>> {
@@ -211,12 +213,12 @@ export class GatewayService implements IGatewayService {
     return this.queryService.getCriticalAlertsCount(entityType, entityId);
   }
 
-  async getAnomalyRate(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<number> {
-    return this.queryService.getAnomalyRate(entityType, entityId, durationMinutes);
+  async getAnomalyRate(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
+    return this.queryService.getAnomalyRate(entityType, entityId, hours);
   }
 
-  async getBurstAnomaly(entityType: RiskEntityType, entityId: string, durationMinutes: number): Promise<boolean> {
-    return this.queryService.getBurstAnomaly(entityType, entityId, durationMinutes);
+  async getBurstAnomaly(entityType: RiskEntityType, entityId: string, hours: number): Promise<boolean> {
+    return this.queryService.getBurstAnomaly(entityType, entityId, hours);
   }
 
   async getUniqueServicesCount(ipAddress: string): Promise<number> {
@@ -283,47 +285,59 @@ export class GatewayService implements IGatewayService {
   }
 
   async getAllInsiderThreats(): Promise<InsiderThreatDTO[]> {
-  return await this.insiderThreatService.getAllThreats();
-}
+    return await this.insiderThreatService.getAllThreats();
+  }
 
-async getInsiderThreatById(id: number): Promise<InsiderThreatDTO> {
-  return await this.insiderThreatService.getThreatById(id);
-}
+  async getInsiderThreatById(id: number): Promise<InsiderThreatDTO> {
+    return await this.insiderThreatService.getThreatById(id);
+  }
 
-async getInsiderThreatsByUserId(userId: string): Promise<InsiderThreatDTO[]> {
-  return await this.insiderThreatService.getThreatsByUserId(userId);
-}
+  async getInsiderThreatsByUserId(userId: string): Promise<InsiderThreatDTO[]> {
+    return await this.insiderThreatService.getThreatsByUserId(userId);
+  }
 
-async getUnresolvedInsiderThreats(): Promise<InsiderThreatDTO[]> {
-  return await this.insiderThreatService.getUnresolvedThreats();
-}
+  async getUnresolvedInsiderThreats(): Promise<InsiderThreatDTO[]> {
+    return await this.insiderThreatService.getUnresolvedThreats();
+  }
 
-async searchInsiderThreats(query: ThreatQueryDTO): Promise<PaginatedThreatsDTO> {
-  return await this.insiderThreatService.searchThreats(query);
-}
+  async searchInsiderThreats(query: ThreatQueryDTO): Promise<PaginatedThreatsDTO> {
+    return await this.insiderThreatService.searchThreats(query);
+  }
 
-async resolveInsiderThreat(id: number, resolvedBy: string, resolutionNotes?: string): Promise<InsiderThreatDTO> {
-  return await this.insiderThreatService.resolveThreat(id, resolvedBy, resolutionNotes);
-}
+  async resolveInsiderThreat(id: number, resolvedBy: string, resolutionNotes?: string): Promise<InsiderThreatDTO> {
+    return await this.insiderThreatService.resolveThreat(id, resolvedBy, resolutionNotes);
+  }
 
 
-async getAllUserRiskProfiles(): Promise<UserRiskProfileDTO[]> {
-  return await this.insiderThreatService.getAllUserRiskProfiles();
-}
+  async getAllUserRiskProfiles(): Promise<UserRiskProfileDTO[]> {
+    return await this.insiderThreatService.getAllUserRiskProfiles();
+  }
 
-async getHighRiskUsers(): Promise<UserRiskProfileDTO[]> {
-  return await this.insiderThreatService.getHighRiskUsers();
-}
+  async getHighRiskUsers(): Promise<UserRiskProfileDTO[]> {
+    return await this.insiderThreatService.getHighRiskUsers();
+  }
 
-async getUserRiskProfile(userId: string): Promise<UserRiskProfileDTO> {
-  return await this.insiderThreatService.getUserRiskProfile(userId);
-}
+  async getUserRiskProfile(userId: string): Promise<UserRiskProfileDTO> {
+    return await this.insiderThreatService.getUserRiskProfile(userId);
+  }
 
-async getUserRiskAnalysis(userId: string): Promise<UserRiskAnalysisDTO> {
-  return await this.insiderThreatService.getUserRiskAnalysis(userId);
-}
+  async getUserRiskAnalysis(userId: string): Promise<UserRiskAnalysisDTO> {
+    return await this.insiderThreatService.getUserRiskAnalysis(userId);
+  }
 
-async recalculateUserRisk(userId: string): Promise<UserRiskProfileDTO> {
-  return await this.insiderThreatService.recalculateUserRisk(userId);
-}
+  async recalculateUserRisk(userId: string): Promise<UserRiskProfileDTO> {
+    return await this.insiderThreatService.recalculateUserRisk(userId);
+  }
+
+  async calculateScore(entityType: RiskEntityType, entityId: string, hours: number): Promise<number> {
+    return await this.riskScoreService.calculateScore(entityType, entityId, hours);
+  }
+  
+  async getLatestScore(entityType: RiskEntityType, entityId: string): Promise<number | null> {
+    return await this.riskScoreService.getLatestScore(entityType, entityId);
+  }
+  
+  async getScoreHistory(entityType: RiskEntityType, entityId: string, hours: number): Promise<{ score: number; createdAt: Date; }[]> {
+    return await this.riskScoreService.getScoreHistory(entityType, entityId, hours);
+  }
 }
