@@ -39,4 +39,12 @@ const riskScoringController = new RiskScoringController(riskScoreService);
 // Routing
 app.use("/api/v1", riskScoringController.getRouter());
 
+// 3_600_000 za svaki sat
+// 10_000 za svakih 10 sekundi -> previse cesto
+// 600_000 za svakih 10 minuta
+
+setInterval(() => {
+    riskScoreService.calculateAll();
+}, 600_000); // poziva se na 10 minuta
+
 export default app;

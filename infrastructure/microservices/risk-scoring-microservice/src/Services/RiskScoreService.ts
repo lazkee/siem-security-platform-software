@@ -5,7 +5,7 @@ import { createAxiosClient } from "../Utils/Helpers/AxiosClient";
 import { ILoggerService } from "../Domain/services/ILoggerService";
 import { Between, MoreThanOrEqual, Repository } from "typeorm";
 import { SecurityMetrics } from "../Domain/models/SecurityMetrics";
-
+import { processInBatches } from "../Utils/Helpers/ProcessInBatches";
 
 export class RiskScoreService implements IRiskScoreService {
     private readonly queryClient: AxiosInstance;
@@ -112,15 +112,94 @@ export class RiskScoreService implements IRiskScoreService {
 
         const since = new Date(Date.now() - hours * 60 * 60 * 1000);
 
-        const history = await this.metricsRepo.find({
-            where: {
-                entityType,
-                entityId,
-                createdAt: MoreThanOrEqual(since),
-            },
-            order: { createdAt: "ASC" }
-        });
+        if (hours === 24)
+        {
+            const history = await this.metricsRepo.find({
+                where: {
+                    entityType,
+                    entityId,
+                    createdAt: MoreThanOrEqual(since),
+                },
+                order: { createdAt: "ASC" }
+            });
 
-        return history.map(h => ({ score: h.riskScore, createdAt: h.createdAt }));
+            return history.map(h => ({ score: h.riskScore, createdAt: h.createdAt }));
+        }
+
+        const raw = await this.metricsRepo
+            .createQueryBuilder("m")
+            .select("DATE(m.createdAt)", "day")
+            .addSelect("AVG(m.riskScore)", "avgScore")
+            .where("m.entityType = :entityType", { entityType })
+            .andWhere("m.entityId = :entityId", { entityId })
+            .andWhere("m.createdAt >= :since", { since })
+            .groupBy("DATE(m.createdAt)")
+            .orderBy("day", "ASC")
+            .getRawMany();
+
+        return raw.map(r => ({
+            score: Math.round(Number(r.avgScore)),
+            createdAt: new Date(r.day),
+        }));
     }   
+
+    public async getGlobalScore(): Promise<number> {
+        if (!this.metricsRepo) return 0;
+
+        const latestPerEntity = await this.metricsRepo
+            .createQueryBuilder("m")
+            .select("m.entityType")
+            .addSelect("m.entityId")
+            .addSelect("MAX(m.createdAt)", "latest")
+            .groupBy("m.entityType")
+            .addGroupBy("m.entityId")
+            .getRawMany();
+        
+        let scores: number[] = [];
+
+        for (const e of latestPerEntity)
+        {
+            const metric = await this.metricsRepo.findOne({
+                where: {
+                    entityType: e.entityType,
+                    entityId: e.entityId,
+                    createdAt: e.latest
+                }
+            });
+            if (metric) scores.push(metric.riskScore);
+        }
+
+        if (scores.length === 0) return 0;
+
+        // global score - za ceo sistem - racunamo kao prosek
+        // poslednjih score-ova svih entiteta u sistemu
+        return Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+    }
+
+    public async calculateAll(): Promise<void> {
+        try {
+            const distinctIpsResp = await this.queryClient.get<string[]>("/query/statistics/uniqueIps");
+            const distinctServicesResp = await this.queryClient.get<string[]>("/query/statistics/uniqueServices");
+
+            const distinctIps = distinctIpsResp?.data ?? [];
+            const distinctServices = distinctServicesResp?.data ?? [];
+
+            const batchSize = 10; // paralelno 10 entiteta
+
+            // IP adrese
+            await processInBatches(distinctIps, batchSize, async (ip) => {
+                await this.calculateScore(RiskEntityType.IP_ADDRESS, ip, 1);
+            });
+
+            // Servisi
+            await processInBatches(distinctServices, batchSize, async (service) => {
+                await this.calculateScore(RiskEntityType.SERVICE, service, 1);
+            });
+
+            //this.logger?.log(`calculateAll finished successfully for ${distinctIps.length} IPs and ${distinctServices.length} services.`);
+        } catch (err) {
+            this.logger?.log(`Error in calculateAll: ${err}`);
+        }
+    }
+
 }

@@ -17,6 +17,7 @@ export class RiskScoringController {
       this.router.post("/riskScore/calculate", this.calculateScore.bind(this));
       this.router.get("/riskScore/getLatestScore", this.getLatestScore.bind(this));
       this.router.get("/riskScore/getScoreHistory", this.getScoreHistory.bind(this));
+      this.router.get("/riskScore/getGlobalScore", this.getGlobalScore.bind(this));
   }
 
   private async calculateScore(req: Request, res: Response): Promise<void> {
@@ -57,6 +58,15 @@ export class RiskScoringController {
       res.status(200).json(result);
     } catch(err) {
       res.status(500).json({message: "Error while retreiving risk score history."});
+    }
+  }
+
+  private async getGlobalScore(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await this.riskScoreService.getGlobalScore();
+      res.status(200).json(result);
+    } catch(err) {
+      res.status(500).json({message: "Error while retreiving global risk score."});
     }
   }
 

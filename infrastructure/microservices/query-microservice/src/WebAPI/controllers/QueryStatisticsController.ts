@@ -22,6 +22,8 @@ export class QueryStatisticsController {
         this.router.get("/query/statistics/burstAnomaly", this.getBurstAnomaly.bind(this));
         this.router.get("/query/statistics/uniqueServicesCount", this.getUniqueServicesCount.bind(this));
         this.router.get("/query/statistics/uniqueIpsCount", this.getUniqueIpsCount.bind(this));
+        this.router.get("/query/statistics/uniqueServices", this.getUniqueServices.bind(this));
+        this.router.get("/query/statistics/uniqueIps", this.getUniqueIps.bind(this));
     }
 
     private async getTotalEventCount(req: Request, res: Response): Promise<void> {
@@ -131,6 +133,24 @@ export class QueryStatisticsController {
             res.status(200).json(result);
         } catch (err) {
             res.status(500).json({ message: "Error while retrieving unique IP addresses count for statistics." });
+        }
+    }
+
+    private async getUniqueServices(req: Request, res: Response): Promise<void> {
+        try {
+            const result = await this.queryStatisticsService.getUniqueServices();
+            res.status(200).json(result);
+        } catch (err) {
+            res.status(500).json({ message: "Error while retrieving unique services for statistics." });
+        }
+    }
+
+    private async getUniqueIps(req: Request, res: Response): Promise<void> {
+        try {
+            const result = await this.queryStatisticsService.getUniqueIps();
+            res.status(200).json(result);
+        } catch (err) {
+            res.status(500).json({ message: "Error while retrieving unique IP addresses for statistics." });
         }
     }
     

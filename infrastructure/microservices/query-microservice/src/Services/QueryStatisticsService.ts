@@ -109,8 +109,8 @@ export class QueryStatisticsService implements IQueryStatisticsService {
         const now = new Date();
 
         // poredimo aktivnost u poslednjih hours sa aktivnoscu u prethodnih 60 minuta
-        const recentStart = new Date(now.getTime() - hours * 60000);
-        const baselineStart = new Date(now.getTime() - 60 * 60000);
+        const recentStart = new Date(now.getTime() - hours * 60 * 60 * 1000);
+        const baselineStart = new Date(recentStart.getTime() - hours * 60 * 60 * 1000);
 
         const recentWhere: any = {
             timestamp: Between(recentStart, now)
@@ -141,7 +141,7 @@ export class QueryStatisticsService implements IQueryStatisticsService {
     
     async getBurstAnomaly(entityType: RiskEntityType, entityId: string, hours: number): Promise<boolean> {
         const now = new Date();
-        const start = new Date(now.getTime() - hours * 60000);
+        const start = new Date(now.getTime() - hours * 60 * 60 * 1000);
 
         const where: any = {
             timestamp: Between(start, now)
@@ -178,5 +178,24 @@ export class QueryStatisticsService implements IQueryStatisticsService {
             .getRawOne();
 
         return Number(raw.count);
+    }
+
+    async getUniqueServices(): Promise<string[]> {
+        const raw = await this.eventRepository
+            .createQueryBuilder("event")
+            .select("DISTINCT event.source")
+            .getRawMany();
+
+        return raw.map(r => r.source);
+    }
+
+    async getUniqueIps(): Promise<string[]> {
+        const raw = await this.eventRepository
+            .createQueryBuilder("event")
+            .select("DISTINCT event.ipAddress")
+            .where("event.ipAddress IS NOT NULL")
+            .getRawMany();
+
+        return raw.map(r => r.ipAddress);
     }
 }

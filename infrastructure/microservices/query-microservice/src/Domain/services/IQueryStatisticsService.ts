@@ -13,4 +13,7 @@ export interface IQueryStatisticsService {
 
     getUniqueServicesCount(ipAddress: string): Promise<number>;
     getUniqueIpsCount(serviceName: string): Promise<number>;
+
+    getUniqueServices(): Promise<string[]>;
+    getUniqueIps(): Promise<string[]>;
 }
