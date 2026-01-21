@@ -45,7 +45,6 @@ export class KpiSnapshot {
   @Column({ name: "resolved_alerts", type: "int" })
   resolvedAlerts!: number;
 
-  // backlog as of window_to
   @Column({ name: "open_alerts", type: "int" })
   openAlerts!: number;
 

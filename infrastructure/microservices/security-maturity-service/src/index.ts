@@ -1,6 +1,6 @@
-import { createApp } from "./app";
+console.clear();
+import app from './app';
 
-const app = createApp();
 
 const PORT = Number(process.env.PORT ?? 4010);
 

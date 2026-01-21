@@ -4,19 +4,11 @@ import { initialize_database } from "./Database/InitializeConnection";
 
 dotenv.config();
 
-export function createApp() {
-  const app = express();
-  
-  initialize_database();
+
+const app = express();
+app.use(express.json());
+initialize_database();
 
 
 
-  app.get("/health", (_req, res) => {
-    res.json({
-      status: "ok",
-      service: process.env.SERVICE_NAME ?? "security-maturity-service"
-    });
-  });
-
-  return app;
-}
+export default app;
