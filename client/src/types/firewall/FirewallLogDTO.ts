@@ -1,8 +1,8 @@
 export interface FirewallLogDTO {
     id: number;
-    sourceIp: string;
-    destinationIp: string;
+    ipAddress: string;
     port: number;
-    action: "ALLOWED" | "BLOCKED";
-    timestamp: string;
+    decision: "ALLOWED" | "BLOCKED";
+    mode: "WHITELIST" | "BLACKLIST";
+    createdAt?: Date;
 }

@@ -5,6 +5,7 @@ import { IStorageAPI } from "../../../api/storage/IStorageAPI";
 import { ISimulatorAPI } from "../../../api/simulator/ISimulatorAPI";
 import { DesktopNotificationService } from "../../../services/DesktopNotificationService";
 import { IRiskScoreAPI } from "../../../api/risk-score/IRiskScoreAPI";
+import { IFirewallAPI } from "../../../api/firewall/IFirewallAPI";
 
 export interface MainLayoutProps {
     alertsAPI: IAlertAPI;
@@ -12,6 +13,7 @@ export interface MainLayoutProps {
     queryAPI: IQueryAPI;
     storageAPI: IStorageAPI;
     simulatorAPI: ISimulatorAPI;
-    desktopNotification:DesktopNotificationService;
-    riskScoreApi: IRiskScoreAPI
+    desktopNotification: DesktopNotificationService;
+    riskScoreApi: IRiskScoreAPI;
+    firewallApi: IFirewallAPI;
 }

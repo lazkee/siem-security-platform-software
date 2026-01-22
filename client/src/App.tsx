@@ -2,8 +2,6 @@ import { Route, Routes } from "react-router-dom";
 import { AuthPage } from "./pages/AuthPage";
 import { IAuthAPI } from "./api/auth/IAuthAPI";
 import { AuthAPI } from "./api/auth/AuthAPI";
-import { UserAPI } from "./api/users/UserAPI";
-import { IUserAPI } from "./api/users/IUserAPI";
 import MainLayout from "./pages/MainLayout";
 import { IAlertAPI } from "./api/alerts/IAlertAPI";
 import { AlertAPI } from "./api/alerts/AlertAPI";
@@ -18,6 +16,8 @@ import { ISimulatorAPI } from "./api/simulator/ISimulatorAPI";
 import { SimulatorAPI } from "./api/simulator/SimulatorAPI";
 import { IRiskScoreAPI } from "./api/risk-score/IRiskScoreAPI";
 import { RiskScoreAPI } from "./api/risk-score/RiskScoreAPI";
+import { IFirewallAPI } from "./api/firewall/IFirewallAPI";
+import { FirewallAPI } from "./api/firewall/FirewallAPI";
 
 const auth_api: IAuthAPI = new AuthAPI();
 const alerts_api: IAlertAPI = new AlertAPI();
@@ -27,6 +27,7 @@ const storage_api: IStorageAPI = new StorageAPI();
 const simulator_api: ISimulatorAPI = new SimulatorAPI();
 const desktopNotification = new DesktopNotificationService();
 const risk_score_api: IRiskScoreAPI = new RiskScoreAPI();
+const firewall_api: IFirewallAPI = new FirewallAPI();
 
 function App() {
   return (
@@ -46,7 +47,7 @@ function App() {
         <Route path="/mainLayout" element={<MainLayout alertsAPI={alerts_api}
           parserAPI={parser_api} queryAPI={query_api} storageAPI={storage_api}
           simulatorAPI={simulator_api} desktopNotification={desktopNotification}
-          riskScoreApi={risk_score_api} />} />
+          riskScoreApi={risk_score_api} firewallApi={firewall_api} />} />
       </Routes>
     </>
   );

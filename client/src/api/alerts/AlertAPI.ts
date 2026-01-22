@@ -9,7 +9,7 @@ export class AlertAPI implements IAlertAPI {
 
   constructor() {
     this.axiosInstance = axios.create({
-      baseURL: import.meta.env.VITE_FIREWALL_URL,
+      baseURL: import.meta.env.VITE_FIREWALL_PROXY_URL,
       headers: { "Content-Type": "application/json" },
       timeout: 30000,
     });

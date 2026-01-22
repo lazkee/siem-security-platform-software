@@ -5,7 +5,7 @@ import { VscGraph } from "react-icons/vsc";
 import { LuLayers3 } from "react-icons/lu";
 import { MdKeyboardArrowRight, MdOutlineScience } from "react-icons/md";
 import { BiError } from "react-icons/bi";
-import { PiShieldWarningFill, PiSpeedometerFill } from "react-icons/pi"; 
+import { PiShieldCheck, PiShieldWarningFill, PiSpeedometerFill } from "react-icons/pi";
 import { useState } from "react";
 import { TbSquareLetterS } from "react-icons/tb";
 import { TbSquareLetterI } from "react-icons/tb";
@@ -150,6 +150,20 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
                     >
                         <PiSpeedometerFill size={22} />
                         Risk Score
+                        <MdKeyboardArrowRight size={20} />
+                    </button>
+
+                    <button
+                        className={itemClass(8)} style={{ marginLeft: '20px', borderRadius: '0.75rem' }}
+                        onClick={() => {
+                            setSideMenuPage(8);
+                            setSelectedButton(8);
+                        }}
+                        onMouseEnter={() => setHover(8)}
+                        onMouseLeave={() => setHover(null)}
+                    >
+                        <PiShieldCheck size={22} />
+                        Firewall
                         <MdKeyboardArrowRight size={20} />
                     </button>
                 </div>
