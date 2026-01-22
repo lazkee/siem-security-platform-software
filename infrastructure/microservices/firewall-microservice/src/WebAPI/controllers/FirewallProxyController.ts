@@ -3,6 +3,10 @@ import axios, { Method } from "axios";
 import { IFirewallService } from "../../Domain/services/IFirewallService";
 import { ILogerService } from "../../Domain/services/ILogerService";
 import { microserviceUrls } from "../../Domain/constants/MicroserviceUrls";
+import { normalizeIpAddress } from "../../Utils/Proxy/NormalizeIp";
+import { getMicroserviceUrl } from "../../Utils/Proxy/GetMicroserviceUrl";
+import { parseUrl } from "../../Utils/Proxy/ParseUrl";
+import { buildProxyTarget } from "../../Utils/Proxy/BuildProxyTarget";
 
 export class FirewallProxyController {
     private readonly router: Router;
@@ -30,10 +34,7 @@ export class FirewallProxyController {
                 return;
             }
 
-            if (sourceIp === "::1")         // IPv6 localhost
-                sourceIp = "127.0.0.1";
-            else if (sourceIp.startsWith("::ffff:"))    // IPv6 mapping of IPv4
-                sourceIp = sourceIp.replace("::ffff:", "");
+            sourceIp = normalizeIpAddress(sourceIp);
 
             const sourceAllowed = await this.firewallService.checkAndLogAccess(sourceIp, sourcePort);
             if (!sourceAllowed) {
@@ -48,29 +49,23 @@ export class FirewallProxyController {
                 return;
             }
 
-            // Extract service key from URL path (e.g. "/analysis-engine/process" -> "analysis-engine")
-            const serviceKey = url.replace(/^\/+/, "").split("/")[0];
-            const destinationUrl = microserviceUrls[serviceKey];
-
-            if (!destinationUrl) {
+            const destinationUrl = getMicroserviceUrl(url);
+            if (destinationUrl === "") {
                 await this.logger.log(`Unknown destination service for path: ${url}`);
-                res.status(400).json({ message: `Unknown destination service: ${serviceKey}` });
+                res.status(400).json({ message: `Unknown destination service for path: ${url}` });
                 return;
             }
 
-            const destinationUrlObj = new URL(destinationUrl);
-            const destinationIp = destinationUrlObj.hostname;
-            const destinationPort = Number(destinationUrlObj.port);
+            const { ip: destinationIp, port: destinationPort } = parseUrl(destinationUrl);
 
             const destinationAllowed = await this.firewallService.checkAndLogAccess(destinationIp, destinationPort);
             if (!destinationAllowed) {
-                await this.logger.log(`Blocked request from ${sourceIp}:${sourcePort} to ${destinationIp}:${destinationPort} (microservice: ${serviceKey})`);
-                res.status(403).json({ message: `Access blocked by firewall (destination microservice: ${serviceKey})` });
+                await this.logger.log(`Blocked request from ${sourceIp}:${sourcePort} to ${destinationIp}:${destinationPort} (destination)`);
+                res.status(403).json({ message: `Access blocked by firewall (destination)` });
                 return;
             }
 
-            const targetUrl = `${process.env.GATEWAY_URL}/${url}`;
-
+            const targetUrl = buildProxyTarget(url);
             const response = await axios({
                 url: targetUrl,
                 method: method as Method,
