@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
-import { AlertCategory } from "../types/AlertCategory";
+import { AlertCategory } from "../enums/AlertCategory";
 import { KpiSnapshot } from "./KpiSnapshot";
 
 @Entity("kpi_snapshot_category_counts")

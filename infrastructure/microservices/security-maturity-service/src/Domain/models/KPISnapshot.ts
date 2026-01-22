@@ -1,6 +1,6 @@
 // src/Domain/models/KpiSnapshot.ts
 import { Entity, PrimaryGeneratedColumn, Column, Index } from "typeorm";
-import { MaturityLevel } from "../types/MaturityLevel";
+import { MaturityLevel } from "../enums/MaturityLevel";
 
 @Entity("kpi_snapshots")
 @Index("uq_kpi_window", ["windowFrom", "windowTo"], { unique: true })
