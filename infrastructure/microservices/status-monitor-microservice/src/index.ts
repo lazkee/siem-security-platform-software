@@ -1,21 +1,11 @@
-import dotenv from "dotenv";
-import { initialize_database } from "./Database/InitializeConnection";
-import { createApp } from "./app";
-import { runChecksOnce } from "./Services/MonitoringService";
+console.clear();
+import app from "./app";
+import { startRecurringJobs } from "./app";
 
-dotenv.config();
+startRecurringJobs();
 
-async function main() {
-    await initialize_database();
+const port = process.env.PORT || 5790;
 
-    await runChecksOnce();
-    
-    const app = createApp();
-    const port = Number(process.env.PORT) || 5790;
-
-    app.listen(port, () => {
-        console.log(`[StatusMonitor] HTTP listening on port ${port}`);
-    });
-}
-
-main();
+app.listen(port, () => {
+  console.log(`\x1b[32m[TCPListen@StatusMonitor]\x1b[0m localhost:${port}`);
+});
