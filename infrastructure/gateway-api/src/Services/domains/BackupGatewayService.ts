@@ -5,6 +5,8 @@ import { defaultAxiosClient } from "../../Domain/constants/AxiosClient";
 import { BackupValidationLogDTO } from "../../Domain/DTOs/BackupValidationLogDTO";
 import { BackupValidationResultDTO } from "../../Domain/DTOs/BackupValidationResultDTO";
 import { response } from "express";
+import { BackupHealthDTO } from "../../Domain/DTOs/BackupHealthDTO";
+import { BackupStatsDTO } from "../../Domain/DTOs/BackupStatsDTO";
 
 export class BackupGatewayService implements IBackupGatewayService {
     private readonly client: AxiosInstance;
@@ -33,6 +35,16 @@ export class BackupGatewayService implements IBackupGatewayService {
 
     async getSummary(): Promise<BackupValidationResultDTO> {
         const response = await this.client.get<BackupValidationResultDTO>("/backup/summary");
+        return response.data;
+    }
+
+    async getHealth(): Promise<BackupHealthDTO> {
+        const response = await this.client.get<BackupHealthDTO>("/backup/health");
+        return response.data;
+    }
+
+    async getStats(rangeDays: number): Promise<BackupStatsDTO[]> {
+        const response = await this.client.get<BackupStatsDTO[]>("/backup/stats");
         return response.data;
     }
 }

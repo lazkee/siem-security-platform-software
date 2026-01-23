@@ -37,6 +37,8 @@ import { UserRiskProfileDTO } from "../../Domain/DTOs/UserRiskProfileDTO";
 import { UserRiskAnalysisDTO } from "../../Domain/DTOs/UserRiskAnalysisDTO";
 import { RiskEntityType } from "../../Domain/enums/RiskEntityType";
 import { IRiskScoreGatewayService } from "../../Domain/services/IRiskScoreGatewayService";
+import { BackupHealthDTO } from "../../Domain/DTOs/BackupHealthDTO";
+import { BackupStatsDTO } from "../../Domain/DTOs/BackupStatsDTO";
 
 /**
  * Facade that delegates to domain-specific gateway services.
@@ -292,6 +294,15 @@ export class GatewayService implements IGatewayService {
     return this.backupService.getSummary();
   }
 
+  async getHealth(): Promise<BackupHealthDTO> {
+    return this.backupService.getHealth();
+  }
+
+  async getStats(rangeDays: number): Promise<BackupStatsDTO[]> {
+    return this.backupService.getStats(rangeDays);
+  }
+  
+  // Insider
   async getAllInsiderThreats(): Promise<InsiderThreatDTO[]> {
     return await this.insiderThreatService.getAllThreats();
   }

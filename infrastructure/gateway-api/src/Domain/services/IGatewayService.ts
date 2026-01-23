@@ -2,6 +2,8 @@ import { AlertDTO } from "../DTOs/AlertDTO";
 import { AlertQueryDTO } from "../DTOs/AlertQueryDTO";
 import { ArchiveStatsDTO } from "../DTOs/ArchiveStatsDTO";
 import { ArchiveVolumeDTO } from "../DTOs/ArchiveVolumeDTO";
+import { BackupHealthDTO } from "../DTOs/BackupHealthDTO";
+import { BackupStatsDTO } from "../DTOs/BackupStatsDTO";
 import { BackupValidationLogDTO } from "../DTOs/BackupValidationLogDTO";
 import { BackupValidationResultDTO } from "../DTOs/BackupValidationResultDTO";
 import { DistributionDTO } from "../DTOs/DistributionDTO";
@@ -117,6 +119,8 @@ export interface IGatewayService {
   getAllLogs(): Promise<BackupValidationLogDTO[]>;
   getLastValidation(): Promise<BackupValidationLogDTO | null>;
   getSummary(): Promise<BackupValidationResultDTO>;
+  getHealth(): Promise<BackupHealthDTO>;
+  getStats(rangeDays: number): Promise<BackupStatsDTO[]>;
 
   //insider threat detection
   getAllInsiderThreats(): Promise<InsiderThreatDTO[]>;
