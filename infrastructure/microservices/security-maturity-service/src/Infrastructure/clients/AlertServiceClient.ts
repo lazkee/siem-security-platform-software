@@ -12,7 +12,7 @@ export class AlertServiceClient {
     });
 
     return res.data
-      .map((x) => mapAlertPayloadToDomain(x, (msg, meta) => console.log(msg, meta)))
-      .filter((x): x is AlertForKpi => x !== null);
+      .map((x) => mapAlertPayloadToDomain(x))
+      .filter((a) => a.isValid);
   }
 }

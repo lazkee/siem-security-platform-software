@@ -1,7 +1,7 @@
 export type AlertPayloadDto = {
   id: number;
   createdAt: string;
-  resolvedAt: string | null;              
+  resolvedAt?: string;
   oldestCorrelatedEventAt: string;        
   category: string;                       
   isFalseAlarm: boolean;

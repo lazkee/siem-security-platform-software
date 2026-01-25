@@ -21,11 +21,11 @@ export class KpiSnapshot {
   // -------------------------
   // Duration KPIs (minutes)
   // -------------------------
-  @Column({ name: "mttd_minutes", type: "float", nullable: true })
-  mttdMinutes!: number | null;
+  @Column({ name: "mttd_minutes", type: "float" })
+  mttdMinutes!: number;
 
-  @Column({ name: "mttr_minutes", type: "float", nullable: true })
-  mttrMinutes!: number | null;
+  @Column({ name: "mttr_minutes", type: "float" })
+  mttrMinutes!: number;
 
   // -------------------------
   // Sample counts

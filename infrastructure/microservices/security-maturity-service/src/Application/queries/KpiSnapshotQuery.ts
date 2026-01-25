@@ -8,8 +8,9 @@ import { IKpiRepositoryService } from "../../Domain/services/IKpiRepositoryServi
 import { IncidentsByCategoryDto } from "../../Domain/types/IncidentsByCategoryDto";
 import { KpiSummaryDto } from "../../Domain/types/KpiSummaryDto";
 import { TrendPointDto } from "../../Domain/types/TrendPointDto";
-import { parseAlertCategory } from "../../Infrastructure/parsers/parseAlertCategory";
+import { parseAlertCategory } from "../../Domain/parsers/parseAlertCategory";
 import { mapScoreToLevel } from "../../Utils/MapScoreToLevel";
+import { NOT_FOUND } from "../../Domain/constants/Sentinels";
 
 export class KpiSnapshotQuery {
   private readonly kpiRepository: IKpiRepositoryService;
@@ -22,26 +23,17 @@ export class KpiSnapshotQuery {
 
   async getCurrent(): Promise<KpiSummaryDto> {
     const now = new Date();
-    const to = new Date(now);
-    to.setUTCMinutes(0, 0, 0);
+    const to = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      now.getUTCHours(),
+      0, 0, 0
+    ));
 
     const from = new Date(to.getTime() - 24 * 60 * 60 * 1000);
 
     const snapshots = await this.kpiRepository.getSnapshots(from, to);
-
-    if (snapshots.length === 0) {
-      return {
-        mttdMinutes: -1,
-        mttrMinutes: -1,
-        falseAlarmRate: -1,
-        totalAlerts: 0,
-        resolvedAlerts: 0,
-        openAlerts: 0,
-        categoryCounts: {},
-        scoreValue: -1,
-        maturityLevel: MaturityLevel.UNKNOWN,
-      };
-    }
 
     let totalAlerts = 0;
     let resolvedAlerts = 0;
@@ -55,25 +47,14 @@ export class KpiSnapshotQuery {
       falseAlarms += s.falseAlarms;
     }
 
-    const falseAlarmRate = totalAlerts === 0 ? -1 : falseAlarms / totalAlerts;
+    const falseAlarmRate = totalAlerts === 0 ? NOT_FOUND : falseAlarms / totalAlerts;
 
-    const mttdMinutes = this.kpiAggregation.weightedAverageMetric(
-      snapshots,
-      TrendMetricType.MTTD,
-    );
-
-    const mttrMinutes = this.kpiAggregation.weightedAverageMetric(
-      snapshots,
-      TrendMetricType.MTTR,
-    );
-
-    const scoreValue = this.kpiAggregation.weightedAverageMetric(
-      snapshots,
-      TrendMetricType.SMS,
-    );
+    const mttdMinutes = this.kpiAggregation.weightedAverageMetric(snapshots, TrendMetricType.MTTD);
+    const mttrMinutes = this.kpiAggregation.weightedAverageMetric(snapshots, TrendMetricType.MTTR);
+    const scoreValue = this.kpiAggregation.weightedAverageMetric(snapshots, TrendMetricType.SMS);
 
     const maturityLevel =
-      scoreValue === -1 ? MaturityLevel.UNKNOWN : mapScoreToLevel(scoreValue);
+      scoreValue === NOT_FOUND ? MaturityLevel.UNKNOWN : mapScoreToLevel(scoreValue);
 
     const rawCounts = await this.kpiRepository.getCategoryCounts(from, to);
     const categoryCounts: Partial<Record<AlertCategory, number>> = {};
@@ -155,12 +136,21 @@ export class KpiSnapshotQuery {
   private resolvePeriod(period: TrendPeriod) {
     const now = new Date();
 
-    const toHour = new Date(now);
-    toHour.setUTCMinutes(0, 0, 0);
+    const toHour = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      now.getUTCHours(),
+      0, 0, 0
+    ));
 
     if (period === TrendPeriod.D7) {
-      const toDay = new Date(toHour);
-      toDay.setUTCHours(0, 0, 0, 0);
+      const toDay = new Date(Date.UTC(
+        toHour.getUTCFullYear(),
+        toHour.getUTCMonth(),
+        toHour.getUTCDate(),
+        0, 0, 0, 0
+      ));
 
       return {
         from: new Date(toDay.getTime() - 7 * 24 * 60 * 60 * 1000),

@@ -53,7 +53,7 @@ export class HourlyAlignedScheduler {
     } catch (err) {
       console.error(
         "[HourlyAlignedScheduler] Job execution failed:",
-        (err as Error).message
+        err 
       );
     } finally {
       this.running = false;
@@ -61,9 +61,13 @@ export class HourlyAlignedScheduler {
   }
 
   private msUntilNextHour(now: Date): number {
-    const nextHour = new Date(now);
-    nextHour.setMinutes(0, 0, 0);
-    nextHour.setHours(nextHour.getHours() + 1);
-    return nextHour.getTime() - now.getTime();
+    const nextHourUtc = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      now.getUTCHours() + 1,
+      0, 0, 0
+    ));
+    return nextHourUtc.getTime() - now.getTime();
   }
 }

@@ -1,4 +1,5 @@
 import { ScoreInput } from "../Domain/types/ScoreInput";
+import { NOT_FOUND, isNotFound } from "../Domain/constants/Sentinels";
 
 function limitValue(value: number, min = 0, max = 1): number {
   return Math.min(Math.max(value, min), max);
@@ -7,21 +8,29 @@ function limitValue(value: number, min = 0, max = 1): number {
 export function calculateScore(input: ScoreInput): number {
   const { mttdMinutes, mttrMinutes, falseAlarmRate, totalAlerts } = input;
 
-  const normalizedMTTD =
-    mttdMinutes === null ? 0.5 : limitValue(1 - mttdMinutes / 120);
+  if (totalAlerts === NOT_FOUND || totalAlerts <= 0) {
+    return NOT_FOUND;
+  }
 
-  const normalizedMTTR =
-    mttrMinutes === null ? 0.5 : limitValue(1 - mttrMinutes / 240);
+  const normalizedMTTD = isNotFound(mttdMinutes)
+    ? 0.5
+    : limitValue(1 - mttdMinutes / 120);
 
-  const normalizedFalseAlarm = limitValue(1 - falseAlarmRate);
+  const normalizedMTTR = isNotFound(mttrMinutes)
+    ? 0.5
+    : limitValue(1 - mttrMinutes / 240);
 
-  const noramlizedVolume = limitValue(Math.log10(totalAlerts + 1) / 2);
+  const normalizedFalseAlarm = isNotFound(falseAlarmRate)
+    ? 0.5
+    : limitValue(1 - falseAlarmRate);
+
+  const normalizedVolume = limitValue(Math.log10(totalAlerts + 1) / 2);
 
   const score =
     normalizedMTTD * 30 +
     normalizedMTTR * 30 +
     normalizedFalseAlarm * 25 +
-    noramlizedVolume * 15;
+    normalizedVolume * 15;
 
   return Math.round(score);
 }

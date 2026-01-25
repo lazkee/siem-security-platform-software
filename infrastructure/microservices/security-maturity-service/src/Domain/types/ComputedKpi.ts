@@ -2,8 +2,8 @@ import { AlertCategory } from "../enums/AlertCategory";
 import { MaturityLevel } from "../enums/MaturityLevel";
 
 export type ComputedKpi = {
-  mttdMinutes: number | null;
-  mttrMinutes: number | null;
+  mttdMinutes: number;
+  mttrMinutes: number;
   mttdSampleCount: number;
   mttrSampleCount: number;
 

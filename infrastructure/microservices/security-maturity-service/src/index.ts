@@ -1,9 +1,18 @@
-console.clear();
-import app from './app';
+import { createApp } from "./app";
 
+async function bootstrap(): Promise<void> {
+  try {
+    const app = await createApp();
+    const port = Number(process.env.PORT) || 3000;
 
-const PORT = Number(process.env.PORT ?? 4010);
+    app.listen(port, () => {
+      console.log(`[Bootstrap] Server running on port ${port}`);
+    });
+  } catch (err) {
+    console.error("[Bootstrap] Fatal startup error", err);
 
-app.listen(PORT, () => {
-  console.log(`security-maturity-service listening on port ${PORT}`);
-});
+    
+  }
+}
+
+void bootstrap();

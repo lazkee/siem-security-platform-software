@@ -9,18 +9,19 @@ import { ISecurityMaturityService } from "../Domain/services/ISecurityMaturitySe
 import { AlertServiceClient } from "../Infrastructure/clients/AlertServiceClient";
 import { diffMinutesNonNegative, isValidDate } from "../Infrastructure/utils/dateUtils";
 import { AlertCategory } from "../Domain/enums/AlertCategory";
+import { NOT_FOUND } from "../Domain/constants/Sentinels";
 
 export class KpiSnapshotService implements IKpiSnapshotService {
   private readonly repo: IKpiRepositoryService;
   private readonly alertClient: AxiosInstance;
   private readonly alertServiceClient: AlertServiceClient;
-  private readonly SMSService: ISecurityMaturityService;
+  private readonly smsService: ISecurityMaturityService;
 
   public constructor(repo: IKpiRepositoryService, smsService: ISecurityMaturityService) {
     this.repo = repo;
     this.alertClient = createAxiosClient(process.env.ALERT_SERVICE_API ?? "");
     this.alertServiceClient = new AlertServiceClient(this.alertClient);
-    this.SMSService = smsService;
+    this.smsService = smsService;
   }
 
   public async createSnapshotForWindow(windowFrom: Date, windowTo: Date): Promise<void> {
@@ -34,7 +35,7 @@ export class KpiSnapshotService implements IKpiSnapshotService {
     const snapshot = this.toSnapshotEntity(windowFrom, windowTo, computed);
 
     const snapshotId = await this.repo.upsertSnapshot(snapshot);
-    if (snapshotId === -1) {
+    if (snapshotId === NOT_FOUND) {
       console.log("[KpiSnapshotService] Snapshot upsert failed; categories not written.");
       return;
     }
@@ -63,17 +64,17 @@ export class KpiSnapshotService implements IKpiSnapshotService {
 
       if (a.isFalseAlarm) falseAlarms++;
 
-      if (a.resolvedAt) {
+      if (a.resolvedAt !== undefined) {
         resolvedAlerts++;
         const mttrMin = diffMinutesNonNegative(a.resolvedAt, a.createdAt);
-        if (mttrMin !== null) {
+        if (mttrMin >= 0) {
           mttrSum += mttrMin;
           mttrSampleCount++;
         }
       }
 
       const mttdMin = diffMinutesNonNegative(a.createdAt, a.oldestCorrelatedEventAt);
-      if (mttdMin !== null) {
+      if (mttdMin >= 0) {
         mttdSum += mttdMin;
         mttdSampleCount++;
       }
@@ -81,12 +82,11 @@ export class KpiSnapshotService implements IKpiSnapshotService {
 
     const openAlerts = totalAlerts - resolvedAlerts;
 
-    const mttdMinutes = mttdSampleCount > 0 ? mttdSum / mttdSampleCount : null;
-    const mttrMinutes = mttrSampleCount > 0 ? mttrSum / mttrSampleCount : null;
+    const mttdMinutes = mttdSampleCount > 0 ? mttdSum / mttdSampleCount : NOT_FOUND;
+    const mttrMinutes = mttrSampleCount > 0 ? mttrSum / mttrSampleCount : NOT_FOUND;
+    const falseAlarmRate = totalAlerts > 0 ? falseAlarms / totalAlerts : NOT_FOUND;
 
-    const falseAlarmRate = totalAlerts > 0 ? falseAlarms / totalAlerts : 0;
-
-    const smsResult = await this.SMSService.calculateCurrentMaturity({
+    const smsResult = await this.smsService.calculateCurrentMaturity({
       mttdMinutes,
       mttrMinutes,
       falseAlarmRate,
@@ -110,21 +110,21 @@ export class KpiSnapshotService implements IKpiSnapshotService {
   }
 
   private toSnapshotEntity(windowFrom: Date, windowTo: Date, computed: ComputedKpi): KpiSnapshot {
-    const s = new KpiSnapshot();
-    s.windowFrom = windowFrom;
-    s.windowTo = windowTo;
-    s.mttdMinutes = computed.mttdMinutes;
-    s.mttrMinutes = computed.mttrMinutes;
-    s.mttdSampleCount = computed.mttdSampleCount;
-    s.mttrSampleCount = computed.mttrSampleCount;
-    s.totalAlerts = computed.totalAlerts;
-    s.resolvedAlerts = computed.resolvedAlerts;
-    s.openAlerts = computed.openAlerts;
-    s.falseAlarms = computed.falseAlarms;
-    s.falseAlarmRate = computed.falseAlarmRate;
-    s.scoreValue = computed.scoreValue;
-    s.maturityLevel = computed.maturityLevel;
-    return s;
+    const snapshot = new KpiSnapshot();
+    snapshot.windowFrom = windowFrom;
+    snapshot.windowTo = windowTo;
+    snapshot.mttdMinutes = computed.mttdMinutes;
+    snapshot.mttrMinutes = computed.mttrMinutes;
+    snapshot.mttdSampleCount = computed.mttdSampleCount;
+    snapshot.mttrSampleCount = computed.mttrSampleCount;
+    snapshot.totalAlerts = computed.totalAlerts;
+    snapshot.resolvedAlerts = computed.resolvedAlerts;
+    snapshot.openAlerts = computed.openAlerts;
+    snapshot.falseAlarms = computed.falseAlarms;
+    snapshot.falseAlarmRate = computed.falseAlarmRate;
+    snapshot.scoreValue = computed.scoreValue;
+    snapshot.maturityLevel = computed.maturityLevel;
+    return snapshot;
   }
 
   private async safeFetchAlerts(from: Date, to: Date): Promise<AlertForKpi[]> {

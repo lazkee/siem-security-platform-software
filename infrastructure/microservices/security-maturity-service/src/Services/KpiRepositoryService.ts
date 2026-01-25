@@ -2,22 +2,23 @@ import { Repository } from "typeorm";
 import { IKpiRepositoryService } from "../Domain/services/IKpiRepositoryService";
 import { KpiSnapshot } from "../Domain/models/KpiSnapshot";
 import { KpiSnapshotCategoryCount } from "../Domain/models/KpiSnapshotCategoryCount";
-import { Db } from "../Database/DBConnectionPool";
 import { AlertCategory } from "../Domain/enums/AlertCategory";
-
+import { NOT_FOUND } from "../Domain/constants/Sentinels";
 
 export class KpiRepositoryService implements IKpiRepositoryService {
   private readonly snapshotRepo: Repository<KpiSnapshot>;
   private readonly categoryRepo: Repository<KpiSnapshotCategoryCount>;
 
-  public constructor() {
-    this.snapshotRepo = Db.getRepository(KpiSnapshot);
-    this.categoryRepo = Db.getRepository(KpiSnapshotCategoryCount);
+  public constructor(
+    snapshotRepo: Repository<KpiSnapshot>,
+    categoryRepo: Repository<KpiSnapshotCategoryCount>
+  ) {
+    this.snapshotRepo = snapshotRepo;
+    this.categoryRepo = categoryRepo;
   }
 
   public async upsertSnapshot(snapshot: KpiSnapshot): Promise<number> {
     try {
-        //upsert based on windowFrom + windowTo to avoid duplicates
       await this.snapshotRepo.upsert(
         {
           windowFrom: snapshot.windowFrom,
@@ -43,7 +44,7 @@ export class KpiRepositoryService implements IKpiRepositoryService {
       );
     } catch (e) {
       console.log("[KpiRepository] Failed to upsert KpiSnapshot.", e);
-      return -1;
+      return NOT_FOUND;
     }
 
     try {
@@ -51,15 +52,10 @@ export class KpiRepositoryService implements IKpiRepositoryService {
         where: { windowFrom: snapshot.windowFrom, windowTo: snapshot.windowTo },
       });
 
-      if (!saved) {
-        console.log("[KpiRepository] Snapshot not found after upsert.");
-        return -1;
-      }
-
-      return saved.id;
+      return saved ? saved.id : NOT_FOUND;
     } catch (e) {
       console.log("[KpiRepository] Failed to reload KpiSnapshot after upsert.", e);
-      return -1;
+      return NOT_FOUND;
     }
   }
 
@@ -74,13 +70,15 @@ export class KpiRepositoryService implements IKpiRepositoryService {
       return false;
     }
 
-    const rows = Object.entries(categoryCounts).map(([category, count]) => {
-      const row = new KpiSnapshotCategoryCount();
-      row.snapshotId = snapshotId;
-      row.category = category as AlertCategory;
-      row.count = count as number;
-      return row;
-    });
+    const rows: KpiSnapshotCategoryCount[] = Object.entries(categoryCounts).map(
+      ([category, count]) => {
+        const row = new KpiSnapshotCategoryCount();
+        row.snapshotId = snapshotId;
+        row.category = category as AlertCategory;
+        row.count = count as number;
+        return row;
+      }
+    );
 
     if (rows.length === 0) return true;
 
@@ -98,7 +96,7 @@ export class KpiRepositoryService implements IKpiRepositoryService {
       return await this.snapshotRepo
         .createQueryBuilder("s")
         .where("s.windowFrom >= :from", { from })
-        .andWhere("s.windowTo < :to", { to })
+        .andWhere("s.windowFrom < :to", { to })
         .orderBy("s.windowFrom", "ASC")
         .getMany();
     } catch (e) {
@@ -109,12 +107,11 @@ export class KpiRepositoryService implements IKpiRepositoryService {
 
   public async getCategoryCounts(from: Date, to: Date): Promise<KpiSnapshotCategoryCount[]> {
     try {
-      // Join to snapshots to filter by time window without needing a list of IDs first.
       return await this.categoryRepo
         .createQueryBuilder("c")
         .innerJoin(KpiSnapshot, "s", "s.id = c.snapshotId")
         .where("s.windowFrom >= :from", { from })
-        .andWhere("s.windowTo < :to", { to })
+        .andWhere("s.windowFrom < :to", { to })
         .getMany();
     } catch (e) {
       console.log("[KpiRepository] Failed to read category counts.", e);
