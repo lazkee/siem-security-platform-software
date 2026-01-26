@@ -8,6 +8,8 @@ import { IAlertService } from "../Domain/services/IAlertService";
 import { ILoggerService } from "../Domain/services/ILoggerService";
 import { AlertQueryDTO, PaginatedAlertsDTO } from "../Domain/DTOs/AlertQueryDTO";
 import { toAlertDTO, createEmptyAlertDTO } from "../Utils/Converters/AlertConverter";
+import { AlertForKpi } from "../Domain/DTOs/AlertForKpiDTO";
+import { Alert } from "../Domain/models/Alert";
 
 export class AlertService implements IAlertService {
   constructor(
@@ -35,6 +37,44 @@ export class AlertService implements IAlertService {
       return createEmptyAlertDTO();
     }
   }
+
+  async getAlertsForKpi(from: Date, to: Date): Promise<AlertForKpi[]> {
+  try {
+    const [createdAlerts, resolvedAlerts] = await Promise.all([
+      this.repo.findCreatedBetween(from, to),
+      this.repo.findResolvedBetween(from, to),
+    ]);
+
+    const byId = new Map<number, AlertForKpi>();
+
+    const toDto = (a: Alert): AlertForKpi => {
+      const createdAtValid = a.createdAt instanceof Date && !Number.isNaN(a.createdAt.getTime());
+      const oldestValid =
+        a.oldestEventTimestamp instanceof Date &&
+        !Number.isNaN(a.oldestEventTimestamp.getTime());
+
+      const isValid = a.id > 0 && createdAtValid && oldestValid;
+
+      return {
+        id: a.id,
+        createdAt: a.createdAt,
+        resolvedAt: a.resolvedAt ?? undefined,
+        oldestCorrelatedEventAt: a.oldestEventTimestamp,
+        category: a.category,
+        isFalseAlarm: a.status === AlertStatus.MARKED_FALSE,
+        isValid,
+      };
+    };
+
+    for (const a of createdAlerts) byId.set(a.id, toDto(a));
+    for (const a of resolvedAlerts) byId.set(a.id, toDto(a));
+
+    return Array.from(byId.values());
+  } catch (err) {
+    await this.logger.log(`getAlertsForKpi failed: ${err}`);
+    return [];
+  }
+}
 
 
   async getAllAlerts(): Promise<AlertDTO[]> {

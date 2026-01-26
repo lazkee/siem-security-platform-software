@@ -11,7 +11,8 @@ export interface IAlertRepositoryService {
   findBySeverity(severity: AlertSeverity): Promise<Alert[]>;
   findByStatus(status: AlertStatus): Promise<Alert[]>;
   delete(id: number): Promise<boolean>;
-
+  findResolvedBetween(from: Date, to: Date): Promise<Alert[]>;
+  findCreatedBetween(from: Date, to: Date): Promise<Alert[]>;
   findWithFilters(query: AlertQueryDTO): Promise<{ alerts: Alert[], total: number }>;
 
 }

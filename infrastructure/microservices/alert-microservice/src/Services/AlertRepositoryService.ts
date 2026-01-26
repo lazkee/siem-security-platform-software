@@ -10,7 +10,7 @@ export class AlertRepositoryService implements IAlertRepositoryService {
   constructor(
     private repo: Repository<Alert>,
     private readonly logger: ILoggerService
-  ) {}
+  ) { }
 
   // odmah čuva u bazu
   async create(data: Partial<Alert>): Promise<Alert> {
@@ -29,13 +29,29 @@ export class AlertRepositoryService implements IAlertRepositoryService {
 
   async findById(id: number): Promise<Alert | null> {
     const alert = await this.repo.findOne({ where: { id } });
-    
+
     if (!alert) {
       await this.logger.log(`Alert with ID ${id} not found in database`);
     }
-    
+
     return alert;
   }
+
+  async findResolvedBetween(from: Date, to: Date): Promise<Alert[]> {
+    return this.repo
+      .createQueryBuilder("a")
+      .where("a.resolvedAt IS NOT NULL")
+      .andWhere("a.resolvedAt >= :from", { from })
+      .andWhere("a.resolvedAt <= :to", { to })
+      .getMany();
+  }
+
+  async findCreatedBetween(from: Date, to: Date): Promise<Alert[]> {
+  return this.repo
+    .createQueryBuilder("a")
+    .where("a.createdAt BETWEEN :from AND :to", { from, to })
+    .getMany();
+}
 
   async findBySeverity(severity: AlertSeverity): Promise<Alert[]> {
     return this.repo.find({ where: { severity } });
@@ -48,11 +64,11 @@ export class AlertRepositoryService implements IAlertRepositoryService {
   async delete(id: number): Promise<boolean> {
     const result = await this.repo.delete(id);
     const success = result.affected !== undefined && result.affected !== null && result.affected > 0;
-    
+
     if (!success) {
       await this.logger.log(`Failed to delete alert with ID ${id}`);
     }
-    
+
     return success;
   }
 

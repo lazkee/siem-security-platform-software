@@ -13,6 +13,7 @@ export const Db = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   ssl: { rejectUnauthorized: false },
+  timezone: "Z",
   synchronize: true, // automatsko kreiranje tabela u bazi
   logging: false, // debug sql gresaka
   entities: [Alert],

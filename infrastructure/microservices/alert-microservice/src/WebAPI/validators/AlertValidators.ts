@@ -54,6 +54,18 @@ export function validateCreateAlertDTO(data: CreateAlertDTO): ValidationResult {
   return { success: true };
 }
 
+export function validateAlertTimeWindow(from: Date, to: Date): ValidationResult {
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
+    return { success: false, message: "Invalid time window" };
+  }
+
+  if (from > to) {
+    return { success: false, message: "Invalid time window: from is after to" };
+  }
+
+  return { success: true };
+}
+
 export function validateAlertStatus(status: string): ValidationResult {
   if (!status || !Object.values(AlertStatus).includes(status as AlertStatus)) {
     return { success: false, message: "Invalid status value!" };

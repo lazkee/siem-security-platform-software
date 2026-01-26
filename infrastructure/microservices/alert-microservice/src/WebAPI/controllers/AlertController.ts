@@ -8,6 +8,7 @@ import { CreateAlertDTO } from "../../Domain/DTOs/CreateAlertDTO";
 import { ResolveAlertDTO } from "../../Domain/DTOs/ResolveAlertDTO";
 import { CreateAlertFromCorrelationDTO } from "../../Domain/DTOs/CreateAlertFromCorrelationDTO";
 import { AlertQueryDTO } from "../../Domain/DTOs/AlertQueryDTO";
+import { AlertForKpi } from "../../Domain/DTOs/AlertForKpiDTO";
 import { toHourlyWindowStartUtc, formatWindowStartIsoUtc, formatWindowStartHumanUtc } from "../../Utils/Time/CorrelationWindow";
 import {
   validateAlertId,
@@ -15,7 +16,8 @@ import {
   validateAlertStatus,
   validateAlertSeverity,
   validateResolveAlertDTO,
-  validateCreateAlertFromCorrelationDTO
+  validateCreateAlertFromCorrelationDTO,
+  validateAlertTimeWindow
 } from "../validators/AlertValidators";
 
 export class AlertController {
@@ -35,6 +37,7 @@ export class AlertController {
     this.router.get("/alerts/search", this.searchAlerts.bind(this));
     this.router.post("/alerts/correlation", this.createAlertFromCorrelation.bind(this));
     this.router.get("/alerts", this.getAllAlerts.bind(this));
+    this.router.get("/alerts/for-kpi", this.getAlertsForKpi.bind(this));
     this.router.get("/alerts/:id", this.getAlertById.bind(this));
     this.router.get("/alerts/severity/:severity", this.getAlertsBySeverity.bind(this));
     this.router.get("/alerts/status/:status", this.getAlertsByStatus.bind(this));
@@ -154,6 +157,38 @@ export class AlertController {
     } catch (err: any) {
       await this.logger.log(`Error fetching all alerts: ${err.message}`);
       res.status(500).json({ message: "Service error: Failed to fetch alerts." });
+    }
+  }
+
+  private async getAlertsForKpi(req: Request, res: Response): Promise<void> {
+    try {
+      const fromRaw = req.query.from as string | undefined;
+      const toRaw = req.query.to as string | undefined;
+
+      if (!fromRaw || !toRaw) {
+        res.status(400).json({ success: false, message: "Invalid time window parameters" });
+        return;
+      }
+
+      const from = new Date(fromRaw);
+      const to = new Date(toRaw);
+
+      const validation = validateAlertTimeWindow(from, to);
+      if (!validation.success) {
+        res.status(400).json({ success: false, message: validation.message });
+        return;
+      }
+
+      await this.logger.log(
+        `Fetching alerts for KPI from ${from.toISOString()} to ${to.toISOString()}`
+      );
+
+      const alerts = await this.alertService.getAlertsForKpi(from, to);
+
+      res.status(200).json(alerts);
+    } catch (err: any) {
+      await this.logger.log(`Error fetching alerts for KPI: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to fetch alerts for KPI." });
     }
   }
 
