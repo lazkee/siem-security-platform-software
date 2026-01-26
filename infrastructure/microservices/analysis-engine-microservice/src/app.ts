@@ -1,63 +1,88 @@
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
 import "reflect-metadata";
-import { initialize_database } from './Database/InitializeConnection';
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import { Repository } from "typeorm";
 
-import { ICorrelationService } from './Domain/services/ICorrelationService';
-import { CorrelationService } from './Services/CorrelationService';
+import { initialize_database } from "./Database/InitializeConnection";
+import { Db } from "./Database/DbConnectionPool";
 
-import { ILLMChatAPIService } from './Domain/services/ILLMChatAPIService';
-import { LLMChatAPIService } from './Services/LLMChatAPIService';
+import { Correlation } from "./Domain/models/Correlation";
+import { CorrelationEventMap } from "./Domain/models/CorrelationEventMap";
 
-import { RecurringCorrelationJob } from './Services/ReccuringCorrelationJob';
-import { IntervalScheduler } from './Infrastructure/schedulers/IntervalScheduler';
+import { ICorrelationService } from "./Domain/services/ICorrelationService";
+import { CorrelationService } from "./Services/CorrelationService";
 
-import { Repository } from 'typeorm';
-import { Correlation } from './Domain/models/Correlation';
-import { Db } from './Database/DbConnectionPool';
-import { CorrelationEventMap } from './Domain/models/CorrelationEventMap';
-import { AnalysisEngineController } from './WebAPI/controllers/AnalysisEngineController';
-import { ILoggerService } from './Domain/services/ILoggerService';
-import { LoggerService } from './Services/LoggerService';
+import { ILLMChatAPIService } from "./Domain/services/ILLMChatAPIService";
+import { LLMChatAPIService } from "./Services/LLMChatAPIService";
+
+import { IntervalScheduler } from "./Infrastructure/schedulers/IntervalScheduler";
+import { RecurringCorrelationJob } from "./Services/ReccuringCorrelationJob";
+
+import { AnalysisEngineController } from "./WebAPI/controllers/AnalysisEngineController";
+
+import { ILoggerService } from "./Domain/services/ILoggerService";
+import { LoggerService } from "./Services/LoggerService";
 
 dotenv.config({ quiet: true });
 
 const app = express();
 
-// Read CORS settings from environment
-const corsOrigin = process.env.CORS_ORIGIN ?? "*";
-const corsMethods = process.env.CORS_METHODS?.split(",").map(m => m.trim()) ?? ["POST"];
+const loggerService: ILoggerService = new LoggerService();
 
-// Protected microservice from unauthorized access
-app.use(cors({
-  origin: corsOrigin,
-  methods: corsMethods,
-}));
+/* ===================== Middleware ===================== */
+
+const corsOrigin = process.env.CORS_ORIGIN ?? "*";
+const corsMethods = process.env.CORS_METHODS?.split(",").map((m) => m.trim()) ?? ["POST"];
+
+app.use(
+  cors({
+    origin: corsOrigin,
+    methods: corsMethods,
+  })
+);
 
 app.use(express.json());
+/* ===================== Startup ===================== */
 
-initialize_database();
+export async function initializeApp(): Promise<void> {
+  try {
+    await initialize_database(Db, loggerService);
+  } catch {
+    await loggerService.error("[App] initialize_database threw");
+  }
+}
 
-//======================================ANALYSIS ENGINE===========================================
+/* ===================== Composition ===================== */
 
-const CorrelationRepo: Repository<Correlation> = Db.getRepository(Correlation);
+const correlationRepo: Repository<Correlation> = Db.getRepository(Correlation);
+const correlationMapRepo: Repository<CorrelationEventMap> = Db.getRepository(CorrelationEventMap);
 
-const CorrelationMapRepo: Repository<CorrelationEventMap> = Db.getRepository(CorrelationEventMap);
-
-const loggerService: ILoggerService = new LoggerService();
 const llmChatAPIService: ILLMChatAPIService = new LLMChatAPIService(loggerService);
-const correlationService: ICorrelationService = new CorrelationService(CorrelationRepo, CorrelationMapRepo, llmChatAPIService, loggerService);
 
-const analysisEngineController = new AnalysisEngineController(correlationService, llmChatAPIService);
+const correlationService: ICorrelationService = new CorrelationService(
+  correlationRepo,
+  correlationMapRepo,
+  llmChatAPIService,
+  loggerService
+);
 
-app.use('/api/v1', analysisEngineController.getRouter());
+const analysisEngineController = new AnalysisEngineController(
+  correlationService,
+  llmChatAPIService
+);
 
-export function startRecurringJobs() {
+app.use("/api/v1", analysisEngineController.getRouter());
+
+
+
+/* ===================== Jobs ===================== */
+
+export function startRecurringJobs(): void {
   const recurringCorrelationJob = new RecurringCorrelationJob(correlationService, loggerService);
-  const intervalMs = 15 * 60 * 1000; // 15 minutes
+  const intervalMs = 15 * 60 * 1000;
 
-  const intervalScheduler = new IntervalScheduler(recurringCorrelationJob, intervalMs);
+  const intervalScheduler = new IntervalScheduler(recurringCorrelationJob, intervalMs, loggerService);
   intervalScheduler.start();
 }
 

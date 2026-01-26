@@ -1,11 +1,21 @@
-import { Db } from "./DbConnectionPool";
+import { DataSource } from "typeorm";
+import { ILoggerService } from "../Domain/services/ILoggerService";
 
-export async function initialize_database() {
+export async function initialize_database(
+  dataSource: DataSource,
+  logger: ILoggerService
+): Promise<void> {
   try {
-    await Db.initialize();
-    console.log("\x1b[34m[DbConn@1.12.4]\x1b[0m Database connected");
+    if (dataSource.isInitialized) {
+      await logger.warn("[Database] DataSource already initialized");
+      return;
+    }
 
-  } catch (err) {
-    console.error("\x1b[31m[DbConn@1.12.4]\x1b[0m Error during DataSource initialization ", err);
+    await dataSource.initialize();
+    await logger.info("[Database] Connection established");
+  } catch (e) {
+    await logger.error("[Database] Initialization failed", {
+      error: "datasource_init_failed",
+    });
   }
 }

@@ -18,15 +18,16 @@ export class AnalysisEngineController {
 
     private async processEvent(req: Request, res: Response): Promise<void> {
         try {
-            const rawMessage = req.body.message as string;
+            // const rawMessage = req.body.message as string;
 
-            if (!rawMessage || rawMessage.trim().length === 0) {
-                res.status(400).json({ error: "Message is required" });
-                return;
-            }
+            // if (!rawMessage || rawMessage.trim().length === 0) {
+            //     res.status(400).json({ error: "Message is required" });
+            //     return;
+            // }
 
-            const processedEventJson = await this.llmChatAPIService.sendNormalizationPrompt(rawMessage);
+            // const processedEventJson = await this.llmChatAPIService.sendNormalizationPrompt(rawMessage);
 
+            const processedEventJson = await this.correlationService.findCorrelations();
             res.status(200).json({ eventData: processedEventJson });
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });

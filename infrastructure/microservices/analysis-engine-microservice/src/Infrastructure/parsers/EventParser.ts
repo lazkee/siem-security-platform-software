@@ -1,21 +1,29 @@
 import { EventDTO } from "../../Domain/types/EventDTO";
+import { Result } from "../../Domain/types/Result";
+import { JsonValue } from "../../Domain/types/JsonValue";
+import { isJsonObject } from "../json/isJsonObject";
 
-export function parseEventDTO(raw: unknown): EventDTO | null {
-  if (!raw || typeof raw !== "object") return null;
+export function parseEventDTO(raw: JsonValue): Result<EventDTO> {
+  if (!isJsonObject(raw)) return { ok: false, error: "not_object" };
 
-  const obj = raw as any;
+  const typeVal = raw["type"];
+  const descVal = raw["description"];
 
-  if (typeof obj.type !== "string" || typeof obj.description !== "string" || obj.description.trim().length === 0) {
-    return null;
-  }
+  if (typeof typeVal !== "string") return { ok: false, error: "type_not_string" };
+  if (typeof descVal !== "string" || descVal.trim().length === 0)
+    return { ok: false, error: "description_invalid" };
 
-  const type = obj.type.toUpperCase();
+  const type = typeVal.toUpperCase();
   const allowed: EventDTO["type"][] = ["INFO", "WARNING", "ERROR"];
 
-  if (!allowed.includes(type)) return null;
+  if (!allowed.includes(type as EventDTO["type"]))
+    return { ok: false, error: "type_not_allowed" };
 
   return {
-    type,
-    description: obj.description,
+    ok: true,
+    value: {
+      type: type as EventDTO["type"],
+      description: descVal,
+    },
   };
 }

@@ -1,5 +1,7 @@
+import { JsonObject } from "../types/JsonValue";
+
 export interface ILoggerService {
-    info(message: string, meta?: Record<string, any>): Promise<void>
-    warn(message: string, meta?: unknown): Promise<void>
-    error(message: string, meta?: unknown): Promise<void>;
+  info(message: string, meta?: JsonObject): Promise<void>;
+  warn(message: string, meta?: JsonObject): Promise<void>;
+  error(message: string, meta?: JsonObject): Promise<void>;
 }

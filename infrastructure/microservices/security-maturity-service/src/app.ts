@@ -21,13 +21,6 @@ import { HourlyAlignedScheduler } from "./Infrastructure/schedulers/HourlyAligne
 dotenv.config();
 
 function attachDegradedRoutes(app: Express): void {
-  app.get("/health", (_: Request, res: Response) => {
-    res.status(503).json({
-      status: "DEGRADED",
-      message: "Service failed to initialize",
-    });
-  });
-
   
   app.use("/api/v1", (_: Request, res: Response) => {
     res.status(503).json({
