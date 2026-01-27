@@ -184,6 +184,7 @@ export class QueryStatisticsService implements IQueryStatisticsService {
         const raw = await this.eventRepository
             .createQueryBuilder("event")
             .select("DISTINCT event.source")
+            .where("event.ipAddress IS NULL")
             .getRawMany();
 
         return raw.map(r => r.source);
