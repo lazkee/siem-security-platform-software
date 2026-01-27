@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
 import { AlertSeverity } from "../enums/AlertSeverity";
 import { AlertStatus } from "../enums/AlertStatus";
+import { AlertCategory } from "../enums/AlertCategory";
 
 @Entity("alerts")
 export class Alert {
@@ -27,6 +28,12 @@ export class Alert {
 
   @Column({ type: "text", nullable: true })
   detectionRule!: string | null;
+
+  @Column({ type: "enum", enum: AlertCategory, default: AlertCategory.OTHER })
+  category!: AlertCategory ;
+
+  @Column({ type: "datetime" })
+  oldestEventTimestamp!: Date ;
 
   @CreateDateColumn()
   createdAt!: Date;
