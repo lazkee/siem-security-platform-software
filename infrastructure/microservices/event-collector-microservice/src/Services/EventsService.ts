@@ -72,6 +72,7 @@ export class EventsService implements IEventsService {
 
         const entity = this.eventRepository.create({
             source: eventDto.source,
+            userId: eventDto.userId, 
             type: eventDto.type,
             description: eventDto.description,
             timestamp,

@@ -2,9 +2,12 @@ import { EventDTO } from "../../Domain/DTOs/EventDTO";
 import { EventType } from "../../Domain/enums/EventType";
 import { ValidationResult } from "../../Domain/types/ValidationResult";
 
-export function validateEventData(
-  data: EventDTO,
-): ValidationResult {
+export function validateEventData(data: EventDTO): ValidationResult {
+
+  if (data.userId !== undefined && typeof data.userId !== "string") {
+    return { success: false, message: "Invalid userId" };
+  }
+
   if (!data.source || data.source.trim().length === 0) {
     return { success: false, message: "Source is required" };
   }
