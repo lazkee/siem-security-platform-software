@@ -17,7 +17,7 @@ import { AlertsProps } from "../../types/props/alerts/AlertsProps";
 
 export default function Alerts({ alertsApi, desktopNotification }: AlertsProps) {
   //const { token } = useAuth(); TO DO LATER WHEN FINISH LOG IN
-  const token="token";
+  const token = "token";
   const {
     alerts,
     isLoading,
@@ -110,8 +110,8 @@ export default function Alerts({ alertsApi, desktopNotification }: AlertsProps) 
     setSelectedAlertId(null);
   };
 
-  const handleResolve = async (id: number, resolvedBy: string) => {
-    await resolveAlert(id, resolvedBy, AlertStatus.RESOLVED);
+  const handleResolve = async (id: number, resolvedBy: string, markedFalse: boolean) => {
+    await resolveAlert(id, resolvedBy, markedFalse ? AlertStatus.MARKED_FALSE : AlertStatus.RESOLVED);
     setSelectedAlertId(null);
   };
 
@@ -144,8 +144,8 @@ export default function Alerts({ alertsApi, desktopNotification }: AlertsProps) 
         <div className="flex items-center gap-3">
           <div
             className={`flex w-[150px]! items-center gap-2 px-3! py-1.5! rounded-[8px] text-[12px] font-semibold ${sseConnected
-                ? "bg-[rgba(74,222,128,0.15)] text-[#4ade80] border border-[rgba(74,222,128,0.3)]"
-                : "bg-[rgba(239,68,68,0.15)] text-[#f87171] border border-[rgba(239,68,68,0.3)]"
+              ? "bg-[rgba(74,222,128,0.15)] text-[#4ade80] border border-[rgba(74,222,128,0.3)]"
+              : "bg-[rgba(239,68,68,0.15)] text-[#f87171] border border-[rgba(239,68,68,0.3)]"
               }`}
           >
             <div
@@ -163,12 +163,12 @@ export default function Alerts({ alertsApi, desktopNotification }: AlertsProps) 
       </div>
 
       <AlertStatistics alerts={alerts} lastAlertTime={lastAlertTime} />
-      <AlertFilters 
-  onSearch={handleSearch} 
-  severity={currentQuery.severity || 'all'} 
-  status={currentQuery.status || 'all'}
-  searchText={currentQuery.source || ''} 
-/>
+      <AlertFilters
+        onSearch={handleSearch}
+        severity={currentQuery.severity || 'all'}
+        status={currentQuery.status || 'all'}
+        searchText={currentQuery.source || ''}
+      />
       {isLoading && (
         <div className="text-center p-10">
           <div className="spinner"></div>

@@ -10,13 +10,14 @@ export default function AlertDetailsPanel({
   onResolve
 }: AlertDetailsPanelProps) {
   const [resolvedBy, setResolvedBy] = useState("");
+  const [markedFalse, setMarkedFalse] = useState(false);
 
   const handleResolve = () => {
     if (!resolvedBy.trim()) {
       alert("Please enter your name");
       return;
     }
-    onResolve(alertData.id, resolvedBy);
+    onResolve(alertData.id, resolvedBy, markedFalse);
   };
 
   const badgeClass = (color: string) =>
@@ -119,24 +120,59 @@ export default function AlertDetailsPanel({
           )}
 
           {/* Action Section */}
-          {alertData.status !== AlertStatus.RESOLVED && alertData.status !== AlertStatus.DISMISSED && (
-            <div className="mt-2! pt-5 border-t border-[#333]">
-              <h3 className="mt-2! text-base text-center! mb-4">Resolve Alert</h3>
-              <input
-                type="text"
-                placeholder="Your name or email"
-                value={resolvedBy}
-                onChange={(e) => setResolvedBy(e.target.value)}
-                className="w-full px-3 py-2 mb-3 rounded-lg border border-gray-700 bg-[#2a2a2a] text-white text-sm"
-              />
-              <button
-                onClick={handleResolve}
-                className="w-full mt-2! py-3 rounded-lg bg-[#007a55] text-white font-semibold text-base"
-              >
-                ✓ Resolve Alert
-              </button>
-            </div>
-          )}
+          {alertData.status !== AlertStatus.RESOLVED &&
+            alertData.status !== AlertStatus.DISMISSED &&
+            alertData.status !== AlertStatus.MARKED_FALSE && (
+              <div className="mt-2! pt-5 border-t border-[#333]">
+                <h3 className="mt-2! text-base text-center! mb-4">Resolve Alert</h3>
+                <input
+                  type="text"
+                  placeholder="Your name or email"
+                  value={resolvedBy}
+                  onChange={(e) => setResolvedBy(e.target.value)}
+                  className="w-full px-3 py-2 mb-3 rounded-lg border border-gray-700 bg-[#2a2a2a] text-white text-sm"
+                />
+
+                <label className="flex items-center gap-3 text-sm text-gray-300 !my-3 select-none cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={markedFalse}
+                    onChange={(e) => setMarkedFalse(e.target.checked)}
+                    className="sr-only"
+                  />
+
+                  <span
+                    className={[
+                      "w-5 h-5 rounded-md border",
+                      "bg-[#2a2a2a] border-gray-700",
+                      "flex items-center justify-center",
+                      "shadow-[inset_0_0_0_1px_rgba(0,0,0,0.35)]",
+                      "transition-all duration-150",
+                      markedFalse ? "bg-[#007a55] border-[#007a55]" : ""
+                    ].join(" ")}
+                    aria-hidden="true"
+                  >
+                    {markedFalse && (
+                      <svg viewBox="0 0 20 20" className="w-3.5 h-3.5 text-white">
+                        <path
+                          fill="currentColor"
+                          d="M7.7 13.3 4.9 10.5l-1.1 1.1 3.9 3.9L16.2 7l-1.1-1.1z"
+                        />
+                      </svg>
+                    )}
+                  </span>
+
+                  <span className="leading-none">Mark False</span>
+                </label>
+
+                <button
+                  onClick={handleResolve}
+                  className="w-full mt-2! py-3 rounded-lg bg-[#007a55] text-white font-semibold text-base"
+                >
+                  ✓ Resolve Alert
+                </button>
+              </div>
+            )}
         </div>
       </div>
     </div>

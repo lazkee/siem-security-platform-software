@@ -16,6 +16,7 @@ export const getStatusColor = (status: AlertStatus) => {
         case AlertStatus.ACTIVE: return "#ffa500";
         case AlertStatus.INVESTIGATING: return "#60a5fa";
         case AlertStatus.RESOLVED: return "#4ade80";
+        case AlertStatus.MARKED_FALSE: return "#a6a6a6";
         case AlertStatus.DISMISSED: return "#a6a6a6";
         case AlertStatus.ESCALATED: return "#ff4b4b";
         default: return "#60a5fa";
