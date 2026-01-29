@@ -39,7 +39,7 @@ export function loadQueryAlertState(): {
         lastProcessedId: parsedData.lastProcessedId || 0,
         invertedIndex,
         alertTokenMap,
-        alertCount: parsedData.eventCount || 0
+        alertCount: parsedData.alertCount || 0
     };
 }
 
