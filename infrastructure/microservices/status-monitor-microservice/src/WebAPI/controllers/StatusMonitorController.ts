@@ -7,13 +7,15 @@ import { ServiceThreshold } from "../../Domain/models/ServiceThreshold";
 
 import { IMonitoringService } from "../../Domain/services/IMonitoringService";
 import { IIncidentService } from "../../Domain/services/IIncidentService";
+import { IAnalyticsService } from "../../Domain/services/IAnalyticsService";
 
 export class StatusMonitorController {
   private readonly router: Router;
 
   constructor(
     private readonly monitoringService: IMonitoringService,
-    private readonly incidentService: IIncidentService,
+    private readonly incidentService: IIncidentService, //obrisi ako ne budes koristio
+    private readonly analyticsService: IAnalyticsService,
     private readonly checkRepo: Repository<ServiceCheck>,
     private readonly incidentRepo: Repository<ServiceIncident>,
     private readonly thresholdRepo: Repository<ServiceThreshold>
@@ -26,6 +28,7 @@ export class StatusMonitorController {
     this.router.get("/status", this.getStatus.bind(this));
     this.router.get("/checks", this.getChecks.bind(this));
     this.router.get("/incidents", this.getIncidents.bind(this));
+    this.router.get("/stats/:serviceName", this.getStats.bind(this));
   }
 
   /* ========================
@@ -99,6 +102,19 @@ export class StatusMonitorController {
       res.status(500).json({ message: "Failed to fetch incidents" });
     }
   }
+
+  private async getStats(req: Request, res: Response): Promise<void> {
+  try {
+    const serviceName = String(req.params.serviceName);
+    const hours = Number(req.query.hours || 24);
+
+    const stats = await this.analyticsService.calculateStats(serviceName, hours);
+    
+    res.status(200).json(stats);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to calculate stats" });
+  }
+}
 
   public getRouter(): Router {
     return this.router;

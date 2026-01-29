@@ -20,6 +20,7 @@ import { IIncidentService } from "./Domain/services/IIncidentService";
 import { MonitoringService } from "./Services/MonitoringService";
 import { IncidentService } from "./Services/IncidentService";
 import { MonitoringOrchestrator } from "./Services/MonitoringOrchestrator";
+import { AnalyticsService } from "./Services/AnalyticsService";
 
 // Jobs & scheduler
 import { RecurringMonitoringJob } from "./Services/RecurringMonitoringJob";
@@ -68,17 +69,13 @@ const incidentRepository: Repository<ServiceIncident> =
 /* ========================
    SERVICES
 ======================== */
-const monitoringService: IMonitoringService =
-  new MonitoringService(thresholdRepository, checkRepository);
+const monitoringService: IMonitoringService = new MonitoringService(thresholdRepository, checkRepository);
 
-const incidentService: IIncidentService =
-  new IncidentService(checkRepository, incidentRepository, thresholdRepository);
+const incidentService: IIncidentService = new IncidentService(checkRepository, incidentRepository, thresholdRepository);
 
-const monitoringOrchestrator = new MonitoringOrchestrator(
-    monitoringService,
-    incidentService,
-    thresholdRepository
-);
+const monitoringOrchestrator = new MonitoringOrchestrator(monitoringService, incidentService, thresholdRepository);
+
+const analyticsService = new AnalyticsService(checkRepository);
 
 /* ========================
    CONTROLLERS
@@ -87,6 +84,7 @@ const statusMonitorController =
   new StatusMonitorController(
     monitoringService,
     incidentService,
+    analyticsService,
     checkRepository,
     incidentRepository,
     thresholdRepository
