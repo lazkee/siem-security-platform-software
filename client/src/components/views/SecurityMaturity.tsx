@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { SecurityMaturityProps } from "../../types/props/security-maturity/SecurityMaturityProps";
 import { SecuirtyMaturityCurrentDTO } from "../../models/security-maturity/SecurityMaturityCurrentDTO";
 import { MaturityLevel } from "../../enums/MaturityLevel";
+import MaturityScoreGauge from "../security-maturity/MaturityScoreGauge";
+import MaturityScoreCard from "../security-maturity/MaturityScoreCard";
+import MaturityKpiGrid from "../security-maturity/MaturityKpiGrid";
 
 const testSecurityMaturity: SecuirtyMaturityCurrentDTO = {
   scoreValue: 72,
@@ -58,30 +61,24 @@ export default function SecurityMaturity({
 
     return (
     <div className="p-6">
-      <div className="rounded-lg border-2 border-[#282A28] bg-[#1f2123] p-6">
-        <h2 className="text-xl font-semibold mb-4">Security Maturity</h2>
+      <div className="grid grid-cols-2 gap-5">
 
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          <div>
-            <div className="text-sm text-gray-400">Score</div>
-            <div className="text-2xl">{summary.scoreValue}</div>
+        <div className="flex flex-col gap-5">
+          <div className="rounded-lg border-2 border-[#282A28] bg-[#1f2123] p-6">
+            <MaturityScoreGauge score={summary.scoreValue} />
           </div>
 
-          <div>
-            <div className="text-sm text-gray-400">Maturity Level</div>
-            <div className="text-2xl">{summary.maturityLevel}</div>
-          </div>
-
-          <div>
-            <div className="text-sm text-gray-400">MTTD (min)</div>
-            <div className="text-2xl">{summary.mttdMinutes}</div>
-          </div>
-
-          <div>
-            <div className="text-sm text-gray-400">MTTR (min)</div>
-            <div className="text-2xl">{summary.mttrMinutes}</div>
-          </div>
+          <MaturityScoreCard level={summary.maturityLevel} />
         </div>
+
+        <div className="flex flex-col items-center rounded-lg border-2 border-[#282A28] bg-[#1f2123] p-6">
+          <h2 className="text-sm uppercase tracking-widest text-gray-400">
+            Security Metrics
+          </h2>
+
+          <MaturityKpiGrid data={summary} />
+        </div>
+
       </div>
     </div>
   );
