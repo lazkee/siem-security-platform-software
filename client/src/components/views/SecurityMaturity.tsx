@@ -5,6 +5,8 @@ import { MaturityLevel } from "../../enums/MaturityLevel";
 import MaturityScoreGauge from "../security-maturity/MaturityScoreGauge";
 import MaturityScoreCard from "../security-maturity/MaturityScoreCard";
 import MaturityKpiGrid from "../security-maturity/MaturityKpiGrid";
+import { SecurityMaturityTrendDTO } from "../../models/security-maturity/SecurityMaturityTrendDTO";
+import SecurityMaturityTrend from "../security-maturity/SecurityMaturityTrend";
 
 const testSecurityMaturity: SecuirtyMaturityCurrentDTO = {
   scoreValue: 72,
@@ -24,6 +26,15 @@ const testSecurityMaturity: SecuirtyMaturityCurrentDTO = {
   }
 };
 
+const testSecurityMaturityTrend: SecurityMaturityTrendDTO[] = [
+  { bucketStart: "2024-01-01", value: 58, sampleCount: 120 },
+  { bucketStart: "2024-02-01", value: 61, sampleCount: 140 },
+  { bucketStart: "2024-03-01", value: 65, sampleCount: 160 },
+  { bucketStart: "2024-04-01", value: 69, sampleCount: 180 },
+  { bucketStart: "2024-05-01", value: 72, sampleCount: 200 },
+];
+
+
 
 export default function SecurityMaturity({
     securityMaturityApi
@@ -32,6 +43,7 @@ export default function SecurityMaturity({
     const token = "sdasda";
     const [summary, setSummary] = useState<SecuirtyMaturityCurrentDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [trend, setTrend] = useState<SecurityMaturityTrendDTO[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -43,6 +55,7 @@ export default function SecurityMaturity({
             } catch(err){
                 console.error("Security maturity fetch failed", err);
                 setSummary(testSecurityMaturity);
+                setTrend(testSecurityMaturityTrend);
             } finally{
                 setIsLoading(false);
             }
@@ -79,7 +92,15 @@ export default function SecurityMaturity({
           <MaturityKpiGrid data={summary} />
         </div>
 
+
       </div>
+        <div className="flex flex-col items-center rounded-lg border-2 border-[#282A28] bg-[#1f2123] p-6">
+          <h2 className="text-sm uppercase tracking-widest text-gray-400">
+            Security Maturity Trend
+          </h2>
+          
+          <SecurityMaturityTrend data={trend} />
+        </div>
     </div>
   );
 
