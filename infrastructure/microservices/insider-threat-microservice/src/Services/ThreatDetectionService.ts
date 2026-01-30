@@ -8,16 +8,15 @@ import { detectPermissionChange } from "../Utils/Detectors/PermissionChangeDetec
 import { detectOffHoursAccess } from "../Utils/Detectors/OffHoursAccessDetector";
 import { correlateAuthEvents } from "../Utils/Analyzers/AuthEventCorrelator";
 
+
 export class ThreatDetectionService implements IThreatDetectionService {
   constructor(private readonly logger: ILoggerService) {}
 
-  async analyzeEvents(eventIds: number[]): Promise<DetectionResult[]> {
-    await this.logger.log(`Analyzing ${eventIds.length} events for insider threats`);
+
+  async analyzeEvents(userId: string, eventIds: number[]): Promise<DetectionResult[]> {
+    await this.logger.log(`Analyzing ${eventIds.length} events for user ${userId}`);
 
     const results: DetectionResult[] = [];
-
-    // PRIVREMENO: userId hardkodiran (kasnije ide iz JWT-a)
-    const userId = "1";
 
     const authResults = await this.correlateWithAuthEvents(userId, eventIds);
     results.push(...authResults);
@@ -43,7 +42,6 @@ export class ThreatDetectionService implements IThreatDetectionService {
   async detectMassDataRead(userId: string, eventIds: number[]): Promise<DetectionResult | null> {
     await this.logger.log(`Checking for mass data read by user ${userId}`);
     
-    // Pozivamo helper funkciju iz Utils/Detectors
     const result = await detectMassDataRead(userId, eventIds);
     
     if (result) {

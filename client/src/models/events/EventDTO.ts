@@ -7,4 +7,5 @@ export interface EventDTO {
   description: string;
   timestamp: string;
   ipAddress?: string;
+  user_id?: string,
 }

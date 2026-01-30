@@ -7,4 +7,5 @@ export type EventRow = {
     type: EventType;
     description: string;
     ipAddress?: string;
+    user_id?: string;
 }

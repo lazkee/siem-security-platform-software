@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-dotenv.config({ quiet: true });// da bi se ucitale env prije gateway
+dotenv.config({ quiet: true });
 
 import { IGatewayService } from './Domain/services/IGatewayService';
 import { GatewayService } from './Services/gateway/GatewayService';
@@ -21,6 +21,8 @@ import { SimulatorGatewayController } from "./WebAPI/controllers/SimulatorGatewa
 import { BackupGatewayController } from './WebAPI/controllers/BackupGatewayController';
 import { InsiderThreatGatewayController } from './WebAPI/controllers/InsiderThreatGatewayController';
 import { RiskScoreGatwayController } from './WebAPI/controllers/RiskScoreGatewayController';
+
+import { enrichRequestWithUserId } from './Middlewares/EnrichRequestWithUserId';
 
 const app = express();
 
@@ -56,15 +58,19 @@ const authenticate = createAuthMiddleware(gatewayService);
 
 // WebAPI routes
 app.use('/api/v1', new AuthGatewayController(gatewayService).getRouter());
-app.use('/api/v1', new AlertGatewayController(gatewayService, authenticate,loggerService).getRouter());
+app.use('/api/v1', new AlertGatewayController(gatewayService, authenticate, loggerService).getRouter());
 app.use('/api/v1', new QueryGatewayController(gatewayService, authenticate).getRouter());
 app.use('/api/v1', new StorageGatewayController(gatewayService, authenticate).getRouter());
-app.use('/api/v1', new EventCollectorGatewayController(gatewayService, authenticate,loggerService).getRouter());
+
+const eventCollectorController = new EventCollectorGatewayController(gatewayService, authenticate, loggerService);
+app.use('/api/v1', authenticate, enrichRequestWithUserId, eventCollectorController.getRouter());
+
 app.use('/api/v1', new ParserGatewayController(gatewayService).getRouter());
-app.use('/api/v1', new AnalysisGatewayController(gatewayService, authenticate,loggerService).getRouter());
+app.use('/api/v1', new AnalysisGatewayController(gatewayService, authenticate, loggerService).getRouter());
 app.use('/api/v1', new SimulatorGatewayController(simulatorService, authenticate).getRouter());
 app.use('/api/v1', new BackupGatewayController(gatewayService, authenticate).getRouter());
 app.use('/api/v1', new InsiderThreatGatewayController(gatewayService, authenticate, loggerService).getRouter());
 app.use('/api/v1', new RiskScoreGatwayController(gatewayService, authenticate).getRouter());
 
 export default app;
+

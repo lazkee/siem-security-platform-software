@@ -5,4 +5,5 @@ export interface EventDTO {
     timestamp: Date;
     type: EventType;
     description: string;
+    userId?: string;
 }

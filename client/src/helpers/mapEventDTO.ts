@@ -24,5 +24,6 @@ export function mapEventDTO(e: EventDTO): EventRow {
         type,
         description: e.description.toString(),
         ipAddress: e.ipAddress,
+        user_id: e.user_id,
     };
 }

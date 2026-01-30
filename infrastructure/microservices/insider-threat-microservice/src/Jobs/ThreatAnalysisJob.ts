@@ -5,6 +5,7 @@ import { IThreatDetectionService } from "../Domain/services/IThreatDetectionServ
 import { ILoggerService } from "../Domain/services/ILoggerService";
 import { UserCacheService } from "../Services/UserCacheService";
 
+
 export class ThreatAnalysisJob {
   private lastProcessedEventId: number = 0;
   private isRunning: boolean = false;
@@ -73,13 +74,8 @@ export class ThreatAnalysisJob {
 
     } catch (error: any) {
       this.logger.log(`[ThreatAnalysisJob] ERROR: ${error.message}`);
-      this.logger.log(`[ThreatAnalysisJob] ERROR Stack: ${error.stack || 'No stack trace'}`);
-      if (error.response) {
-        this.logger.log(`[ThreatAnalysisJob] ERROR Response status: ${error.response.status}`);
-        this.logger.log(`[ThreatAnalysisJob] ERROR Response data: ${JSON.stringify(error.response.data)}`);
-      }
-      if (error.code) {
-        this.logger.log(`[ThreatAnalysisJob] ERROR Code: ${error.code}`);
+      if (error.stack) {
+        this.logger.log(`[ThreatAnalysisJob] Stack: ${error.stack}`);
       }
     } finally {
       this.isRunning = false;
@@ -88,135 +84,58 @@ export class ThreatAnalysisJob {
 
   private async getMaxEventId(): Promise<number> {
     try {
-      this.logger.log(`[ThreatAnalysisJob] Fetching events from: ${this.eventCollectorUrl}/events`);
-      
       const response = await axios.get(`${this.eventCollectorUrl}/events`, {
         timeout: 10000
       });
       
-      this.logger.log(`[ThreatAnalysisJob] Received response, status: ${response.status}`);
-      
       const events = response.data;
       
-      if (!Array.isArray(events)) {
-        this.logger.log(`[ThreatAnalysisJob] ERROR: Response is not an array! Type: ${typeof events}`);
-        return 0;
-      }
-      
-      if (events.length === 0) {
-        this.logger.log(`[ThreatAnalysisJob] No events returned`);
+      if (!Array.isArray(events) || events.length === 0) {
         return 0;
       }
 
-      const maxId = Math.max(...events.map((e: any) => e.id));
-      this.logger.log(`[ThreatAnalysisJob] Max event ID: ${maxId}`);
-      
-      return maxId;
+      return Math.max(...events.map((e: any) => e.id));
     } catch (error: any) {
-      this.logger.log(`[ThreatAnalysisJob] Failed to get max event ID!`);
-      this.logger.log(`[ThreatAnalysisJob] Error message: ${error.message || 'No message'}`);
-      this.logger.log(`[ThreatAnalysisJob] Error code: ${error.code || 'No code'}`);
-      
-      if (error.response) {
-        this.logger.log(`[ThreatAnalysisJob] HTTP Status: ${error.response.status}`);
-        this.logger.log(`[ThreatAnalysisJob] Response: ${JSON.stringify(error.response.data)}`);
-      } else if (error.request) {
-        this.logger.log(`[ThreatAnalysisJob] No response received! Request was made but no response.`);
-        this.logger.log(`[ThreatAnalysisJob] Target URL: ${this.eventCollectorUrl}/events`);
-      } else {
-        this.logger.log(`[ThreatAnalysisJob] Error setting up request: ${error.message}`);
-      }
-      
+      this.logger.log(`[ThreatAnalysisJob] Failed to get max event ID: ${error.message}`);
       return this.lastProcessedEventId;
     }
   }
 
   private async getEventsInRange(fromId: number, toId: number): Promise<any[]> {
     try {
-      this.logger.log(`[ThreatAnalysisJob] Fetching events from ${fromId} to ${toId}`);
-      
       const response = await axios.get(
         `${this.eventCollectorUrl}/events/from/${fromId}/to/${toId}`,
         { timeout: 30000 }
       );
       
-      this.logger.log(`[ThreatAnalysisJob] Received ${response.data.length} events`);
-      
       return Array.isArray(response.data) ? response.data : [];
     } catch (error: any) {
       this.logger.log(`[ThreatAnalysisJob] Failed to get events: ${error.message}`);
-      if (error.response) {
-        this.logger.log(`[ThreatAnalysisJob] Status: ${error.response.status}`);
-      }
       return [];
     }
   }
 
+
   private async groupEventsByPrivilegedUsers(events: any[]): Promise<Record<string, any[]>> {
     const grouped: Record<string, any[]> = {};
 
-    this.logger.log(`[ThreatAnalysisJob] ========== ULTRA DEBUG START ==========`);
     this.logger.log(`[ThreatAnalysisJob] Grouping ${events.length} events by privileged users`);
 
     const eventsWithUserId = events.filter(e => e.userId);
     this.logger.log(`[ThreatAnalysisJob] Events with userId: ${eventsWithUserId.length} / ${events.length}`);
     
-    if (eventsWithUserId.length > 0) {
-      const firstEvent = eventsWithUserId[0];
-      this.logger.log(`[ThreatAnalysisJob] First event:`);
-      this.logger.log(`[ThreatAnalysisJob]   - ID: ${firstEvent.id}`);
-      this.logger.log(`[ThreatAnalysisJob]   - userId: ${JSON.stringify(firstEvent.userId)}`);
-      this.logger.log(`[ThreatAnalysisJob]   - userId type: ${typeof firstEvent.userId}`);
+    if (eventsWithUserId.length === 0) {
+      this.logger.log(`[ThreatAnalysisJob]  WARNING: No events have userId field!`);
+      this.logger.log(`[ThreatAnalysisJob]  Make sure Gateway enriches requests with userId`);
+      return grouped;
     }
-    
-    this.logger.log(`[ThreatAnalysisJob] Testing getUserByUserId('1')...`);
-    try {
-      const testUser = await this.userCacheService.getUserByUserId('1');
-      if (testUser) {
-        this.logger.log(`[ThreatAnalysisJob] ✓ getUserByUserId('1') SUCCESS!`);
-        this.logger.log(`[ThreatAnalysisJob]   - user.id: ${testUser.id}`);
-        this.logger.log(`[ThreatAnalysisJob]   - user.userId: ${JSON.stringify(testUser.userId)}`);
-        this.logger.log(`[ThreatAnalysisJob]   - user.userId type: ${typeof testUser.userId}`);
-        this.logger.log(`[ThreatAnalysisJob]   - user.username: ${testUser.username}`);
-        this.logger.log(`[ThreatAnalysisJob]   - user.role: ${testUser.role}`);
-      } else {
-        this.logger.log(`[ThreatAnalysisJob] ✗ getUserByUserId('1') returned NULL!`);
-      }
-    } catch (error: any) {
-      this.logger.log(`[ThreatAnalysisJob] ✗ getUserByUserId('1') ERROR: ${error.message}`);
-    }
-    
-    this.logger.log(`[ThreatAnalysisJob] Testing getAllPrivilegedUsers()...`);
-    try {
-      const allPrivileged = await this.userCacheService.getAllPrivilegedUsers();
-      this.logger.log(`[ThreatAnalysisJob] Total privileged users: ${allPrivileged.length}`);
-      if (allPrivileged.length > 0) {
-        allPrivileged.forEach((user, i) => {
-          this.logger.log(`[ThreatAnalysisJob]   User ${i + 1}:`);
-          this.logger.log(`[ThreatAnalysisJob]     - userId: ${JSON.stringify(user.userId)} (type: ${typeof user.userId})`);
-          this.logger.log(`[ThreatAnalysisJob]     - username: ${user.username}`);
-          this.logger.log(`[ThreatAnalysisJob]     - role: ${user.role}`);
-        });
-      } else {
-        this.logger.log(`[ThreatAnalysisJob]   (No privileged users found in cache)`);
-      }
-    } catch (error: any) {
-      this.logger.log(`[ThreatAnalysisJob] ✗ getAllPrivilegedUsers() ERROR: ${error.message}`);
-    }
-    
-    this.logger.log(`[ThreatAnalysisJob] ========== ULTRA DEBUG END ==========`);
 
-    for (const event of events) {
-      const userId = event.userId;
+    for (const event of eventsWithUserId) {
+      const userId = String(event.userId);
       
-      if (!userId) {
-        continue;
-      }
-
       const user = await this.userCacheService.getUserByUserId(userId);
       
       if (!user) {
-        this.logger.log(`[ThreatAnalysisJob] User ${userId} not found in cache`);
         continue;
       }
 
@@ -228,12 +147,16 @@ export class ThreatAnalysisJob {
 
       if (!grouped[userId]) {
         grouped[userId] = [];
+        this.logger.log(`[ThreatAnalysisJob] ✓ Found privileged user: ${user.username} (userId: ${userId}, role: ${user.role})`);
       }
       grouped[userId].push(event);
     }
 
+    this.logger.log(`[ThreatAnalysisJob] Grouped events for ${Object.keys(grouped).length} privileged users`);
+    
     return grouped;
   }
+
 
   private async analyzeUserEvents(userId: string, events: any[]): Promise<void> {
     try {
@@ -352,7 +275,7 @@ export class ThreatAnalysisJob {
         });
 
         await this.riskService.updateUserRiskAfterThreat(userId, username, threat.id);
-        this.logger.log(`[ThreatAnalysisJob]  Created threat ${threat.id} for ${username}: ${result.threatType}`);
+        this.logger.log(`[ThreatAnalysisJob] ✓ Created threat ${threat.id} for ${username}: ${result.threatType}`);
       }
     }
   }

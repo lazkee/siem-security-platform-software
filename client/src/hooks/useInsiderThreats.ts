@@ -3,9 +3,10 @@ import { IInsiderThreatAPI } from "../api/insider-threat/IInsiderThreatAPI";
 import { InsiderThreatDTO } from "../models/insider-threat/InsiderThreatDTO";
 import { UserRiskProfileDTO } from "../models/insider-threat/UserRiskProfileDTO";
 import { ThreatQueryDTO } from "../models/insider-threat/ThreatQueryDTO";
+import { useAuth } from "./useAuthHook";
 
 export const useInsiderThreats = (insiderThreatAPI: IInsiderThreatAPI) => {
-  const token = "token"; 
+  const { token } = useAuth(); 
   
   const [threats, setThreats] = useState<InsiderThreatDTO[]>([]);
   const [userRiskProfiles, setUserRiskProfiles] = useState<UserRiskProfileDTO[]>([]);
@@ -21,11 +22,14 @@ export const useInsiderThreats = (insiderThreatAPI: IInsiderThreatAPI) => {
 
   // Initial load
   useEffect(() => {
-    loadThreats();
-    loadUserRiskProfiles();
+    if (token) {
+      loadThreats();
+      loadUserRiskProfiles();
+    }
   }, [token]);
 
   const loadThreats = async () => {
+    if (!token) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -40,6 +44,7 @@ export const useInsiderThreats = (insiderThreatAPI: IInsiderThreatAPI) => {
   };
 
   const loadUserRiskProfiles = async () => {
+    if (!token) return;
     try {
       const data = await insiderThreatAPI.getAllUserRiskProfiles(token);
       setUserRiskProfiles(data);
@@ -49,6 +54,7 @@ export const useInsiderThreats = (insiderThreatAPI: IInsiderThreatAPI) => {
   };
 
   const searchThreats = async (query: ThreatQueryDTO) => {
+    if (!token) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -64,6 +70,9 @@ export const useInsiderThreats = (insiderThreatAPI: IInsiderThreatAPI) => {
   };
 
   const resolveThreat = async (id: number, resolvedBy: string, resolutionNotes?: string) => {
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
     try {
       const updatedThreat = await insiderThreatAPI.resolveThreat(id, resolvedBy, resolutionNotes, token);
       
@@ -78,6 +87,7 @@ export const useInsiderThreats = (insiderThreatAPI: IInsiderThreatAPI) => {
   };
 
   const getHighRiskUsers = async (): Promise<UserRiskProfileDTO[]> => {
+    if (!token) return [];
     try {
       return await insiderThreatAPI.getHighRiskUsers(token);
     } catch (err) {
@@ -87,6 +97,9 @@ export const useInsiderThreats = (insiderThreatAPI: IInsiderThreatAPI) => {
   };
 
   const getUserRiskAnalysis = async (userId: string) => {
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
     try {
       return await insiderThreatAPI.getUserRiskAnalysis(userId, token);
     } catch (err) {

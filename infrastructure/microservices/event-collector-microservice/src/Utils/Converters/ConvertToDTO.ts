@@ -5,6 +5,7 @@ export function toDTO(event: EventEntity): EventDTO {
   return {
     id: event.id,
     source: event.source,
+    userId: event.userId,
     type: event.type,
     description: event.description,
     timestamp: event.timestamp,
