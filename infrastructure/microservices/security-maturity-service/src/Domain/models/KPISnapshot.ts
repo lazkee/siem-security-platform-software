@@ -1,4 +1,3 @@
-// src/Domain/models/KpiSnapshot.ts
 import { Entity, PrimaryGeneratedColumn, Column, Index } from "typeorm";
 import { MaturityLevel } from "../enums/MaturityLevel";
 

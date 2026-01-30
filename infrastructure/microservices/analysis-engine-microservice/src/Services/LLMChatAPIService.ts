@@ -14,10 +14,14 @@ import { CorrelationResponseSchema } from "../Infrastructure/schemas/Correlation
 import { NORMALIZATION_PROMPT } from "../Infrastructure/prompts/normalization.prompt";
 import { CORRELATION_PROMPT } from "../Infrastructure/prompts/correlation.prompt";
 import { CorrelationCandidate } from "../Domain/types/CorrelationCandidate";
+import { Recommendation } from "../Domain/types/Recommendation";
+import { RecommendationResponseSchema } from "../Infrastructure/schemas/RecommendationResponse.schema";
+import { RecommendationContextDto } from "../Domain/types/recommendationContext/RecommendationContext";
+import { RECOMMENDATIONS_PROMPT } from "../Infrastructure/prompts/recommendation.prompt";
+import { parseRecommendations } from "../Infrastructure/parsers/RecommendationParser";
 
 dotenv.config();
 
-// Minimal, typed view of Gemini response we actually use (no any/unknown).
 type GeminiPart = { readonly text?: string };
 type GeminiContent = { readonly parts?: readonly GeminiPart[] };
 type GeminiCandidate = { readonly content?: GeminiContent };
@@ -28,6 +32,8 @@ export class LLMChatAPIService implements ILLMChatAPIService {
   private readonly apiKey: string;
   private readonly normalizationModelId: string;
   private readonly correlationModelId: string;
+  private readonly recommendationModelId: string;
+
 
   private readonly timeoutMs = 60000;
   private readonly maxRetries = 3;
@@ -37,12 +43,54 @@ export class LLMChatAPIService implements ILLMChatAPIService {
     this.apiKey = process.env.GEMINI_API_KEY ?? "";
     this.normalizationModelId = process.env.GEMINI_NORMALIZATION_MODEL_ID ?? "";
     this.correlationModelId = process.env.GEMINI_CORRELATION_MODEL_ID ?? "";
+    this.recommendationModelId = process.env.GEMINI_RECOMMENDATION_MODEL_ID ?? "";
+
 
     void this.loggerService.info("[LLM] Service initialized", {
       apiUrl: this.apiUrl,
       normalizationModelId: this.normalizationModelId,
       correlationModelId: this.correlationModelId,
+      recommendationModelId: this.recommendationModelId,
     });
+  }
+
+  // =========================================================
+  // RECOMMENDATIONS (Recommendation[])
+  // =========================================================
+  public async sendRecommendationsPrompt(
+    context: RecommendationContextDto
+  ): Promise<Recommendation[]> {
+    const json = JSON.stringify(context);
+    const messages: ChatMessage[] = [
+      {
+        role: "user",
+        content: `${RECOMMENDATIONS_PROMPT}${json}`.trim(),
+      },
+    ];
+    const raw = await this.sendChatCompletion(
+      this.recommendationModelId,
+      messages,
+      RecommendationResponseSchema as JsonObject
+    );
+
+    if (!raw.ok) {
+      await this.loggerService.warn("[LLM] Recommendations failed: LLM request/parse error", {
+        error: raw.error,
+        modelId: this.recommendationModelId,
+      });
+      return [];
+    }
+
+    const parsed = parseRecommendations(raw.value);
+
+    if (parsed.length === 0) {
+      await this.loggerService.warn("[LLM] Recommendations failed: schema validation returned 0 items", {
+        modelId: this.recommendationModelId,
+        raw: raw.value,
+      });
+    }
+
+    return parsed;
   }
 
   // =========================================================
@@ -165,6 +213,8 @@ export class LLMChatAPIService implements ILLMChatAPIService {
           timeout: this.timeoutMs,
         });
 
+        
+
         const textRes = this.extractFirstText(res.data);
         if (!textRes.ok) {
           await this.loggerService.warn("[LLM] Missing text part in response", {
@@ -215,20 +265,20 @@ export class LLMChatAPIService implements ILLMChatAPIService {
         return parsed;
       } catch (e) {
         const status =
-          axios.isAxiosError(e) && typeof e.response?.status === "number"
-            ? e.response.status
-            : 0;
+          axios.isAxiosError(e) ? e.response?.status : undefined;
 
         const message =
-          e instanceof Error
-            ? e.message
-            : "non-Error thrown";
+          e instanceof Error ? e.message : "unknown_error";
+
+        const data =
+          axios.isAxiosError(e) ? e.response?.data : undefined;
 
         await this.loggerService.warn("[LLM] Request failed", {
           attempt,
           modelId,
-          status,
+          
           message,
+          data
         });
 
         if (attempt < this.maxRetries) await this.sleep(400 * attempt);

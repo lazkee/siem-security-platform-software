@@ -1,4 +1,3 @@
-// src/Domain/models/KpiSnapshotCategoryCount.ts
 import {
   Entity,
   PrimaryGeneratedColumn,

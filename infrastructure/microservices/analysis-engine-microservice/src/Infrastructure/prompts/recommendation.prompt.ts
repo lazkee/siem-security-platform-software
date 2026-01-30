@@ -45,7 +45,7 @@ relatedMetrics items MUST be from: ${allowedMetrics}
 === HARD RULES ===
 1) Output MUST be valid JSON and MUST match the format above.
 2) Do NOT add any extra fields.
-3) Produce 5 to 8 recommendations.
+3) If there are no clear KPI gaps, trends, or incident patterns that justify actionable recommendations, return [].
 4) "id" must be sequential starting from 1.
 5) Every rationale MUST cite evidence from the context (at least one):
    - latest vs avg7d comparison, OR
@@ -56,7 +56,7 @@ relatedMetrics items MUST be from: ${allowedMetrics}
 7) Avoid generic advice. Be specific.
 8) Keep titles short and specific.
 
+
 Now produce recommendations for this context:
 
-context = {{CONTEXT_JSON}}
 `;
