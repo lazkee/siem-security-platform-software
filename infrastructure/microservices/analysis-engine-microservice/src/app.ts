@@ -66,13 +66,11 @@ const correlationService: ICorrelationService = new CorrelationService(
 );
 
 const analysisEngineController = new AnalysisEngineController(
-  correlationService,
-  llmChatAPIService
+  llmChatAPIService,
+  loggerService
 );
 
 app.use("/api/v1", analysisEngineController.getRouter());
-
-
 
 /* ===================== Jobs ===================== */
 

@@ -1,0 +1,1 @@
+export type GeminiPart = { readonly text?: string };

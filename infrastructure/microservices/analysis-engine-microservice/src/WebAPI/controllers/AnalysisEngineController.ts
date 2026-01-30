@@ -2,12 +2,13 @@ import { Router, Request, Response } from "express";
 import { ICorrelationService } from "../../Domain/services/ICorrelationService";
 import { ILLMChatAPIService } from "../../Domain/services/ILLMChatAPIService";
 import { validateRecommendationContextDto } from "../validators/validateRecommendationContext";
+import { ILoggerService } from "../../Domain/services/ILoggerService";
 
 export class AnalysisEngineController {
 
     private readonly router: Router;
 
-    constructor(private readonly correlationService: ICorrelationService, private readonly llmChatAPIService: ILLMChatAPIService) {
+    constructor(private readonly llmChatAPIService: ILLMChatAPIService, private readonly loggerService: ILoggerService) {
         this.router = Router();
         this.initializeRoutes();
     }
@@ -27,8 +28,7 @@ export class AnalysisEngineController {
             const contextDto = req.body;
             const validation = validateRecommendationContextDto(contextDto);
             if (!validation.ok) {
-                //dodati logera
-                console.log("Invalid RecommendationContextDto:", validation.error);
+                this.loggerService.error("[Controller] Invalid RecommendationContextDto:" + validation.error);
                 res.status(400).json({ error: validation.error });
                 return;
             }
@@ -37,6 +37,7 @@ export class AnalysisEngineController {
 
             res.status(200).json(recommendations);
         } catch (err) {
+            this.loggerService.error("[Controller] getRecommendations failed: " + (err as Error).message);
             res.status(500).json({ error: (err as Error).message });
         }
     }
@@ -46,6 +47,7 @@ export class AnalysisEngineController {
             const rawMessage = req.body.message as string;
 
              if (!rawMessage || rawMessage.trim().length === 0) {
+                 this.loggerService.warn("[Controller] procesEvent called with empty message.");
                  res.status(400).json({ error: "Message is required" });
                  return;
             }
@@ -54,9 +56,8 @@ export class AnalysisEngineController {
             
             res.status(200).json({ eventData: processedEventJson });
         } catch (err) {
+            this.loggerService.error("[Controller] processEventFailed: " + (err as Error).message);
             res.status(500).json({ error: (err as Error).message });
         }
     }
-
-
 }

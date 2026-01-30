@@ -9,8 +9,9 @@ import { QueryEventDTO } from "../Domain/types/QueryEventDTO";
 import { JsonValue } from "../Domain/types/JsonValue";
 import { Result } from "../Domain/types/Result";
 import { createAxiosClient } from "../Infrastructure/helpers/axiosClient";
-import { parseQueryEvents } from "../Infrastructure/parsers/QueryEventParser";
 import { CorrelationCandidate } from "../Domain/types/CorrelationCandidate";
+import { parseDateMs } from "../Infrastructure/helpers/parseDateMs";
+import { safeParseEvents } from "../Infrastructure/helpers/safeParseEvents";
 
 export class CorrelationService implements ICorrelationService {
   private readonly queryClient: AxiosInstance;
@@ -44,7 +45,7 @@ export class CorrelationService implements ICorrelationService {
       return;
     }
 
-    const eventsRes = this.safeParseEvents(eventsJsonRes.value);
+    const eventsRes = safeParseEvents(eventsJsonRes.value);
     if (!eventsRes.ok) {
       await this.loggerService.error("[CorrelationService] Failed to parse Query events", {
         error: eventsRes.error,
@@ -88,16 +89,6 @@ export class CorrelationService implements ICorrelationService {
       return { ok: true, value: res.data as JsonValue };
     } catch {
       return { ok: false, error: "query_fetch_failed" };
-    }
-  }
-
-  private safeParseEvents(raw: JsonValue): Result<QueryEventDTO[]> {
-    try {
-      const events = parseQueryEvents(raw);
-      return { ok: true, value: events };
-    } catch {
-      // parseQueryEvents ideally never throws, but we still comply with "never throw"
-      return { ok: false, error: "parse_query_events_failed" };
     }
   }
 
@@ -173,7 +164,7 @@ export class CorrelationService implements ICorrelationService {
       if (!idSet.has(e.id)) continue;
       found = true;
 
-      const msRes = this.parseDateMs(e.timestamp);
+      const msRes = parseDateMs(e.timestamp);
       if (!msRes.ok) continue;
 
       if (oldestMs === null || msRes.value < oldestMs) oldestMs = msRes.value;
@@ -183,13 +174,6 @@ export class CorrelationService implements ICorrelationService {
     if (oldestMs === null) return { ok: false, error: "no_valid_timestamps" };
 
     return { ok: true, value: new Date(oldestMs) };
-  }
-
-  private parseDateMs(raw: string): Result<number> {
-    const d = new Date(raw);
-    const ms = d.getTime();
-    if (Number.isNaN(ms)) return { ok: false, error: "invalid_timestamp" };
-    return { ok: true, value: ms };
   }
 
   private async notifyAlertService(dto: CorrelationDTO): Promise<void> {
