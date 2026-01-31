@@ -2,13 +2,6 @@ import express from "express";
 import cors from "cors";
 import "reflect-metadata";
 import dotenv from "dotenv";
-import { Repository } from "typeorm";
-
-import { initialize_database } from "./Database/InitializeConnection";
-import { Db } from "./Database/DbConnectionPool";
-
-import { Correlation } from "./Domain/models/Correlation";
-import { CorrelationEventMap } from "./Domain/models/CorrelationEventMap";
 
 import { ICorrelationService } from "./Domain/services/ICorrelationService";
 import { CorrelationService } from "./Services/CorrelationService";
@@ -43,20 +36,8 @@ app.use(
 );
 
 app.use(express.json());
-/* ===================== Startup ===================== */
-
-export async function initializeApp(): Promise<void> {
-  try {
-    await initialize_database(Db, loggerService);
-  } catch {
-    await loggerService.error("[App] initialize_database threw");
-  }
-}
 
 /* ===================== Composition ===================== */
-
-const correlationRepo: Repository<Correlation> = Db.getRepository(Correlation);
-const correlationMapRepo: Repository<CorrelationEventMap> = Db.getRepository(CorrelationEventMap);
 
 const llmChatAPIService: ILLMChatAPIService = new LLMChatAPIService(loggerService);
 

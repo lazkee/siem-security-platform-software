@@ -52,41 +52,60 @@ app.get("/health", async (req, res) => {
   }
 });
 
+async function startApp() {
+  try {
+    // Initialize the database first
+    await initialize_database();
+    console.log("Database initialized successfully.");
 
-// inicijalizacija baze
-void (async () => {
-  await initialize_database();
-})();
+    // Now it's safe to get the repository
+    const storageRepo = Db.getRepository(StorageLog);
 
-const storageRepo = Db.getRepository(StorageLog);
+    // Initialize services
+    const logerService: ILogerService = new LogerService();
+    const archiveProcessService: IArchiveProcessService = new ArchiveProcessService(storageRepo, logerService);
+    const archiveQueryService: IArchiveQueryService = new ArchiveQueryService(storageRepo, logerService);
+    const archiveStatsService: IArchiveStatsService = new ArchiveStatsService(storageRepo, logerService);
 
-const logerService : ILogerService = new LogerService();
-const archiveProcessService: IArchiveProcessService = new ArchiveProcessService(storageRepo, logerService);
-const archiveQueryService: IArchiveQueryService = new ArchiveQueryService(storageRepo, logerService);
-const archiveStatsService: IArchiveStatsService = new ArchiveStatsService(storageRepo, logerService);
+    // Initialize controllers
+    const storageController = new StorageLogController(
+      archiveProcessService,
+      archiveQueryService,
+      archiveStatsService
+    );
 
-const storageController = new StorageLogController(archiveProcessService, archiveQueryService, archiveStatsService);
+    // Set up Express
+    const app = express();
+    app.use(express.json());
+    app.use("/api/v1", storageController.getRouter());
 
-app.use("/api/v1", storageController.getRouter());
+    // Start periodic archiving
+    const FIFTEEN_MINUTES = 15 * 60 * 1000;
+    setInterval(async () => {
+      console.log("Starting automatic StorageLog archiving...");
+      try {
+        await archiveProcessService.runArchiveProcess();
+        console.log("Archiving completed.");
+      } catch (err) {
+        console.error("Error in archiving:", err);
+      }
+    }, FIFTEEN_MINUTES);
 
-
-//pokretanje na svakih 15 minuta
-const FIFTEEN_MINUTES = 15 * 60 * 1000;
-
-setInterval(async () => {
-  console.log("Starting automatic StorageLog archiving...");
-
-  try{
+    // Run the first archive immediately
     await archiveProcessService.runArchiveProcess();
-    console.log("Archiving completed.");
-  } catch (err){
-    console.error("Error in archiving: ", err);
-  }
-}, FIFTEEN_MINUTES);
+    console.log("First archiving complete.");
 
-//odmah pokrene jednom kada servis startuje
-archiveProcessService.runArchiveProcess()
-  .then(() => console.log("First archiving complete."))
-  .catch(err => console.error("Error while first archiving: ", err));
+    // Start server
+    const PORT = process.env.PORT ?? 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    
+  } catch (err) {
+    console.error("Failed to start app:", err);
+  }
+}
+
+// Start everything
+void startApp();
+
   
 export default app;

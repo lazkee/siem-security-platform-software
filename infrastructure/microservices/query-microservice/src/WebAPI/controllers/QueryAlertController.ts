@@ -25,9 +25,8 @@ export class QueryAlertContoller{
                 res.status(400).json({ message: "Invalid hours parameter." });
                 return;
             }
-            console.log("oldEvents");
             const oldEvents = await this.queryAlertRepositoryService.getOldAlerts(hours);
-            
+
             res.status(200).json(oldEvents);
         } catch (err) {
             res.status(500).json({ message: "Error while retrieving old events." });

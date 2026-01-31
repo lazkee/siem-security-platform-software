@@ -16,6 +16,6 @@ export interface IAlertService {
   updateAlertStatus(id: number, status: AlertStatus): Promise<AlertDTO>;
   getAlertsForKpi(from: Date, to: Date): Promise<AlertForKpi[]>;
   getAlertsWithFilters(query: AlertQueryDTO): Promise<PaginatedAlertsDTO>;
-
+  deleteArchivedAlerts(alertIds: number[]): Promise<void>;
 }
   

@@ -43,6 +43,7 @@ export class AlertController {
     this.router.get("/alerts/status/:status", this.getAlertsByStatus.bind(this));
     this.router.put("/alerts/:id/resolve", this.resolveAlert.bind(this));
     this.router.put("/alerts/:id/status", this.updateAlertStatus.bind(this));
+    this.router.delete("/alerts/deleteArchivedAlerts", this.deleteArchivedAlerts.bind(this));
   }
 
   public getRouter(): Router {
@@ -324,6 +325,23 @@ export class AlertController {
     } catch (err: any) {
       await this.logger.log(`Error updating alert status: ${err.message}`);
       res.status(500).json({ message: "Service error: Failed to update alert status." });
+    }
+  }
+
+  private async deleteArchivedAlerts(req: Request, res: Response): Promise<void> {
+    try{
+      const alertIds: number[] = req.body || [];
+      if(!Array.isArray(alertIds) || alertIds.length == 0){
+        await this.logger.log(`No alert IDs provided.`);
+        res.status(400).json({ message: "No alert IDs provided."});
+        return;
+      }
+
+      await this.alertService.deleteArchivedAlerts(alertIds);
+      res.status(200).json({ message: "Alerts deleted successfully."});
+    }catch(err: any){
+      await this.logger.log(`Error while updating alert status: ${err.message}`);
+      res.status(500).json({ message: "Service error: Failed to delete archived alerts. "});
     }
   }
 }

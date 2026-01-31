@@ -1,8 +1,7 @@
 console.clear();
 import app from './app';
-import { initializeApp ,startRecurringJobs} from "./app";
+import { startRecurringJobs} from "./app";
 
-initializeApp();
 // Start recurring jobs
 startRecurringJobs();
 

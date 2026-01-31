@@ -26,7 +26,7 @@ export class ArchiveProcessService implements IArchiveProcessService {
     ) {
         this.queryClient = createAxiosClient(process.env.QUERY_SERVICE_API ?? "");
         this.eventClient = createAxiosClient(process.env.EVENT_SERVICE_API ?? "");
-        this.correlationClient = createAxiosClient(process.env.ANALYSIS_ENGINE_API ?? "");
+        this.correlationClient = createAxiosClient(process.env.ALERT_API ?? "");
 
         //radi proveru 
         mkdirSync(ARCHIVE_DIR, { recursive: true });
@@ -37,14 +37,14 @@ export class ArchiveProcessService implements IArchiveProcessService {
         await this.logger.log("Starting archive process...");
 
         const eventsOk = await this.archiveEvents();
-        //const alertsOk = await this.archiveAlerts();
+        const alertsOk = await this.archiveAlerts();
         // zakomentarisano jer ne radimo jos uvek arhiviranje alertova
 
         // stavljeno alerts = true jer nije pozvano arhiviranje alertova
-        await this.logger.log(`Archive process result: events:${eventsOk}, alerts=${true}`);
+        await this.logger.log(`Archive process result: events:${eventsOk}, alerts=${alertsOk}`);
 
         // vracamo true za alertove
-        return eventsOk && true;
+        return eventsOk && alertsOk;
     }
 
     public async archiveEvents(): Promise<boolean> {
@@ -124,7 +124,7 @@ export class ArchiveProcessService implements IArchiveProcessService {
             const groups: Record<string, string[]> = {};
 
             for (const a of alerts) {
-                const alertDate = new Date(a.timestamp as any);
+                const alertDate = new Date(a.createdAt as any);
                 const line = `ALERT | ID = ${a.id} | SOURCE = ${a.source} | ${alertDate.toISOString()}`;
 
                 const key = getTimeGroup(alertDate);
@@ -158,7 +158,7 @@ export class ArchiveProcessService implements IArchiveProcessService {
 
             await this.logger.log(`Deleting ${alerts.length} events from Analysis Engine service`);
 
-            await this.correlationClient.delete("/AnalysisEngine/correlations/deleteByEventIds",
+            await this.correlationClient.delete("/alerts/deleteArchivedAlerts",
                 { data: alerts.map(a => a.id) }
             );
 

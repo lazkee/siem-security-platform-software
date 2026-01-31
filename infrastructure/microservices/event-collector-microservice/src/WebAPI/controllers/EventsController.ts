@@ -25,8 +25,8 @@ export class EventsController {
         this.router.get("/events/:id", this.getEventById.bind(this));
         this.router.get("/events/from/:fromId/to/:toId", this.getEventsFromId1ToId2.bind(this))
         this.router.post("/events", this.createEvent.bind(this));
-        this.router.delete("/events/:id", this.deleteEvent.bind(this));
         this.router.delete("/events/old", this.deleteOldEvents.bind(this));
+        this.router.delete("/events/:id", this.deleteEvent.bind(this));
     }
 
     private async healthCheck(req: Request, res: Response): Promise<void> {
@@ -103,6 +103,7 @@ export class EventsController {
 
     private async deleteEvent(req: Request, res: Response): Promise<void> {
         try {
+            console.log("I am in here");
             const id = Number(req.params.id);
 
             const validate = validateEventId(id);
@@ -125,7 +126,8 @@ export class EventsController {
 
     private async deleteOldEvents(req: Request, res: Response): Promise<void> {
         try {
-            const ids = req.body;
+
+            const ids: number[] = req.body || [];
 
             const validate = validateEventIdArray(ids);
             if (!validate.success) {

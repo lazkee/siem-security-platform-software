@@ -116,4 +116,20 @@ export class AlertRepositoryService implements IAlertRepositoryService {
 
     return { alerts, total };
   }
+
+  async deleteMany(alertIds: number[]): Promise<void> {
+      if (!alertIds || alertIds.length === 0) return;
+
+      const result = await this.repo
+          .createQueryBuilder()
+          .delete()
+          .from(Alert)
+          .where("id IN (:...ids)", { ids: alertIds })
+          .execute();
+
+      if (result.affected === 0) {
+          await this.logger.log(`No alerts were deleted for IDs: ${alertIds}`);
+      }
+  }
+
 }

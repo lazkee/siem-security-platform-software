@@ -1,7 +1,7 @@
 export interface CorrelationDTO{
     id: number;
     description: string;
-    timestamp: Date;
+    createdAt: Date;
     is_alert: boolean;
     source: string;
 }

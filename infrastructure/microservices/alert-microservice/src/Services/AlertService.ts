@@ -16,7 +16,7 @@ export class AlertService implements IAlertService {
     private repo: IAlertRepositoryService,
     private readonly logger: ILoggerService
   ) { }
-
+  
   async createAlert(data: CreateAlertDTO): Promise<AlertDTO> {
     try {
       const alertData = {
@@ -153,5 +153,16 @@ export class AlertService implements IAlertService {
         totalPages
       }
     };
+  }
+
+  async deleteArchivedAlerts(alertIds: number[]): Promise<void> {
+    if (!alertIds || alertIds.length === 0) return;
+
+    try {
+        await this.repo.deleteMany(alertIds);
+        await this.logger.log(`Deleted archived alerts with IDs: ${alertIds}`);
+    } catch (err) {
+        await this.logger.log(`Failed to delete archived alerts: ${err}`);
+    }
   }
 }

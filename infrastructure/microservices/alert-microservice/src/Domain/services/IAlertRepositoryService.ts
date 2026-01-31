@@ -14,5 +14,5 @@ export interface IAlertRepositoryService {
   findResolvedBetween(from: Date, to: Date): Promise<Alert[]>;
   findCreatedBetween(from: Date, to: Date): Promise<Alert[]>;
   findWithFilters(query: AlertQueryDTO): Promise<{ alerts: Alert[], total: number }>;
-
+  deleteMany(alertIds: number[]): Promise<void>;
 }
