@@ -204,6 +204,7 @@ export class GatewayService implements IGatewayService {
   }
 
   async searchAlertsFromQuery(alertQueryDTO: AlertQueryDTO): Promise<PaginatedAlertsDTO> {
+    console.log("Da loi ovde udje");
     return this.queryService.searchAlerts(alertQueryDTO);
   }
 

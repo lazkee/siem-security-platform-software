@@ -163,7 +163,9 @@ export class QueryGatewayService implements IQueryGatewayService {
   }
 
   async searchAlerts(alertQueryDTO: AlertQueryDTO): Promise<PaginatedAlertsDTO> {
-    const response = await this.client.post<PaginatedAlertsDTO>("/query/search", alertQueryDTO);
+    //console.log("aaaaaaaaaa");
+    const response = await this.client.post<PaginatedAlertsDTO>("/query/searchAlerts", alertQueryDTO);
+    
     return response.data;
   }
 

@@ -6,7 +6,7 @@ import { AlertQueryDTO, PaginatedAlertsDTO } from "../../models/alerts/AlertQuer
 export class AlertAPI implements IAlertAPI {
   private readonly axiosInstance: AxiosInstance;
   private readonly basePath = "alerts";
-
+  private readonly baseSearchPath = "query/searchAlerts";
   constructor() {
     this.axiosInstance = axios.create({
       baseURL: import.meta.env.VITE_FIREWALL_PROXY_URL,
@@ -37,12 +37,12 @@ export class AlertAPI implements IAlertAPI {
 
   async searchAlerts(query: AlertQueryDTO, token: string): Promise<PaginatedAlertsDTO> {
     const response: AxiosResponse = await this.axiosInstance.post("", {
-      url: `${this.basePath}/search`,
-      method: "GET",
+      url: "query/searchAlerts",
+      method: "POST",
       headers: { Authorization: `Bearer ${token}` },
-      params: this.sanitizeQuery(query),
+      data: this.sanitizeQuery(query),
     });
-
+    
     return response.data.response;
   }
 
