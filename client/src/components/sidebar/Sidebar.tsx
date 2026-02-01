@@ -5,7 +5,7 @@ import { VscGraph } from "react-icons/vsc";
 import { LuDatabaseBackup, LuLayers3 } from "react-icons/lu";
 import { MdKeyboardArrowRight, MdOutlineScience } from "react-icons/md";
 import { BiError } from "react-icons/bi";
-import { PiShieldCheck, PiShieldWarningFill, PiSpeedometerFill } from "react-icons/pi";
+import { PiShieldCheck, PiShieldWarningFill, PiSpeedometerFill, PiFingerprintFill } from "react-icons/pi"; // Nova ikonica
 import { useState } from "react";
 import { TbSquareLetterS } from "react-icons/tb";
 import { TbSquareLetterI } from "react-icons/tb";
@@ -27,9 +27,9 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
 
     return (
         <div
-            className={`h-full bg-[#202020] text-white transition-all duration-300 left-2 ${isSidebarOpened ? "w-[200px]" : "w-[45px]"}
+            className={`h-screen overflow-y-auto bg-[#202020] text-white transition-all duration-300 left-2 custom-sidebar ${isSidebarOpened ? "w-[200px]" : "w-[45px]"}
         `}>
-            <div className="flex items-center">
+            <div className="flex items-center sticky top-0 bg-[#202020] z-10 pb-2">
                 <button onClick={() => setIsSidebarOpened(!isSidebarOpened)}>
                     <IoIosMenu size={30} style={{ marginLeft: '-2px' }} />
                 </button>
@@ -170,34 +170,40 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
 
                     <button
                         className={itemClass(9)}
-                        style={{ marginLeft: '20px', borderRadius: '0.75rem'}}
+                        style={{ marginLeft: '20px', borderRadius: '0.75rem' }}
                         onClick={() => {
                             setSideMenuPage(9);
                             setSelectedButton(9);
                         }}
                         onMouseEnter={() => setHover(9)}
                         onMouseLeave={() => setHover(null)}>
-                            <LuDatabaseBackup size={22}/>
-                            Backup
-                            <MdKeyboardArrowRight size={20}/>
+                        <LuDatabaseBackup size={22} />
+                        Backup
+                        <MdKeyboardArrowRight size={20} />
                     </button>
                     <button
                         className={itemClass(10)}
-                        style={{marginLeft: "20px", borderRadius: "0.75rem"}}
+                        style={{ marginLeft: "20px", borderRadius: "0.75rem" }}
                         onClick={() => {
                             setSideMenuPage(10);
                             setSelectedButton(10);
                         }}
                         onMouseEnter={() => setHover(10)}
                         onMouseLeave={() => setHover(null)}
-                        >
-                            <PiShieldStarFill size={22} />
-                            Security Maturity
-                            <MdKeyboardArrowRight size={20} />
+                    >
+                        <PiShieldStarFill size={22} />
+                        Security Maturity
+                        <MdKeyboardArrowRight size={20} />
                     </button>
+
                     <button
                         className={itemClass(11)}
-                        style={{marginLeft: "20px", borderRadius: "0.75rem"}}
+                        style={{ 
+                            marginLeft: "20px", 
+                            borderRadius: "0.75rem",
+                            border: selectedButton === 11 ? "1px solid #00ffaa" : "none", // Suptilni okvir kad je kliknuto
+                            boxShadow: selectedButton === 11 ? "0px 0px 10px rgba(0, 255, 170, 0.2)" : "none"
+                        }}
                         onClick={() => {
                             setSideMenuPage(11);
                             setSelectedButton(11);
@@ -205,12 +211,26 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
                         onMouseEnter={() => setHover(11)}
                         onMouseLeave={() => setHover(null)}
                     >
-                        <PiShieldStarFill size={22} />
-                        Integrity
+                        <div className="flex items-center gap-2">
+                            <PiFingerprintFill size={24} color={selectedButton === 11 ? "#00ffaa" : "white"} /> 
+                            <span style={{ fontWeight: selectedButton === 11 ? "bold" : "normal" }}>Integrity</span>
+                        </div>
                         <MdKeyboardArrowRight size={20} />
                     </button>
+                    
+                    <div className="h-10"></div>
                 </div>
             )}
+
+            <style>{`
+                .custom-sidebar::-webkit-scrollbar {
+                    width: 5px;
+                }
+                .custom-sidebar::-webkit-scrollbar-thumb {
+                    background: #333;
+                    border-radius: 10px;
+                }
+            `}</style>
         </div>
     );
 }
