@@ -10,14 +10,15 @@ interface IntegrityProps {
 }
 
 export default function Integrity({ integrityApi }: IntegrityProps) {
-  const { token } = useAuth();
+  //const { token } = useAuth();
+  const token = "token"; // TODO: DELETE AFTER TESTING!
   const [status, setStatus] = useState<IntegrityStatusDTO | null>(null);
   const [report, setReport] = useState<IntegrityReportDTO | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showReport, setShowReport] = useState(false);
 
   const loadStatus = async () => {
-    const activeToken = token || "token";
+    const activeToken = token;
     setIsLoading(true);
     try {
       const data = await integrityApi.getStatus(activeToken);
@@ -36,7 +37,7 @@ export default function Integrity({ integrityApi }: IntegrityProps) {
   };
 
   const handleVerify = async () => {
-    const activeToken = token || "token";
+    const activeToken = token;
     setIsLoading(true);
     try {
       const result = await integrityApi.verifyIntegrity(activeToken);

@@ -1,3 +1,4 @@
+
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { IIntegrityAPI } from "./IIntegrityAPI";
 import { IntegrityReportDTO, IntegrityStatusDTO } from "../../models/interity/IntegrityLogDTO";
@@ -8,29 +9,33 @@ export class IntegrityAPI implements IIntegrityAPI {
 
   constructor() {
     this.axiosInstance = axios.create({
-      baseURL: import.meta.env.VITE_FIREWALL_PROXY_URL,
+      baseURL: import.meta.env.VITE_FIREWALL_PROXY_URL, 
       headers: { "Content-Type": "application/json" },
       timeout: 30000,
     });
   }
 
   async getStatus(token: string): Promise<IntegrityStatusDTO> {
+    console.log("token: ", token);
     const response: AxiosResponse = await this.axiosInstance.post("", {
-      url: `${this.basePath}/status`,
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
+      url: `integrity/status`, 
+      method: "POST", 
+      headers: { 
+        "Authorization": `Bearer ${token}`
+      },
     });
-
-    return response.data.response;
-  }
+    console.log("Stiglo sa servera:", response.data);
+    return response.data?.response || response.data;
+}
 
   async verifyIntegrity(token: string): Promise<IntegrityReportDTO> {
     const response: AxiosResponse = await this.axiosInstance.post("", {
-      url: `${this.basePath}/verify`,
+      url: `integrity/verify`,
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { "Authorization": `Bearer ${token}` },
     });
 
-    return response.data.response;
+    return response.data?.response || response.data;
   }
+
 }
