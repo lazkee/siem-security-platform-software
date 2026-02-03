@@ -1,4 +1,3 @@
-// src/app.ts
 import express from 'express';
 import cors from 'cors';
 import 'reflect-metadata';
@@ -13,17 +12,14 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// CORS podešavanje prema tvom primeru
 const corsOrigin = process.env.CORS_ORIGIN?.split(",").map((m) => m.trim()) ?? ["*"];
 app.use(cors({ origin: corsOrigin, methods: ["GET", "POST"] }));
 
-// Konfiguracija baze - ČISTA VERZIJA BEZ GREŠAKA
 const AppDataSource = new DataSource({
     type: "mongodb",
     url: process.env.MONGO_URI || "mongodb://user:1234@localhost:27017/integrity_db?authSource=admin",
-    // IZBACILI SMO: useNewUrlParser i useUnifiedTopology jer prave grešku
     entities: [LogHash],
-    synchronize: true, // Automatski pravi kolekciju "log_integrity_chain"
+    synchronize: true, 
     logging: true
 });
 
