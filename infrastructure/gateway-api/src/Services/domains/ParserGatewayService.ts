@@ -15,12 +15,14 @@ export class ParserGatewayService implements IParserGatewayService {
     });
   }
 
-  async log(eventMessage: string, eventSource: string, ipAddress?: string): Promise<EventDTO> {
-    const response = await this.client.post<EventDTO>("/parserEvents/log", {
-      message: eventMessage,
-      source: eventSource,
-      ipAddress: ipAddress,
-    });
+  async log(eventMessage: string,eventSource: string, ipAddress?: string, userId?: number, userRole?: string): Promise<EventDTO> {
+  const response = await this.client.post<EventDTO>("/parserEvents/log", {
+    message: eventMessage,
+    source: eventSource,
+    ipAddress: ipAddress,
+    userId: userId,     
+    userRole: userRole, 
+  });
 
     return response.data;
   }

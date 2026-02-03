@@ -3,9 +3,16 @@ import { EventType } from "../../Domain/enums/EventType";
 import { ValidationResult } from "../../Domain/types/ValidationResult";
 
 export function validateEventData(data: EventDTO): ValidationResult {
+  if (data.userId !== undefined && !Number.isInteger(data.userId)) {
+    return { success: false, message: "Invalid userId - must be a number" };
+  }
 
-  if (data.userId !== undefined && typeof data.userId !== "string") {
-    return { success: false, message: "Invalid userId" };
+  if (data.userRole !== undefined && typeof data.userRole !== "string") {
+    return { success: false, message: "Invalid userRole - must be a string" };
+  }
+
+  if (data.userRole !== undefined && data.userRole.length > 100) {
+    return { success: false, message: "userRole must be <= 100 characters" };
   }
 
   if (!data.source || data.source.trim().length === 0) {

@@ -9,8 +9,11 @@ export class Event {
     @Column({ type: "varchar", length: 255 })
     source!: string;
 
+    @Column({ type: "int", nullable: true })
+    userId?: number;       
+
     @Column({ type: "varchar", length: 100, nullable: true })
-    userId?: string;
+    userRole?: string;  
 
     @Column({ type: "enum", enum: EventType, default: EventType.INFO })
     type!: EventType;

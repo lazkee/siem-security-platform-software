@@ -20,7 +20,13 @@ export class ParserService implements IParserService {
         this.eventClient = createAxiosClient(process.env.EVENT_SERVICE_API ?? "");
     }
 
-    async normalizeAndSaveEvent(eventMessage: string, eventSource: string, ipAddress?: string): Promise<EventDTO> {
+    async normalizeAndSaveEvent(
+        eventMessage: string, 
+        eventSource: string, 
+        ipAddress?: string,
+        userId?: number,
+        userRole?: string
+    ): Promise<EventDTO> {
         const timeOfEvent: Date = new Date();
 
         let event = this.normalizeEventWithRegexes(eventMessage);
@@ -35,6 +41,9 @@ export class ParserService implements IParserService {
         event.source = eventSource;
         event.timestamp = timeOfEvent;
         event.ipAddress = ipAddress;
+        event.userId = userId;
+        event.userRole = userRole;
+        
         const responseEvent = (await this.eventClient.post<EventDTO>("/events", event)).data;    // Saving to the Events table (calling event-collector)
 
         if (responseEvent.id === -1)
