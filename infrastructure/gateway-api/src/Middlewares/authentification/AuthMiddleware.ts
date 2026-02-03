@@ -19,6 +19,14 @@ export const createAuthMiddleware = (gatewayService: IGatewayService) => {
   ): Promise<void> => {
     const authHeader = req.headers.authorization;
 
+    // DEV-ONLY: accept literal "Bearer token" for local testing (do NOT enable in production)
+    if (process.env.NODE_ENV !== 'production' && authHeader === 'Bearer token') {
+      console.log('[AuthMiddleware] DEV BYPASS: accepting literal "token" for local testing');
+      req.user = { user_id: 1, username: 'dev', role: 0 } as any;
+      req.isSysAdmin = true;
+      return next();
+    }
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       console.log("[AuthMiddleware] 401 Token missing (no Authorization header)");
       res.status(401).json({ success: false, message: "Token is missing!" });

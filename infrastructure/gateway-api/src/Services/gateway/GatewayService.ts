@@ -382,13 +382,15 @@ export class GatewayService implements IGatewayService {
   async getGlobalScore(): Promise<number> {
     return await this.riskScoreService.getGlobalScore();
   }
-  async getIntegrityStatus(): Promise<void>  { 
-    return await this.integrityService.getStatus(); 
-  }
-  async getCompromisedLogs(): Promise<void>  { 
-    return await this.integrityService.getCompromised(); 
-  }
-  async verifyIntegrity(): Promise<void>  { 
-    return await this.integrityService.verify(); 
-  }
+  async getIntegrityStatus(): Promise<any> { 
+  return await this.integrityService.getStatus(); 
+}
+
+async getCompromisedLogs(): Promise<any> { 
+  return await this.integrityService.getCompromised(); 
+}
+
+async verifyIntegrity(): Promise<any> { 
+  return await this.integrityService.verify(); 
+}
 }

@@ -5,7 +5,7 @@ import { IntegrityReportDTO, IntegrityStatusDTO } from "../../models/interity/In
 
 export class IntegrityAPI implements IIntegrityAPI {
   private readonly axiosInstance: AxiosInstance;
-  private readonly basePath = "integrity";
+ // private readonly basePath = "integrity";
 
   constructor() {
     this.axiosInstance = axios.create({
@@ -17,22 +17,20 @@ export class IntegrityAPI implements IIntegrityAPI {
 
   async getStatus(token: string): Promise<IntegrityStatusDTO> {
     console.log("token: ", token);
+    console.info('[IntegrityAPI] Sending integrity request without Authorization header (consistent with Alerts)');
     const response: AxiosResponse = await this.axiosInstance.post("", {
-      url: `integrity/status`, 
-      method: "POST", 
-      headers: { 
-        "Authorization": `Bearer ${token}`
-      },
+      url: `integrity/status`,
+      method: "POST",
     });
     console.log("Stiglo sa servera:", response.data);
     return response.data?.response || response.data;
 }
 
   async verifyIntegrity(token: string): Promise<IntegrityReportDTO> {
+    console.info('[IntegrityAPI] Sending verify request without Authorization header (consistent with Alerts)');
     const response: AxiosResponse = await this.axiosInstance.post("", {
       url: `integrity/verify`,
       method: "POST",
-      headers: { "Authorization": `Bearer ${token}` },
     });
 
     return response.data?.response || response.data;
