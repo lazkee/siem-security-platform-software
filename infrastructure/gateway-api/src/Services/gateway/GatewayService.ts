@@ -18,7 +18,6 @@ import { EventsResultDTO } from "../../Domain/DTOs/EventsResultDTO";
 import { OTPVerificationDTO } from "../../Domain/DTOs/OtpVerificationDTO";
 import { AuthJwtResponse } from "../../Domain/types/AuthJwtResponse";
 import { IAuthGatewayService } from "../../Domain/services/IAuthGatewayService";
-import { IUserGatewayService } from "../../Domain/services/IUserGatewayService";
 import { IAlertGatewayService } from "../../Domain/services/IAlertGatewayService";
 import { IQueryGatewayService } from "../../Domain/services/IQueryGatewayService";
 import { IStorageGatewayService } from "../../Domain/services/IStorageGatewayService";

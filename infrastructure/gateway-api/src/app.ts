@@ -23,8 +23,6 @@ import { InsiderThreatGatewayController } from './WebAPI/controllers/InsiderThre
 import { RiskScoreGatwayController } from './WebAPI/controllers/RiskScoreGatewayController';
 import { IntegrityGatewayController } from './WebAPI/controllers/IntegrityGatewayController';
 
-import { enrichRequestWithUserId } from './Middlewares/EnrichRequestWithUserId';
-
 const app = express();
 
 // Read CORS settings from environment
@@ -64,9 +62,7 @@ app.use('/api/v1', new AlertGatewayController(gatewayService, authenticate, logg
 app.use('/api/v1', new QueryGatewayController(gatewayService, authenticate).getRouter());
 app.use('/api/v1', new StorageGatewayController(gatewayService, authenticate).getRouter());
 
-const eventCollectorController = new EventCollectorGatewayController(gatewayService, authenticate, loggerService);
-app.use('/api/v1', authenticate, enrichRequestWithUserId, eventCollectorController.getRouter());
-
+app.use('/api/v1',new EventCollectorGatewayController(gatewayService, authenticate, loggerService).getRouter());
 app.use('/api/v1', new IntegrityGatewayController(gatewayService, /*authenticate,*/ loggerService).getRouter());
 app.use('/api/v1', new ParserGatewayController(gatewayService).getRouter());
 app.use('/api/v1', new SimulatorGatewayController(simulatorService, authenticate).getRouter());

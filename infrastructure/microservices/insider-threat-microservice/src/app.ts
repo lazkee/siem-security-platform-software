@@ -62,12 +62,8 @@ app.get("/", (req, res) => {
     logger.log(`[TCPListen@InsiderThreat] localhost:${PORT}`);
   });
 
-  logger.log("=".repeat(60));
-  logger.log("STARTING THREAT ANALYSIS JOB");
-  logger.log("=".repeat(60));
-
   const job = new ThreatAnalysisJob(
-    EVENT_COLLECTOR_URL,
+    eventFetcherService,
     threatService,
     riskService,
     threatDetectionService,

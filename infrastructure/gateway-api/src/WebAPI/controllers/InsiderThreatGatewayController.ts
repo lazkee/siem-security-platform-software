@@ -130,13 +130,13 @@ export class InsiderThreatGatewayController {
         page: req.query.page ? Number(req.query.page) : undefined,
         limit: req.query.limit ? Number(req.query.limit) : undefined,
         userId: req.query.userId ? Number(req.query.userId) : undefined,
-        threatType: req.query.threatType as any,
-        riskLevel: req.query.riskLevel as any,
+        threatType: req.query.threatType as ThreatQueryDTO["threatType"],
+        riskLevel: req.query.riskLevel as ThreatQueryDTO["riskLevel"],
         startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
         endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
         isResolved: req.query.isResolved === "true" ? true : req.query.isResolved === "false" ? false : undefined,
-        sortBy: req.query.sortBy as any,
-        sortOrder: req.query.sortOrder as any,
+        sortBy: req.query.sortBy as ThreatQueryDTO["sortBy"],
+        sortOrder: req.query.sortOrder as ThreatQueryDTO["sortOrder"],
       };
 
       const result = await this.gatewayService.searchInsiderThreats(query);
@@ -150,8 +150,12 @@ export class InsiderThreatGatewayController {
   private async resolveThreat(req: Request<ReqParams<"id">>, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id, 10);
-      const resolvedBy = req.user?.username || "Unknown";
-      const { resolutionNotes } = req.body;
+      const { resolvedBy, resolutionNotes } = req.body;
+
+      if (!resolvedBy) {
+        res.status(400).json({ message: "resolvedBy is required" });
+        return;
+      }
 
       const result = await this.gatewayService.resolveInsiderThreat(id, resolvedBy, resolutionNotes);
       res.status(200).json(result);

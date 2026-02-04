@@ -1,4 +1,4 @@
-import axios from "axios";
+import { IEventFetcherService, Event } from "../Domain/services/IEventFetcherService";
 import { IInsiderThreatService } from "../Domain/services/IInsiderThreatService";
 import { IUserRiskAnalysisService } from "../Domain/services/IUserRiskAnalysisService";
 import { IThreatDetectionService } from "../Domain/services/IThreatDetectionService";
@@ -11,7 +11,7 @@ export class ThreatAnalysisJob {
   private readonly intervalMinutes: number;
 
   constructor(
-    private readonly eventCollectorUrl: string,
+    private readonly eventFetcher: IEventFetcherService,
     private readonly threatService: IInsiderThreatService,
     private readonly riskService: IUserRiskAnalysisService,
     private readonly detectionService: IThreatDetectionService,
@@ -22,9 +22,6 @@ export class ThreatAnalysisJob {
   }
 
   start(): void {
-    this.logger.log(` THREAT ANALYSIS JOB STARTED`);
-    this.logger.log(`   Interval: ${this.intervalMinutes} minutes`);
-    
     this.run();
     this.intervalId = setInterval(() => this.run(), this.intervalMinutes * 60 * 1000);
   }
@@ -32,56 +29,41 @@ export class ThreatAnalysisJob {
   stop(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId);
-      this.logger.log(" Threat Analysis Job stopped");
     }
   }
 
   private async run(): Promise<void> {
     if (this.isRunning) {
-      this.logger.log("[ThreatAnalysisJob] Previous analysis still running, skipping");
       return;
     }
 
     this.isRunning = true;
-    const startTime = Date.now();
-    
-    this.logger.log(`[ThreatAnalysisJob] Starting analysis`);
 
     try {
-      const maxEventId = await this.getMaxEventId();
+      const maxEventId = await this.eventFetcher.getMaxEventId();
       
       if (maxEventId <= this.lastProcessedEventId) {
-        this.logger.log("[ThreatAnalysisJob] No new events to process");
         return;
       }
 
-      const newEvents = await this.getEventsInRange(
+      const newEvents = await this.eventFetcher.getEventsInRange(
         this.lastProcessedEventId + 1,
         maxEventId
       );
 
-      this.logger.log(`[ThreatAnalysisJob] Analyzing ${newEvents.length} new events`);
-
       const eventsByUser = this.groupEventsByPrivilegedUsers(newEvents);
-      const privilegedUserCount = Object.keys(eventsByUser).length;
-      this.logger.log(` [ThreatAnalysisJob] Found ${privilegedUserCount} privileged users`);
 
-      let threatsDetected = 0;
       for (const [userIdStr, events] of Object.entries(eventsByUser)) {
         const userId = parseInt(userIdStr, 10);
-        const threats = await this.analyzeUserEvents(userId, events);
-        threatsDetected += threats;
+        await this.analyzeUserEvents(userId, events);
       }
 
       this.lastProcessedEventId = maxEventId;
-      
-      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-      this.logger.log(` [ThreatAnalysisJob] Analysis completed`);
 
-
-    } catch (error: any) {
-      this.logger.log(`[ThreatAnalysisJob] ERROR: ${error.message}`);
-      if (error.stack) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.log(`[ThreatAnalysisJob] ERROR: ${message}`);
+      if (error instanceof Error && error.stack) {
         this.logger.log(error.stack);
       }
     } finally {
@@ -89,49 +71,11 @@ export class ThreatAnalysisJob {
     }
   }
 
-  private async getMaxEventId(): Promise<number> {
-    try {
-      const response = await axios.get(`${this.eventCollectorUrl}/events`, {
-        timeout: 10000
-      });
-      
-      const events = response.data;
-      
-      if (!Array.isArray(events) || events.length === 0) {
-        return 0;
-      }
-
-      return Math.max(...events.map((e: any) => e.id));
-    } catch (error: any) {
-      this.logger.log(`[ThreatAnalysisJob] Failed to get max event ID: ${error.message}`);
-      return this.lastProcessedEventId;
-    }
-  }
-
-  private async getEventsInRange(fromId: number, toId: number): Promise<any[]> {
-    try {
-      const response = await axios.get(
-        `${this.eventCollectorUrl}/events/from/${fromId}/to/${toId}`,
-        { timeout: 30000 }
-      );
-      
-      return Array.isArray(response.data) ? response.data : [];
-    } catch (error: any) {
-      this.logger.log(`[ThreatAnalysisJob] Failed to get events: ${error.message}`);
-      return [];
-    }
-  }
-
-  private groupEventsByPrivilegedUsers(events: any[]): Record<string, any[]> {
-    const grouped: Record<string, any[]> = {};
-    const validEvents = events.filter(e => e.userId && e.userRole);
-
-    if (validEvents.length === 0) {
-      this.logger.log("[ThreatAnalysisJob] WARNING: No events have userId and userRole!");
-      return grouped;
-    }
-
-    this.logger.log(`   Valid events (with userId & userRole): ${validEvents.length} / ${events.length}`);
+  private groupEventsByPrivilegedUsers(events: Event[]): Record<string, Event[]> {
+    const grouped: Record<string, Event[]> = {};
+    const validEvents = events.filter((e): e is Event & { userId: number; userRole: string } =>
+      e.userId != null && e.userRole != null
+    );
 
     for (const event of validEvents) {
       if (!this.isPrivilegedRole(event.userRole)) {
@@ -142,7 +86,6 @@ export class ThreatAnalysisJob {
 
       if (!grouped[userId]) {
         grouped[userId] = [];
-        this.logger.log(`   Privileged user found: userId=${event.userId}, role=${event.userRole}`);
       }
       
       grouped[userId].push(event);
@@ -156,9 +99,9 @@ export class ThreatAnalysisJob {
     return role === "ADMIN" || role === "SYSADMIN";
   }
 
-  private async analyzeUserEvents(userId: number, events: any[]): Promise<number> {
+  private async analyzeUserEvents(userId: number, events: Event[]): Promise<number> {
     try {
-      const userRole = events[0].userRole;
+      const userRole = events[0]?.userRole ?? "UNKNOWN";
       const eventIds = events.map(e => e.id);
 
       this.logger.log(`\n   🔎 Analyzing ${eventIds.length} events for userId=${userId} (${userRole})`);
@@ -176,8 +119,9 @@ export class ThreatAnalysisJob {
 
       return threatsDetected;
 
-    } catch (error: any) {
-      this.logger.log(`    Error analyzing events for userId=${userId}: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.log(`    Error analyzing events for userId=${userId}: ${message}`);
       return 0;
     }
   }
@@ -197,8 +141,6 @@ export class ThreatAnalysisJob {
       });
 
       await this.riskService.updateUserRiskAfterThreat(userId, threat.id);
-      
-      this.logger.log(`       THREAT #${threat.id}: ${result.threatType} (${result.riskLevel})`);
       return 1;
     }
     
@@ -220,8 +162,6 @@ export class ThreatAnalysisJob {
       });
 
       await this.riskService.updateUserRiskAfterThreat(userId, threat.id);
-      
-      this.logger.log(`       THREAT #${threat.id}: ${result.threatType} (${result.riskLevel})`);
       return 1;
     }
     
@@ -243,8 +183,6 @@ export class ThreatAnalysisJob {
       });
 
       await this.riskService.updateUserRiskAfterThreat(userId, threat.id);
-      
-      this.logger.log(`       THREAT #${threat.id}: ${result.threatType} (${result.riskLevel})`);
       return 1;
     }
     
