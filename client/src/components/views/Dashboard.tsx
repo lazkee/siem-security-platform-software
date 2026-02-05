@@ -105,7 +105,7 @@ export default function Dashboard({ queryApi, storageApi }: DashboardProps) {
             <div className="flex items-center gap-5 height-[20%] width-[100%] p-[10px]!">
                 <StatCard title="Top Event Source" subtitle={topEvent} value={topEventValue} valueDescription="events" />
                 <StatCard title="Most Event Type" subtitle={mostEventType} value={mostEventValue} valueDescription="events" />
-                <StatCard title="Most weight archive" subtitle={mostWeightArchive} value={mostWeightArchiveValue} valueDescription="MB" />
+                <StatCard title="Most weight archive" subtitle={mostWeightArchive} value={mostWeightArchiveValue} valueDescription="bytes" />
             </div>
             <h2 className="mt-[10px]! p-[5px]! m-[10px]!">Recent Events</h2>
             <RecentEventsTable events={eventsData} />
