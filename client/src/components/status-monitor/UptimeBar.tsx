@@ -1,43 +1,69 @@
-import { UptimeBarProps } from "../../types/props/status-monitor/UptimeBarProps";
-import { BiServer, BiErrorCircle, BiCheckCircle } from "react-icons/bi";
+import { ServiceStatusDTO } from "../../models/status-monitor/ServiceStatusDTO";
+import { PiCheckCircleFill, PiWarningOctagonFill } from "react-icons/pi";
 
-export default function UptimeBar({ service }: UptimeBarProps) {
-  const statusColor = service.isDown ? "text-[#ff4b4b]" : "text-[#4ade80]";
-  const borderColor = service.isDown ? "border-[#ff4b4b]" : "border-[#4ade80]";
-  const bgColor = service.isDown ? "bg-[#ff4b4b]/10" : "bg-[#4ade80]/10";
+interface Props {
+    service: ServiceStatusDTO;
+}
 
-  return (
-    <div className={`flex flex-col bg-[#313338] p-4 rounded-[10px] mb-3 border-l-4 shadow-md ${borderColor}`}>
-      
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-2">
-          <BiServer className="text-gray-400 text-xl" />
-          <span className="font-bold text-white text-lg">{service.serviceName}</span>
+export default function UptimeBar({ service }: Props) {
+    const isDown = service.isDown;
+    const statusColor = isDown ? "text-[#ff4b4b]" : "text-[#007a55]";
+    const borderColor = isDown ? "border-[rgba(255,75,75,0.3)]" : "border-[rgba(0,122,85,0.3)]";
+    const bgColor = isDown ? "bg-[rgba(255,75,75,0.15)]" : "bg-[rgba(0,122,85,0.15)]";
+    
+    const StatusIcon = isDown ? PiWarningOctagonFill : PiCheckCircleFill;
+    const statusText = isDown ? "OUTAGE DETECTED" : "OPERATIONAL";
+
+    return (
+        <div className="bg-transparent rounded-[14px] border-2 border-[#282A28] p-4! shadow-sm hover:border-[#3a3a3a] transition-all">
+            
+            {/* Header: Service Name + Status Badge */}
+            <div className="flex justify-between items-center mb-4!">
+                <h3 className="text-white text-[16px] font-semibold m-0">{service.serviceName}</h3>
+                
+                <div className={`flex items-center gap-2 px-3! py-1.5! rounded-[8px] border ${borderColor} ${bgColor}`}>
+                    <StatusIcon className={statusColor} size={18} />
+                    <span className={`text-[11px] font-bold uppercase tracking-wider ${statusColor}`}>
+                        {statusText}
+                    </span>
+                </div>
+            </div>
+
+            {/* Uptime History Section */}
+            <div className="mt-3!">
+                <div className="flex justify-between text-[11px] text-[#888] mb-2! font-semibold uppercase tracking-wider">
+                    <span>30 days ago</span>
+                    <span>Today</span>
+                </div>
+                
+                <div className="flex gap-[3px] h-10 w-full">
+                    {(service.history || Array(30).fill({ hasIncident: false })).map((day, index) => {
+                        let barColor = "bg-[#007a55]"; 
+                        let tooltipText = `${day.date || 'Day ' + (index + 1)}: Operational`;
+
+                        if (day.hasIncident) {
+                            barColor = "bg-[#eab308]"; 
+                            tooltipText = `${day.date || 'Day ' + (index + 1)}: Incident reported (${day.incidentCount || 1} times)`;
+                        }
+
+                        if (index === 29 && isDown) {
+                            barColor = "bg-[#ff4b4b]";
+                            tooltipText = "Today: Current Outage";
+                        }
+
+                        return (
+                            <div 
+                                key={index}
+                                className={`flex-1 rounded-[4px] ${barColor} hover:opacity-80 transition-all cursor-help relative group`}
+                            >
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max bg-[#1f1f1f] text-white text-[11px] py-1.5 px-3 rounded-lg border border-[#333] z-10 whitespace-nowrap shadow-xl">
+                                    {tooltipText}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
-        
-        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${bgColor}`}>
-            {service.isDown ? <BiErrorCircle className={statusColor}/> : <BiCheckCircle className={statusColor}/>}
-            <span className={`font-bold text-sm ${statusColor}`}>
-                {service.isDown ? "OUTAGE" : "OPERATIONAL"}
-            </span>
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center text-xs text-gray-400 mt-2">
-        <span>Endpoint: {service.pingUrl}</span>
-        {service.lastCheck && (
-            <span>Response: {service.lastCheck.responseTimeMs}ms</span>
-        )}
-      </div>
-
-      <div className="flex gap-[2px] mt-3 h-2 w-full overflow-hidden opacity-50">
-         {[...Array(30)].map((_, i) => (
-             <div 
-                key={i} 
-                className={`flex-1 rounded-sm ${service.isDown && i > 25 ? "bg-[#ff4b4b]" : "bg-[#4ade80]"}`}
-             />
-         ))}
-      </div>
-    </div>
-  );
+    );
 }

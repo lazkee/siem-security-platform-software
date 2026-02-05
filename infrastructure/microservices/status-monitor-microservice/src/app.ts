@@ -74,7 +74,7 @@ const startServer = async () => {
     const monitoringService: IMonitoringService = new MonitoringService(thresholdRepository, checkRepository);
     const incidentService: IIncidentService = new IncidentService(checkRepository, incidentRepository, thresholdRepository);
     const monitoringOrchestrator = new MonitoringOrchestrator(monitoringService, incidentService, thresholdRepository);
-    const analyticsService = new AnalyticsService(checkRepository);
+    const analyticsService = new AnalyticsService(checkRepository, incidentRepository);
 
     /* ========================
        CONTROLLERS
