@@ -9,23 +9,9 @@ import { IFirewallAPI } from "../../../api/firewall/IFirewallAPI";
 import { IBackupValidationAPI } from "../../../api/backup/IBackupValdationAPI";
 import { IIntegrityAPI } from "../../../api/integrity/IIntegrityAPI";
 import { IStatusMonitorAPI } from "../../../api/status-monitor/IStatusMonitorAPI";
-//import { IInsiderThreatAPI } from "../../../api/insider-threat/IInsiderThreatAPI";
-
-export interface MainLayoutProps {
-    alertsAPI: IAlertAPI;
-    parserAPI: IParserAPI;
-    queryAPI: IQueryAPI;
-    storageAPI: IStorageAPI;
-    simulatorAPI: ISimulatorAPI;
-    desktopNotification: DesktopNotificationService;
-    riskScoreApi: IRiskScoreAPI;
-    firewallApi: IFirewallAPI;
-    backupApi: IBackupValidationAPI;
-    integrityApi: IIntegrityAPI;
-    statusMonitorApi: IStatusMonitorAPI;
-}
-/*
+import { IInsiderThreatAPI } from "../../../api/insider-threat/IInsiderThreatAPI";
 import { ISecurityMaturityAPI } from "../../../api/security-maturity/ISecurityMaturityAPI";
+//import { IInsiderThreatAPI } from "../../../api/insider-threat/IInsiderThreatAPI";
 
 export interface MainLayoutProps {
   alertsAPI: IAlertAPI;
@@ -33,11 +19,12 @@ export interface MainLayoutProps {
   queryAPI: IQueryAPI;
   storageAPI: IStorageAPI;
   simulatorAPI: ISimulatorAPI;
+  insiderThreatApi: IInsiderThreatAPI;
   desktopNotification: DesktopNotificationService;
   riskScoreApi: IRiskScoreAPI;
   firewallApi: IFirewallAPI;
   backupApi: IBackupValidationAPI;
-  insiderThreatApi: IInsiderThreatAPI;
   securityMaturityApi: ISecurityMaturityAPI;
   integrityApi: IIntegrityAPI;
-}*/
+  statusMonitorApi: IStatusMonitorAPI;
+}
