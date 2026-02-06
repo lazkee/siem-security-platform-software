@@ -22,7 +22,7 @@ import { BackupGatewayController } from "./WebAPI/controllers/BackupGatewayContr
 import { InsiderThreatGatewayController } from "./WebAPI/controllers/InsiderThreatGatewayController";
 import { RiskScoreGatwayController } from "./WebAPI/controllers/RiskScoreGatewayController";
 import { IntegrityGatewayController } from "./WebAPI/controllers/IntegrityGatewayController";
-import { SecurityMaturityGatewayController } from "./WebAPI/controllers/SecurityMaturityController";
+import { SecurityMaturityGatewayController } from "./WebAPI/controllers/SecurityMaturityGatewayController";
 
 const app = express();
 
