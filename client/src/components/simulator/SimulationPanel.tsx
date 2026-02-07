@@ -181,59 +181,37 @@ export function SimulationPanel({ simulatorApi }: SimulationPanelProps) {
         </div>
       </div>
 
-<<<<<<< HEAD
-      {!hasSimulatorAccess && (
-        <div className="text-[12px] text-amber-300 mb-3 pl-4">
-          Access restricted: only SysAdmin can run simulations.
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-3 mb-4 pl-4">
-=======
       {/* BUTTONS + STATUS */}
       <div className="flex flex-wrap items-center gap-3 pt-5 pb-5 border-b border-[#2c2c2c]">
->>>>>>> 12af233b18f268e65fbe020719e89e917afca1db
         <button
           onClick={startSimulation}
-<<<<<<< HEAD
-          disabled={isLoading || !hasSimulatorAccess}
-=======
           disabled={isLoading}
           className={`px-5 py-2 rounded-[10px] text-white text-sm font-semibold transition-all duration-200 ${isLoading
               ? "bg-[#313338] cursor-not-allowed"
               : "bg-[#007a55] hover:bg-[#008b65]"
             }`}
->>>>>>> 12af233b18f268e65fbe020719e89e917afca1db
         >
           Start
         </button>
 
         <button
           onClick={stopSimulation}
-<<<<<<< HEAD
-          disabled={!activeSimulation || isLoading || !hasSimulatorAccess}
-=======
           disabled={!activeSimulation || isLoading}
           className={`px-5 py-2 rounded-[10px] text-white text-sm font-semibold transition-all duration-200 ${!activeSimulation || isLoading
               ? "bg-[#313338] cursor-not-allowed"
               : "bg-red-600 hover:bg-red-700"
             }`}
->>>>>>> 12af233b18f268e65fbe020719e89e917afca1db
         >
           Stop
         </button>
 
         <button
           onClick={refreshSimulation}
-<<<<<<< HEAD
-          disabled={!activeSimulation || isLoading || !hasSimulatorAccess}
-=======
           disabled={!activeSimulation || isLoading}
           className={`px-5 py-2 rounded-[10px] text-white text-sm font-semibold transition-all duration-200 ${!activeSimulation || isLoading
               ? "bg-[#313338] cursor-not-allowed"
               : "bg-[#1f6feb] hover:bg-[#2a7fff]"
             }`}
->>>>>>> 12af233b18f268e65fbe020719e89e917afca1db
         >
           Refresh
         </button>
