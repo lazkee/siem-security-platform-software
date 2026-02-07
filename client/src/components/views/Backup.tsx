@@ -89,7 +89,7 @@ export default function Backup({ backupApi }: BackupProps) {
             )}
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 p-[10px]!">
-                <div className="xl:col-span-2 flex flex-col rounded-lg border-2 border-[#282A28] bg-[#1f2123] p-6">
+                <div className="xl:col-span-2 flex flex-col rounded-lg p-6">
                     <BackupStats stats={stats ?? emptyBackupStats} />
                 </div>
 

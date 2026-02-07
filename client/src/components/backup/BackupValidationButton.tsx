@@ -23,7 +23,7 @@ export default function BackupValidationButton({ backupApi, onSuccess }: BackupV
     };
 
     return (
-        <div className="flex justify-end mb-3">
+        <div className="flex flex-col items-center mb-3">
             <button
                 onClick={handleRunBackup}
                 disabled={isLoading}
@@ -32,7 +32,9 @@ export default function BackupValidationButton({ backupApi, onSuccess }: BackupV
             </button>
 
             {error && (
-                <span className="ml-3 text-red-400 text-sm">{error}</span>
+                <div className="mb-2! w-34! px-3 py-2 rounded-md bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.3)] text-[#f87171] text-sm">
+                    {error}
+                </div>           
             )}
         </div>
     )
