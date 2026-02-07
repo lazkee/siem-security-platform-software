@@ -18,7 +18,7 @@ export const useAlerts = (alertAPI: IAlertAPI) => {
   }, [token]);
 
   const loadAlerts = async () => {
-    //if (!token) return;
+    if (!token) return;
 
     setIsLoading(true);
     setError(null);
