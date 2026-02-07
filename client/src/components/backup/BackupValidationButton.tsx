@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { BackupValidationButtonProps } from "../../types/props/backup/BackupValidationButtonProps";
+import { useAuth } from "../../hooks/useAuthHook";
 
 
 export default function BackupValidationButton({ backupApi, onSuccess}: BackupValidationButtonProps){
+    const { token } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleRunBackup = async() => {
+        if (!token) return;
         setIsLoading(true);
         setError(null);
         try {
-            await backupApi.runValidation();
+            await backupApi.runValidation(token);
             if (onSuccess) onSuccess();
         } catch (err) {
             console.error("Manual backup failed: ", err);
