@@ -4,20 +4,24 @@ import { Recommendation } from "../Domain/types/Recommendation";
 import { RecommendationSnapshot } from "../Domain/types/RecommendationSnapshot";
 import { AnalysisEngineClient } from "../Infrastructure/clients/AnalysisEngineClient";
 import { IRecommendationContextService } from "../Domain/services/IRecommendaitonContextService";
+import { ILogerService } from "../Domain/services/ILoggerService";
 
 export class RecommendationService implements IRecommendationService {
   private static readonly CACHE_VALIDITY_MS: number = 24 * 60 * 60 * 1000;
   private readonly recommendationRepositoryService: IRecommendationRepositoryService;
-    private readonly analysisEngineClient: AnalysisEngineClient;
-    private readonly recommendationContextService: IRecommendationContextService;
+  private readonly analysisEngineClient: AnalysisEngineClient;
+  private readonly recommendationContextService: IRecommendationContextService;
+  private readonly logger: ILogerService;
   constructor(
-     recommendationRepositoryService: IRecommendationRepositoryService,
-     analysisEngineClient: AnalysisEngineClient,
-      recommendationContextService: IRecommendationContextService
+    recommendationRepositoryService: IRecommendationRepositoryService,
+    analysisEngineClient: AnalysisEngineClient,
+    recommendationContextService: IRecommendationContextService,
+    logger: ILogerService
   ) {
     this.recommendationRepositoryService = recommendationRepositoryService;
     this.analysisEngineClient = analysisEngineClient;
     this.recommendationContextService = recommendationContextService;
+    this.logger = logger;
   }
 
   public async getRecommendations(): Promise<Recommendation[]> {
@@ -31,7 +35,7 @@ export class RecommendationService implements IRecommendationService {
 
       return await this.fetchSnapshotRecommendations(snapshot);
     } catch (e) {
-      console.error("[RecommendationService] Failed.", String(e));
+      this.logger.log("[RecommendationService] Failed. " + String(e));
       return [];
     }
   }
@@ -48,7 +52,7 @@ export class RecommendationService implements IRecommendationService {
 
       return Array.isArray(recs) ? recs : [];
     } catch (e) {
-      console.error("[RecommendationService] Fetch by ids failed.", String(e));
+      this.logger.log("[RecommendationService] Fetch by ids failed. " + String(e));
       return [];
     }
   }
@@ -56,23 +60,23 @@ export class RecommendationService implements IRecommendationService {
   private async regenerateAndPersist(): Promise<Recommendation[]> {
     try {
 
-      const{fromUtc, toUtc} = await this.resolveRecommendationWindowUtc();
+      const { fromUtc, toUtc } = await this.resolveRecommendationWindowUtc();
       const context = await this.recommendationContextService.buildContext(fromUtc, toUtc);
-      if(context.series.length ===0){
-        console.error("[RecommendationService] Recommendation context is empty, cannot generate recommendations.");
+      if (context.series.length === 0) {
+        this.logger.log("[RecommendationService] Recommendation context is empty, cannot generate recommendations.");
         return [];
       }
       const recommendations: Recommendation[] = await this.analysisEngineClient.fetchRecommendations(context);
 
       if (!Array.isArray(recommendations) || recommendations.length === 0) {
-        console.error("[RecommendationService] Analysis-engine returned no recommendations.");
+        this.logger.log("[RecommendationService] Analysis-engine returned no recommendations.");
         return [];
       }
 
       const ids: number[] = await this.recommendationRepositoryService.saveRecommendations(recommendations);
 
       if (!Array.isArray(ids) || ids.length === 0) {
-        console.error("[RecommendationService] Failed to persist recommendations.");
+        this.logger.log("[RecommendationService] Failed to persist recommendations.");
         return [];
       }
 
@@ -84,10 +88,10 @@ export class RecommendationService implements IRecommendationService {
 
       await this.recommendationRepositoryService.saveSnapshot(snapshot);
 
-      
+
       return recommendations;
     } catch (e) {
-      console.error("[RecommendationService] Regeneration failed.", String(e));
+      this.logger.log("[RecommendationService] Regeneration failed. " + String(e));
       return [];
     }
   }

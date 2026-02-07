@@ -9,7 +9,7 @@ import { IncidentsByCategoryDto } from "../../Domain/types/IncidentsByCategoryDt
 import { KpiSummaryDto } from "../../Domain/types/KpiSummaryDto";
 import { TrendPointDto } from "../../Domain/types/TrendPointDto";
 import { parseAlertCategory } from "../../Domain/parsers/parseAlertCategory";
-import { mapScoreToLevel } from "../../Utils/MapScoreToLevel";
+import { mapScoreToLevel } from "../../Infrastructure/utils/MapScoreToLevel";
 import { NOT_FOUND } from "../../Domain/constants/Sentinels";
 import { IKpiSnapshotQuery } from "../contracts/IKpiSnapshotQuery";
 

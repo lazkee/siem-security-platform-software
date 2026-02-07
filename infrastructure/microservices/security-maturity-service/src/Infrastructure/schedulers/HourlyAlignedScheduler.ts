@@ -1,18 +1,25 @@
 import { IRecurringJob } from "../../Domain/contracts/IRecurringJob";
+import { ILogerService } from "../../Domain/services/ILoggerService";
 
 export class HourlyAlignedScheduler {
   private running = false;
   private intervalId: NodeJS.Timeout | null = null;
   private timeoutId: NodeJS.Timeout | null = null;
 
-  constructor(private readonly job: IRecurringJob) {}
+  constructor(private readonly job: IRecurringJob, private readonly loger: ILogerService) { }
 
   public start(): void {
+    if (this.timeoutId || this.intervalId) {
+      this.loger.log("[HourlyAlignedScheduler] Already started; ignoring start().");
+      return;
+    }
     const now = new Date();
     const msUntilNextHour = this.msUntilNextHour(now);
 
-    console.log(
-      `[HourlyAlignedScheduler] Starting. Next run in ${msUntilNextHour} ms (aligned to next hour).`
+    const minutesUntilNextHour = msUntilNextHour / 60000;
+
+    this.loger.log(
+      `[HourlyAlignedScheduler] Starting. Next run in ${minutesUntilNextHour.toFixed(2)} minutes.`
     );
 
     this.timeoutId = setTimeout(() => {
@@ -41,20 +48,17 @@ export class HourlyAlignedScheduler {
 
   private async trigger(): Promise<void> {
     if (this.running) {
-      console.warn("[HourlyAlignedScheduler] Job still running, skipping...");
+      this.loger.log("[HourlyAlignedScheduler] Job still running, skipping...");
       return;
     }
 
     this.running = true;
-    console.log("[HourlyAlignedScheduler] Triggering scheduled job...");
+    this.loger.log("[HourlyAlignedScheduler] Triggering scheduled job...");
 
     try {
       await this.job.execute();
     } catch (err) {
-      console.error(
-        "[HourlyAlignedScheduler] Job execution failed:",
-        err 
-      );
+      this.loger.log("[HourlyAlignedScheduler] Job execution failed: " + err);
     } finally {
       this.running = false;
     }

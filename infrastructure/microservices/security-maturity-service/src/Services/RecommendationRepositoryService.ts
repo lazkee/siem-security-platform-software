@@ -4,12 +4,23 @@ import { Recommendation } from "../Domain/types/Recommendation";
 import { RecommendationSnapshot } from "../Domain/types/RecommendationSnapshot";
 import { RecommendationEntity } from "../Domain/models/RecommendationEntity";
 import { RecommendationSnapshot as RecommendationSnapshotEntity } from "../Domain/models/RecommendationSnapshot";
+import { ILogerService } from "../Domain/services/ILoggerService";
 
 export class RecommendationRepositoryService implements IRecommendationRepositoryService {
+  private readonly snapshotRepo: Repository<RecommendationSnapshotEntity>;
+  private readonly recommendationRepo: Repository<RecommendationEntity>;
+  private readonly logger: ILogerService;
+
   constructor(
-    private readonly snapshotRepo: Repository<RecommendationSnapshotEntity>,
-    private readonly recommendationRepo: Repository<RecommendationEntity>
-  ) {}
+    snapshotRepo: Repository<RecommendationSnapshotEntity>,
+    recommendationRepo: Repository<RecommendationEntity>,
+    logger: ILogerService
+
+  ) {
+    this.snapshotRepo = snapshotRepo;
+    this.recommendationRepo = recommendationRepo;
+    this.logger = logger;
+  }
 
   // -------------------------
   // Snapshot (IDs-only)
@@ -32,7 +43,7 @@ export class RecommendationRepositoryService implements IRecommendationRepositor
         recommendationIds: Array.isArray(entity.recommendationIds) ? entity.recommendationIds : []
       };
     } catch (e) {
-      console.error("[RecommendationRepositoryService] getLatestSnapshot failed.", String(e));
+      this.logger.log("[RecommendationRepositoryService] getLatestSnapshot failed. " + e);
       return this.sentinelSnapshot();
     }
   }
@@ -46,7 +57,7 @@ export class RecommendationRepositoryService implements IRecommendationRepositor
 
       await this.snapshotRepo.save(entity);
     } catch (e) {
-      console.error("[RecommendationRepositoryService] saveSnapshot failed.", String(e));
+      this.logger.log("[RecommendationRepositoryService] saveSnapshot failed. " + e);
     }
   }
 
@@ -84,7 +95,7 @@ export class RecommendationRepositoryService implements IRecommendationRepositor
 
       return ids;
     } catch (e) {
-      console.error("[RecommendationRepositoryService] saveRecommendations failed.", String(e));
+      this.logger.log("[RecommendationRepositoryService] saveRecommendations failed. " + e);
       return [];
     }
   }
@@ -121,7 +132,7 @@ export class RecommendationRepositoryService implements IRecommendationRepositor
 
       return ordered;
     } catch (e) {
-      console.error("[RecommendationRepositoryService] getRecommendationsByIds failed.", String(e));
+      this.logger.log("[RecommendationRepositoryService] getRecommendationsByIds failed. " + e);
       return [];
     }
   }

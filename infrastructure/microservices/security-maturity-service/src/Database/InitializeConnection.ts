@@ -1,12 +1,13 @@
+import { ILogerService } from "../Domain/services/ILoggerService";
 import { Db } from "./DBConnectionPool";
 
-export async function initialize_database(): Promise<boolean> {
+export async function initialize_database(loger: ILogerService): Promise<boolean> {
   try {
     await Db.initialize();
-    console.log("[DB] initialized");
+    loger.log("[DB] initialized");
     return true;
   } catch (err) {
-    console.error("[DB] init failed", err);
+    loger.log("[DB] init failed: " + err);
     return false;
   }
 }

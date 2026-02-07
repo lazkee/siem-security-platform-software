@@ -4,17 +4,21 @@ import { KpiSnapshot } from "../Domain/models/KpiSnapshot";
 import { KpiSnapshotCategoryCount } from "../Domain/models/KpiSnapshotCategoryCount";
 import { AlertCategory } from "../Domain/enums/AlertCategory";
 import { NOT_FOUND } from "../Domain/constants/Sentinels";
+import { ILogerService } from "../Domain/services/ILoggerService";
 
 export class KpiRepositoryService implements IKpiRepositoryService {
   private readonly snapshotRepo: Repository<KpiSnapshot>;
   private readonly categoryRepo: Repository<KpiSnapshotCategoryCount>;
+  private readonly logger: ILogerService;
 
   public constructor(
     snapshotRepo: Repository<KpiSnapshot>,
-    categoryRepo: Repository<KpiSnapshotCategoryCount>
+    categoryRepo: Repository<KpiSnapshotCategoryCount>,
+    logger: ILogerService
   ) {
     this.snapshotRepo = snapshotRepo;
     this.categoryRepo = categoryRepo;
+    this.logger = logger;
   }
 
   public async upsertSnapshot(snapshot: KpiSnapshot): Promise<number> {
@@ -43,7 +47,7 @@ export class KpiRepositoryService implements IKpiRepositoryService {
         ["windowFrom", "windowTo"]
       );
     } catch (e) {
-      console.log("[KpiRepository] Failed to upsert KpiSnapshot.", e);
+      this.logger.log(`[KpiRepository] Failed to upsert KpiSnapshot. Error: ${e}`);
       return NOT_FOUND;
     }
 
@@ -54,7 +58,7 @@ export class KpiRepositoryService implements IKpiRepositoryService {
 
       return saved ? saved.id : NOT_FOUND;
     } catch (e) {
-      console.log("[KpiRepository] Failed to reload KpiSnapshot after upsert.", e);
+      this.logger.log(`[KpiRepository] Failed to reload KpiSnapshot after upsert. Error: ${e}`);
       return NOT_FOUND;
     }
   }
@@ -66,7 +70,7 @@ export class KpiRepositoryService implements IKpiRepositoryService {
     try {
       await this.categoryRepo.delete({ snapshotId });
     } catch (e) {
-      console.log("[KpiRepository] Failed to delete old category rows.", e);
+      this.logger.log(`[KpiRepository] Failed to delete old category rows. Error: ${e}`);
       return false;
     }
 
@@ -86,7 +90,7 @@ export class KpiRepositoryService implements IKpiRepositoryService {
       await this.categoryRepo.save(rows);
       return true;
     } catch (e) {
-      console.log("[KpiRepository] Failed to save category rows.", e);
+      this.logger.log(`[KpiRepository] Failed to save category rows. Error: ${e}`);
       return false;
     }
   }
@@ -100,7 +104,7 @@ export class KpiRepositoryService implements IKpiRepositoryService {
         .orderBy("s.windowFrom", "ASC")
         .getMany();
     } catch (e) {
-      console.log("[KpiRepository] Failed to read snapshots.", e);
+      this.logger.log(`[KpiRepository] Failed to read snapshots. Error: ${e}`);
       return [];
     }
   }
@@ -114,7 +118,7 @@ export class KpiRepositoryService implements IKpiRepositoryService {
         .andWhere("s.windowFrom < :to", { to })
         .getMany();
     } catch (e) {
-      console.log("[KpiRepository] Failed to read category counts.", e);
+      this.logger.log(`[KpiRepository] Failed to read category counts. Error: ${e}`);
       return [];
     }
   }

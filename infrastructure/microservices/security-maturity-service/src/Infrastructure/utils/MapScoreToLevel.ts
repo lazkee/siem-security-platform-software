@@ -1,4 +1,4 @@
-import { MaturityLevel } from "../Domain/enums/MaturityLevel";
+import { MaturityLevel } from "../../Domain/enums/MaturityLevel";
 
 export function mapScoreToLevel(score: number): MaturityLevel {
   if (score === -1) return MaturityLevel.UNKNOWN;

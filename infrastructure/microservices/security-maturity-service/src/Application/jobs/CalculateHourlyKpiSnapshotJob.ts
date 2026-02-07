@@ -11,15 +11,16 @@ export class CalculateHourlyKpiSnapshotJob implements IRecurringJob {
   }
 
   private getPreviousHourWindow(now: Date): { windowFrom: Date; windowTo: Date } {
-    const windowTo = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      now.getUTCHours(),
-      0, 0, 0
-    ));
+    const windowTo = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    now.getHours(),
+    0, 0, 0
+  );
 
-    const windowFrom = new Date(windowTo.getTime() - 60 * 60 * 1000);
-    return { windowFrom, windowTo };
+  const windowFrom = new Date(windowTo.getTime() - 60 * 60 * 1000);
+  console.log(windowFrom, windowTo)
+  return { windowFrom, windowTo };
   }
 }

@@ -4,12 +4,15 @@ import { RecommendationPayloadDto } from "../../Domain/types/RecommendationPaylo
 import { mapRecommendationPayloadDto } from "../mappers/recommendationPayloadMapper";
 import { createAxiosClient } from "../helpers/createAxiosClient";
 import { RecommendationContextDto } from "../../Domain/types/recommendationContext/RecommendationContext";
+import { ILogerService } from "../../Domain/services/ILoggerService";
 
 export class AnalysisEngineClient {
   private readonly client: AxiosInstance;
+  private readonly loger: ILogerService;
 
-  constructor(baseUrl: string) {
+  constructor(baseUrl: string, loger: ILogerService) {
     this.client = createAxiosClient(baseUrl, 60000);
+    this.loger = loger;
   }
   public async fetchRecommendations(context: RecommendationContextDto): Promise<Recommendation[]> {
     try {
@@ -19,7 +22,7 @@ export class AnalysisEngineClient {
       
       
       if (!Array.isArray(response.data)) {
-        console.error("[AnalysisEngineClient] Invalid response shape (not array).");
+        this.loger.log("[AnalysisEngineClient] Invalid response shape (not array).");
         return [];
       }
 
@@ -29,8 +32,8 @@ export class AnalysisEngineClient {
         const mapped = mapRecommendationPayloadDto(dto);
 
         if (mapped.errors.length > 0) {
-          console.error(
-            "[AnalysisEngineClient] Dropping invalid recommendation payload:",
+          this.loger.log(
+            "[AnalysisEngineClient] Dropping invalid recommendation payload:" +
             mapped.errors.join("; ")
           );
           continue;
@@ -45,7 +48,7 @@ export class AnalysisEngineClient {
 
       return results;
     } catch (e) {
-      console.error("[AnalysisEngineClient] Request failed.", String(e));
+      this.loger.log("[AnalysisEngineClient] Request failed."+ String(e));
       return [];
     }
   }

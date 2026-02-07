@@ -1,8 +1,8 @@
 import { ISecurityMaturityService } from "../Domain/services/ISecurityMaturityService";
 import { ScoreInput } from "../Domain/types/ScoreInput";
 import { SMScore } from "../Domain/types/SMScore";
-import { mapScoreToLevel } from "../Utils/MapScoreToLevel";
-import { calculateScore } from "../Utils/ScoreCalculator";
+import { mapScoreToLevel } from "../Infrastructure/utils/MapScoreToLevel";
+import { calculateScore } from "../Infrastructure/utils/ScoreCalculator";
 
 export class SecurityMaturityService implements ISecurityMaturityService {
   async calculateCurrentMaturity(input: ScoreInput): Promise<SMScore> {

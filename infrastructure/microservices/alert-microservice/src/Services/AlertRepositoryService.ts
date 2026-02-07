@@ -42,16 +42,17 @@ export class AlertRepositoryService implements IAlertRepositoryService {
       .createQueryBuilder("a")
       .where("a.resolvedAt IS NOT NULL")
       .andWhere("a.resolvedAt >= :from", { from })
-      .andWhere("a.resolvedAt <= :to", { to })
+      .andWhere("a.resolvedAt < :to", { to })   
       .getMany();
   }
 
   async findCreatedBetween(from: Date, to: Date): Promise<Alert[]> {
-  return this.repo
-    .createQueryBuilder("a")
-    .where("a.createdAt BETWEEN :from AND :to", { from, to })
-    .getMany();
-}
+    return this.repo
+      .createQueryBuilder("a")
+      .where("a.createdAt >= :from", { from })
+      .andWhere("a.createdAt < :to", { to })  
+      .getMany();
+  }
 
   async findBySeverity(severity: AlertSeverity): Promise<Alert[]> {
     return this.repo.find({ where: { severity } });
@@ -118,18 +119,18 @@ export class AlertRepositoryService implements IAlertRepositoryService {
   }
 
   async deleteMany(alertIds: number[]): Promise<void> {
-      if (!alertIds || alertIds.length === 0) return;
+    if (!alertIds || alertIds.length === 0) return;
 
-      const result = await this.repo
-          .createQueryBuilder()
-          .delete()
-          .from(Alert)
-          .where("id IN (:...ids)", { ids: alertIds })
-          .execute();
+    const result = await this.repo
+      .createQueryBuilder()
+      .delete()
+      .from(Alert)
+      .where("id IN (:...ids)", { ids: alertIds })
+      .execute();
 
-      if (result.affected === 0) {
-          await this.logger.log(`No alerts were deleted for IDs: ${alertIds}`);
-      }
+    if (result.affected === 0) {
+      await this.logger.log(`No alerts were deleted for IDs: ${alertIds}`);
+    }
   }
 
 }

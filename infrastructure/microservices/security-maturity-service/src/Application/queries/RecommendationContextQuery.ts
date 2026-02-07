@@ -7,7 +7,7 @@ import { parseAlertCategory } from "../../Domain/parsers/parseAlertCategory";
 import { NOT_FOUND } from "../../Domain/constants/Sentinels";
 import { IKpiAggregationService } from "../../Domain/services/IKpiAggregationService";
 import { IKpiRepositoryService } from "../../Domain/services/IKpiRepositoryService";
-import { mapScoreToLevel } from "../../Utils/MapScoreToLevel";
+import { mapScoreToLevel } from "../../Infrastructure/utils/MapScoreToLevel";
 import { RecommendationContextAvg7dDto } from "../../Domain/types/recommendationContext/RecommendationContextAvg7dDto";
 import { RecommendationContextLatestDto } from "../../Domain/types/recommendationContext/RecommendationContextLatestDto";
 import { RecommendationContextSeriesPointDto } from "../../Domain/types/recommendationContext/RecommendationContextSeriesPointDto";
@@ -69,7 +69,7 @@ export class RecommendationContextQuery implements IRecommendationContextQuery {
       }));
     }
 
-    
+
     const grouped: Record<string, KpiSnapshot[]> = {};
     for (const s of snapshots) {
       const dayKey = s.windowFrom.toISOString().slice(0, 10);
@@ -127,19 +127,13 @@ export class RecommendationContextQuery implements IRecommendationContextQuery {
     ));
 
     if (period === TrendPeriod.D7) {
-      const toDay = new Date(Date.UTC(
-        toHour.getUTCFullYear(),
-        toHour.getUTCMonth(),
-        toHour.getUTCDate(),
-        0, 0, 0, 0
-      ));
-
       return {
-        from: new Date(toDay.getTime() - 7 * 24 * 60 * 60 * 1000),
-        to: toDay,
+        from: new Date(toHour.getTime() - 7 * 24 * 60 * 60 * 1000),
+        to: toHour,                 
         bucket: "day" as const
       };
     }
+
 
     return {
       from: new Date(toHour.getTime() - 24 * 60 * 60 * 1000),

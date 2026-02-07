@@ -10,23 +10,26 @@ import { AlertServiceClient } from "../Infrastructure/clients/AlertServiceClient
 import { diffMinutesNonNegative, isValidDate } from "../Infrastructure/utils/dateUtils";
 import { AlertCategory } from "../Domain/enums/AlertCategory";
 import { NOT_FOUND } from "../Domain/constants/Sentinels";
+import { ILogerService } from "../Domain/services/ILoggerService";
 
 export class KpiSnapshotService implements IKpiSnapshotService {
   private readonly repo: IKpiRepositoryService;
   private readonly alertClient: AxiosInstance;
   private readonly alertServiceClient: AlertServiceClient;
   private readonly smsService: ISecurityMaturityService;
+  private readonly loger: ILogerService;
 
-  public constructor(repo: IKpiRepositoryService, smsService: ISecurityMaturityService) {
+  public constructor(repo: IKpiRepositoryService, smsService: ISecurityMaturityService, loger: ILogerService) {
     this.repo = repo;
     this.alertClient = createAxiosClient(process.env.ALERT_SERVICE_API ?? "");
-    this.alertServiceClient = new AlertServiceClient(this.alertClient);
+    this.alertServiceClient = new AlertServiceClient(this.alertClient, loger);
     this.smsService = smsService;
+    this.loger = loger;
   }
 
   public async createSnapshotForWindow(windowFrom: Date, windowTo: Date): Promise<void> {
     if (!this.isValidWindow(windowFrom, windowTo)) {
-      console.log("[KpiSnapshotService] Invalid window; snapshot not created.");
+      this.loger.log("[KpiSnapshotService] Invalid window; snapshot not created.");
       return;
     }
 
@@ -36,13 +39,13 @@ export class KpiSnapshotService implements IKpiSnapshotService {
 
     const snapshotId = await this.repo.upsertSnapshot(snapshot);
     if (snapshotId === NOT_FOUND) {
-      console.log("[KpiSnapshotService] Snapshot upsert failed; categories not written.");
+      this.loger.log("[KpiSnapshotService] Snapshot upsert failed; categories not written.");
       return;
     }
 
     const ok = await this.repo.replaceCategoryCounts(snapshotId, computed.categoryCounts);
     if (!ok) {
-      console.log("[KpiSnapshotService] Failed to persist category counts.");
+      this.loger.log("[KpiSnapshotService] Failed to persist category counts.");
     }
   }
 
@@ -131,7 +134,7 @@ export class KpiSnapshotService implements IKpiSnapshotService {
     try {
       return await this.alertServiceClient.fetchAlerts(from, to);
     } catch (e) {
-      console.log("[KpiSnapshotService] Failed to fetch alerts. Using empty set.", e);
+      this.loger.log("[KpiSnapshotService] Failed to fetch alerts. Using empty set.  " + e);
       return [];
     }
   }

@@ -4,27 +4,30 @@ import { TrendPeriod } from "../../Domain/enums/TrendPeriod";
 import { KpiSnapshotQuery } from "../../Application/queries/KpiSnapshotQuery";
 import { IKpiSnapshotService } from "../../Domain/services/IKpiSnapshotService";
 import { IRecommendationService } from "../../Domain/services/IRecommendationService";
+import { ILogerService } from "../../Domain/services/ILoggerService";
 
 export class SecurityMaturityController {
   private readonly router: Router;
   private readonly service: IKpiSnapshotService;
   private readonly recommendationService: IRecommendationService;
+  private readonly loger: ILogerService;
 
   constructor(
     private readonly query: KpiSnapshotQuery,
-    servicee: IKpiSnapshotService,
-    recommendationService: IRecommendationService
+    service: IKpiSnapshotService,
+    recommendationService: IRecommendationService,
+    loger: ILogerService
   ) {
     this.router = Router();
-    this.service = servicee;
+    this.service = service;
     this.recommendationService = recommendationService;
+    this.loger = loger;
     this.initializeRoutes();
   }
 
   private initializeRoutes(): void {
     this.router.get("/current", this.getCurrent.bind(this));
     this.router.get("/incidents-by-category", this.getIncidentsByCategory.bind(this));
-    this.router.get("/test", this.test.bind(this));
     this.router.get("/trend", this.getTrend.bind(this));
     this.router.get("/recommendations", this.getRecommendations.bind(this));
   }
@@ -34,23 +37,12 @@ export class SecurityMaturityController {
       const result = await this.query.getCurrent();
       res.status(200).json(result);
     } catch (err) {
-      console.error("[SecurityMatuirtyController]: getCurrent failed", err);
+      this.loger.log("[SecurityMaturityController]: getCurrent failed: " + err);
       res.status(500).json({ message: "Service error" });
     }
   }
 
-  private async test(req: Request, res: Response): Promise<void> {
-    try {
-      const now = new Date();
-      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-
-      const result = await this.service.createSnapshotForWindow(oneHourAgo, now);
-      res.status(200).json(result);
-    } catch (err) {
-      console.error("[SecurityMaturityController]: test failed", err);
-      res.status(500).json({ message: "Service error" });
-    }
-  }
+ 
 
   private async getIncidentsByCategory(req: Request, res: Response): Promise<void> {
     try {
@@ -71,7 +63,7 @@ export class SecurityMaturityController {
       const result = await this.query.getIncidentsByCategory(period);
       res.status(200).json(result);
     } catch (err) {
-      console.error("[SecurityMaturityController]: getIncidentsByCategory failed", err);
+      this.loger.log("[SecurityMaturityController]: getIncidentsByCategory failed: " + err);
       res.status(500).json({ message: "Service error" });
     }
   }
@@ -107,7 +99,7 @@ export class SecurityMaturityController {
       const result = await this.query.getTrend(metric, period);
       res.status(200).json(result);
     } catch (err) {
-      console.error("[SecurityMaturityController]: getTrend failed", err);
+      this.loger.log("[SecurityMaturityController]: getTrend failed: " + err);
       res.status(500).json({ message: "Service error" });
     }
   }
@@ -117,7 +109,7 @@ export class SecurityMaturityController {
       const recs = await this.recommendationService.getRecommendations();
       res.status(200).json(recs);
     } catch (err) {
-      console.error("[SecurityMaturityController]: getRecommendations failed", err);
+      this.loger.log("[SecurityMaturityController]: getRecommendations failed: " + err);
       res.status(500).json({ message: "Service error" });
     }
   }

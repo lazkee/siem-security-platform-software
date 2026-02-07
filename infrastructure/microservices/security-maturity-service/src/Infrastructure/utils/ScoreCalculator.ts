@@ -1,5 +1,5 @@
-import { ScoreInput } from "../Domain/types/ScoreInput";
-import { NOT_FOUND, isNotFound } from "../Domain/constants/Sentinels";
+import { ScoreInput } from "../../Domain/types/ScoreInput";
+import { NOT_FOUND, isNotFound } from "../../Domain/constants/Sentinels";
 
 function limitValue(value: number, min = 0, max = 1): number {
   return Math.min(Math.max(value, min), max);

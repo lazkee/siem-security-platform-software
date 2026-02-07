@@ -27,6 +27,9 @@ import { AnalysisEngineClient } from "./Infrastructure/clients/AnalysisEngineCli
 import { RecommendationContextService } from "./Services/RecommendationContextService";
 import { IRecommendationContextService } from "./Domain/services/IRecommendaitonContextService";
 import { RecommendationContextQuery } from "./Application/queries/RecommendationContextQuery";
+import { ILogerService } from "./Domain/services/ILoggerService";
+import { LogerService } from "./Services/LoggerService";
+import cors from "cors";
 
 dotenv.config();
 
@@ -42,16 +45,26 @@ function attachDegradedRoutes(app: Express): void {
 export async function createApp(): Promise<Express> {
   const app = express();
   app.use(express.json());
-  // TODO: add CORS setup
+  app.use(
+    cors({
+      origin: process.env.CORS_ORIGIN ?? "*",
+      methods: process.env.CORS_METHODS?.split(",") ?? ["GET"],
+      credentials: true
+    })
+  );
 
-    app.get("/health", async (req, res) => {
+  const loger: ILogerService = new LogerService();
+
+
+
+  app.get("/health", async (req, res) => {
     try {
       // Provera baze: 
       await Db.query("SELECT 1");
 
       res.status(200).json({
         status: "OK",
-        service: "SecurityMaturityService", 
+        service: "SecurityMaturityService",
         timestamp: new Date().toISOString(),
         uptime: process.uptime()
       });
@@ -67,9 +80,9 @@ export async function createApp(): Promise<Express> {
 
   try {
     // 1) Database initialization
-    const dbOk = await initialize_database();
+    const dbOk = await initialize_database(loger);
     if (!dbOk) {
-      console.error("[App] DB initialization returned false. Starting DEGRADED mode.");
+      loger.log("[App] DB initialization returned false. Starting DEGRADED mode.");
       attachDegradedRoutes(app);
       return app;
     }
@@ -88,7 +101,7 @@ export async function createApp(): Promise<Express> {
 
     // 3) Services (DI)
     const kpiRepositoryService: IKpiRepositoryService =
-      new KpiRepositoryService(kpiRepo, categoryRepo);
+      new KpiRepositoryService(kpiRepo, categoryRepo, loger);
 
     const kpiAggregationService: IKpiAggregationService =
       new KpiAggregationService();
@@ -98,24 +111,30 @@ export async function createApp(): Promise<Express> {
 
     const kpiSnapshotService: IKpiSnapshotService = new KpiSnapshotService(
       kpiRepositoryService,
-      securityMaturityService
+      securityMaturityService,
+      loger,
     );
 
     const recommendationRepositoryService: IRecommendationRepositoryService =
-      new RecommendationRepositoryService(recommendationSnapshotRepo, recommendationRepo);
+      new RecommendationRepositoryService(recommendationSnapshotRepo, recommendationRepo, loger);
 
-    const analysisEngineClient = new AnalysisEngineClient(process.env.ANALYSIS_ENGINE_API ?? "");
+    const analysisEngineClient = new AnalysisEngineClient(process.env.ANALYSIS_ENGINE_API ?? "", loger);
 
 
 
     // 4) Scheduler start
     try {
       const job = new CalculateHourlyKpiSnapshotJob(kpiSnapshotService);
-      const scheduler = new HourlyAlignedScheduler(job);
+      
+      job.execute().catch(err =>
+        loger.log("[Startup KPI Job] Failed: " + err)
+      );
+
+      const scheduler = new HourlyAlignedScheduler(job, loger);
       scheduler.start();
-      console.log("[App] Scheduler started");
+      loger.log("[App] Scheduler started");
     } catch (err) {
-      console.error("[App] Failed to start scheduler", err);
+      loger.log("[App] Failed to start scheduler: " + err);
     }
 
     // 5) Queries + Controllers
@@ -135,7 +154,8 @@ export async function createApp(): Promise<Express> {
     const recommendationService: IRecommendationService = new RecommendationService(
       recommendationRepositoryService,
       analysisEngineClient,
-      recommendationContextService
+      recommendationContextService,
+      loger
     );
 
 
@@ -143,17 +163,18 @@ export async function createApp(): Promise<Express> {
     const securityMaturityController = new SecurityMaturityController(
       kpiSnapshotQuery,
       kpiSnapshotService,
-      recommendationService
+      recommendationService,
+      loger
     );
 
     app.use("/api/v1", securityMaturityController.getRouter());
 
-    console.log("[App] Application started in FULL mode");
+    loger.log("[App] Application started in FULL mode");
     return app;
   } catch (err) {
-    console.error("[App] Failed to initialize application", err);
+    loger.log("[App] Failed to initialize application: " + err);
     attachDegradedRoutes(app);
-    console.warn("[App] Application started in DEGRADED mode");
+    loger.log("[App] Application started in DEGRADED mode");
     return app;
   }
 }
