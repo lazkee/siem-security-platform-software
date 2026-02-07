@@ -49,7 +49,7 @@ export class InsiderThreatController {
 
   private async getThreatById(req: Request, res: Response): Promise<void> {
     try {
-      const threatId = parseInt(req.params.id, 10);
+      const threatId = parseInt(req.params.id as string, 10);
       
       if (isNaN(threatId)) {
         res.status(400).json({ error: "Invalid threat ID" });
@@ -76,7 +76,7 @@ export class InsiderThreatController {
 
   private async getThreatsByUserId(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId, 10);
+      const userId = parseInt(req.params.userId as string, 10);
       
       if (isNaN(userId)) {
         res.status(400).json({ error: "Invalid userId - must be a number" });
@@ -128,7 +128,7 @@ export class InsiderThreatController {
 
   private async resolveThreat(req: Request, res: Response): Promise<void> {
     try {
-      const threatId = parseInt(req.params.id, 10);
+      const threatId = parseInt(req.params.id as string, 10);
       
       if (isNaN(threatId)) {
         res.status(400).json({ error: "Invalid threat ID" });
@@ -175,7 +175,7 @@ export class InsiderThreatController {
 
   private async getUserRiskProfile(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId, 10);
+      const userId = parseInt(req.params.userId as string, 10);
 
       if (isNaN(userId)) {
         res.status(400).json({ error: "Invalid userId - must be a number" });
@@ -213,7 +213,7 @@ export class InsiderThreatController {
 
   private async getUserRiskAnalysis(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId, 10);
+      const userId = parseInt(req.params.userId as string, 10);
       
       if (isNaN(userId)) {
         res.status(400).json({ error: "Invalid userId - must be a number" });
@@ -231,7 +231,7 @@ export class InsiderThreatController {
 
   private async recalculateUserRisk(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId, 10);
+      const userId = parseInt(req.params.userId as string, 10);
       
       if (isNaN(userId)) {
         res.status(400).json({ error: "Invalid userId - must be a number" });
