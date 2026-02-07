@@ -14,7 +14,7 @@ export class MonitoringOrchestrator implements IMonitoringOrchestrator {
 
     async run(): Promise<void> {
         try {
-            console.log("🎼 Orchestrator: Započinjem ciklus...");
+            console.log("⏱️ Orchestrator: Starting monitoring cycle...");
 
             // 1. Učitamo sva pravila iz baze
             const thresholds = await this.thresholdRepo.find();
@@ -40,10 +40,10 @@ export class MonitoringOrchestrator implements IMonitoringOrchestrator {
                 await this.incidentService.evaluate(threshold.serviceName, checkResult, threshold);
             }
             
-            console.log("✅ Orchestrator: Ciklus završen.");
+            console.log("✅ Monitoring cycle completed.");
 
         } catch (error) {
-            console.error("❌ Greška u MonitoringOrchestratoru:", error);
+            console.error("❌ Error in MonitoringOrchestrator:", error);
         }
     }
 

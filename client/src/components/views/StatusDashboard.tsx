@@ -4,10 +4,12 @@ import { ServiceStatusDTO } from "../../models/status-monitor/ServiceStatusDTO";
 import { IncidentDTO } from "../../models/status-monitor/IncidentDTO";
 import UptimeBar from "../../components/status-monitor/UptimeBar";
 import IncidentTable from "../../components/status-monitor/IncidentTable";
+import { SystemHealthDTO } from "../../models/status-monitor/SystemHealthDTO";
 
 export default function StatusDashboard({ statusApi }: StatusDashboardProps) {
   const [services, setServices] = useState<ServiceStatusDTO[]>([]);
   const [incidents, setIncidents] = useState<IncidentDTO[]>([]);
+  const [health, setHealth] = useState<SystemHealthDTO | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const token = "token"; 
 
@@ -18,6 +20,10 @@ export default function StatusDashboard({ statusApi }: StatusDashboardProps) {
         setServices(statusData);
         const incidentData = await statusApi.getAllIncidents(token);
         setIncidents(incidentData);
+        if (statusApi.getSystemHealth) {
+             const healthData = await statusApi.getSystemHealth(token);
+             setHealth(healthData);
+        }
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch data", error);
@@ -39,6 +45,7 @@ export default function StatusDashboard({ statusApi }: StatusDashboardProps) {
   }
 
   const activeIncidents = incidents.filter(i => !i.endTime).length;
+  const uptimePercentage = health ? health.systemUptime : 0;
   const totalServices = services.length;
   const operationalServices = services.filter(s => !s.isDown).length;
 
@@ -84,7 +91,7 @@ export default function StatusDashboard({ statusApi }: StatusDashboardProps) {
 
         <div className="bg-[rgba(255,255,255,0.05)] rounded-[12px] p-5! border border-[rgba(255,255,255,0.1)] backdrop-blur-[10px]">
           <div className="font-bold text-[20px] mt-3!" style={{ color: "#4ade80" }}>
-            99.8%
+            {uptimePercentage.toFixed(2)}%
           </div>
           <div className="text-[12px] text-[#a6a6a6] mt-1!">Overall Uptime</div>
         </div>

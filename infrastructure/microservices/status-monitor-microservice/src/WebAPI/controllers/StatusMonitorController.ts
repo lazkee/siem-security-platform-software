@@ -29,6 +29,7 @@ export class StatusMonitorController {
     this.router.get("/checks", this.getChecks.bind(this));
     this.router.get("/incidents", this.getIncidents.bind(this));
     this.router.get("/stats/:serviceName", this.getStats.bind(this));
+    this.router.get("/system-health", this.getSystemHealth.bind(this));
   }
 
   /* ========================
@@ -125,6 +126,15 @@ export class StatusMonitorController {
     res.status(500).json({ message: "Failed to calculate stats" });
   }
 }
+
+private async getSystemHealth(req: Request, res: Response): Promise<void> {
+    try {
+        const health = await this.analyticsService.getSystemHealth();
+        res.status(200).json(health);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to calculate system health" });
+    }
+  }
 
   public getRouter(): Router {
     return this.router;
