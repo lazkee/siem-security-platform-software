@@ -77,7 +77,7 @@ export default function MainLayout({
           <SecurityMaturity securityMaturityApi={securityMaturityApi}/>
         )}
         {sideMenuPage === 11 && (
-          <Integrity integrityApi={integrityApi}/>
+          <Integrity integrityApi={integrityApi} queryApi={queryAPI}/>
         )}
         {sideMenuPage === 12 && (
              <StatusDashboard statusApi={statusMonitorApi} />

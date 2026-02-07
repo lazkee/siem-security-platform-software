@@ -1,6 +1,4 @@
-import { IntegrityReportDTO, IntegrityStatusDTO } from "../../models/interity/IntegrityLogDTO";
-
 export interface IIntegrityAPI {
-  getStatus(token: string): Promise<IntegrityStatusDTO>;
-  verifyIntegrity(token: string): Promise<IntegrityReportDTO>;
+  verifyLogs(token: string): Promise<any>;
+  getCompromisedLogs(token: string): Promise<any[]>;
 }

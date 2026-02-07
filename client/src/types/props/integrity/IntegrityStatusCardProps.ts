@@ -1,7 +1,7 @@
-import { IntegrityStatusDTO } from "../../../models/interity/IntegrityLogDTO";
+import { IntegrityStatusDTO } from "../../../models/integrity/IntegrityStatusDTO";
 
 export interface IntegrityStatusCardProps {
-    status: IntegrityStatusDTO;
+    status: IntegrityStatusDTO | null;
     onVerify: () => void;
     loading: boolean;
 }

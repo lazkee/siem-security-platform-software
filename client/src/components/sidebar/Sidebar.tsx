@@ -197,26 +197,25 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
                     </button>
 
                     <button
-                        className={itemClass(11)}
-                        style={{ 
-                            marginLeft: "20px", 
-                            borderRadius: "0.75rem",
-                            border: selectedButton === 11 ? "1px solid #00ffaa" : "none", // Suptilni okvir kad je kliknuto
-                            boxShadow: selectedButton === 11 ? "0px 0px 10px rgba(0, 255, 170, 0.2)" : "none"
-                        }}
-                        onClick={() => {
-                            setSideMenuPage(11);
-                            setSelectedButton(11);
-                        }}
-                        onMouseEnter={() => setHover(11)}
-                        onMouseLeave={() => setHover(null)}
-                    >
-                        <div className="flex items-center gap-2">
-                            <PiFingerprintFill size={24} color={selectedButton === 11 ? "#00ffaa" : "white"} /> 
-                            <span style={{ fontWeight: selectedButton === 11 ? "bold" : "normal" }}>Integrity</span>
-                        </div>
-                        <MdKeyboardArrowRight size={20} />
-                    </button>
+                    className={itemClass(11)}
+                    style={{ 
+                     marginLeft: "20px", 
+                     borderRadius: "0.75rem",
+                     boxShadow: selectedButton === 11 ? "0px 0px 12px rgba(0, 122, 85, 0.3)" : "none"
+                    }}
+                     onClick={() => {
+                    setSideMenuPage(11);
+                     setSelectedButton(11);
+                    }}
+                     onMouseEnter={() => setHover(11)}
+                     onMouseLeave={() => setHover(null)}
+>
+                     <div className="flex items-center gap-2">
+                    <PiFingerprintFill size={22} className={selectedButton === 11 ? "text-[#00ffa3]" : "text-white"} />
+                     <span className={selectedButton === 11 ? "font-bold text-[#00ffa3]" : ""}>Integrity</span>
+                </div>
+             <MdKeyboardArrowRight size={20} />
+            </button>
 
                     <button
                         className={itemClass(12)}
