@@ -18,19 +18,19 @@ export class IntegrityGatewayController {
     private initializeRoutes(): void {
         this.router.post(
             "/integrity/initialize",
-            /* this.authenticate, */
+             this.authenticate, 
             this.initializeHashChain.bind(this)
         );
 
         this.router.get(
             "/integrity/verify",
-            /* this.authenticate, */
+             this.authenticate, 
             this.verifyLogs.bind(this)
         );
 
         this.router.get(
             "/integrity/compromised",
-            /* this.authenticate, */
+            this.authenticate, 
             this.getCompromisedLogs.bind(this)
         );
     }

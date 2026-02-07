@@ -188,12 +188,12 @@ export class RiskScoreService implements IRiskScoreService {
 
             // IP adrese
             await processInBatches(distinctIps, batchSize, async (ip) => {
-                await this.calculateScore(RiskEntityType.IP_ADDRESS, ip, 1);
+                await this.calculateScore(RiskEntityType.IP_ADDRESS, ip, 2);
             });
 
             // Servisi
             await processInBatches(distinctServices, batchSize, async (service) => {
-                await this.calculateScore(RiskEntityType.SERVICE, service, 1);
+                await this.calculateScore(RiskEntityType.SERVICE, service, 2);
             });
 
             //this.logger?.log(`calculateAll finished successfully for ${distinctIps.length} IPs and ${distinctServices.length} services.`);

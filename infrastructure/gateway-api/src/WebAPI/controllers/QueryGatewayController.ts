@@ -13,31 +13,31 @@ export class QueryGatewayController {
   private initializeRoutes(): void {
     this.router.get(
       "/query/search",
-      this.authenticate,
+     this.authenticate, 
       requireSysAdmin,
       this.searchEvents.bind(this)
     );
     this.router.get(
       "/query/oldEvents/:hours",
-      this.authenticate,
+     this.authenticate, 
       requireSysAdmin,
       this.getOldEvents.bind(this)
     );
     this.router.get(
       "/query/lastThreeEvents",
-      this.authenticate,
-      requireSysAdmin,
+     this.authenticate,
+     requireSysAdmin,
       this.getLastThreeEvents.bind(this)
     );
     this.router.get(
       "/query/events",
-      this.authenticate,
+     this.authenticate,
       requireSysAdmin,
       this.getAllEvents.bind(this)
     );
     this.router.get(
       "/query/eventsCount",
-      this.authenticate,
+      this.authenticate, 
       requireSysAdmin,
       this.getEventsCount.bind(this)
     );

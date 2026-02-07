@@ -13,6 +13,7 @@ export class IntegrityAPI implements IIntegrityAPI {
   }
 
   async verifyLogs(token: string): Promise<any> {
+    console.log("da li udje ovde");
     const response: AxiosResponse = await this.axiosInstance.post("", {
       url: `integrity/verify`,
       method: "GET",
@@ -27,7 +28,7 @@ export class IntegrityAPI implements IIntegrityAPI {
     const response: AxiosResponse = await this.axiosInstance.post("", {
       url: `integrity/compromised`,
       method: "GET",
-      headers: {
+        headers: {
         Authorization: `Bearer ${token}`,
       }
     });

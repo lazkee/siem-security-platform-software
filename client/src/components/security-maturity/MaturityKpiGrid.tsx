@@ -4,7 +4,7 @@ export default function MaturityKpiGrid({
     data,
 }: {data: SecuirtyMaturityCurrentDTO;}) {
     return (
-        <div className="flex flex-col items-center justify-center w-full min-h-[220px]" style={{marginTop: "30px", marginBottom: "30px"}}>
+        <div className="flex flex-col items-center justify-center min-h-[220px]" style={{marginTop: "30px", marginBottom: "30px"}}>
             <h3 className="text-sm uppercase tracking-widest text-gray-400">
                 Security Metrics
             </h3>
@@ -20,7 +20,7 @@ export default function MaturityKpiGrid({
 
 function Kpi({label, value} : {label: string; value: string | number}){
     return (
-        <div className="m-5! rounded-lg border border-[#282A28] bg-[#1f2123] p-6 min-h-[120px] flex items-center justify-center">
+        <div className="m-1! rounded-lg border border-[#282A28] bg-[#1f2123] p-2! min-h-[115px] flex items-center justify-center">
             <div className="text-center">
                 <div className="text-xl uppercase tracking-widest text-gray-400 mb-3">
                     {label}

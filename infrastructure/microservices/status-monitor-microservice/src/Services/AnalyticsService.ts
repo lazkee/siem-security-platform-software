@@ -1,12 +1,15 @@
-import { Repository, MoreThan, Between, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
+import { Repository, MoreThan, Between, LessThanOrEqual, MoreThanOrEqual, IsNull} from "typeorm";
 import { ServiceCheck } from "../Domain/models/ServiceCheck";
 import { ServiceStatus } from "../Domain/enums/ServiceStatusEnum";
 import { ServiceIncident } from "../Domain/models/ServiceIncident";
+import { ServiceThreshold } from "../Domain/models/ServiceThreshold";
+import { SystemHealth } from "../Domain/services/IAnalyticsService";
 
 export class AnalyticsService {
     constructor(
         private checkRepo: Repository<ServiceCheck>,
-        private incidentRepo: Repository<ServiceIncident>
+        private incidentRepo: Repository<ServiceIncident>,
+        private thresholdRepo: Repository<ServiceThreshold>
     ) {}
 
     async calculateStats(serviceName: string, hours: number = 24) {
@@ -66,4 +69,29 @@ export class AnalyticsService {
 
         return history;
     }
+
+    async getSystemHealth(): Promise<SystemHealth> {
+        const services = await this.thresholdRepo.find();
+        
+        if (!services || services.length === 0) {
+            return { systemUptime: 0, activeIncidents: 0 };
+        }
+
+        let totalUptimeSum = 0;
+
+        for (const s of services) {
+            const stats = await this.calculateStats(s.serviceName, 24);
+            totalUptimeSum += stats.uptime;
+        }
+
+        const activeIncidents = await this.incidentRepo.count({
+            where: { endTime: IsNull() }
+        });
+
+        return {
+            systemUptime: parseFloat((totalUptimeSum / services.length).toFixed(2)),
+            activeIncidents: activeIncidents
+        };
+    }
+
 }

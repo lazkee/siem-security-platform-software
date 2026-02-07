@@ -15,6 +15,7 @@ import { ServiceIncident } from "./Domain/models/ServiceIncident";
 // Domain interfaces
 import { IMonitoringService } from "./Domain/services/IMonitoringService";
 import { IIncidentService } from "./Domain/services/IIncidentService";
+import { IAnalyticsService } from "./Domain/services/IAnalyticsService";
 
 // Services
 import { MonitoringService } from "./Services/MonitoringService";
@@ -74,7 +75,7 @@ const startServer = async () => {
     const monitoringService: IMonitoringService = new MonitoringService(thresholdRepository, checkRepository);
     const incidentService: IIncidentService = new IncidentService(checkRepository, incidentRepository, thresholdRepository);
     const monitoringOrchestrator = new MonitoringOrchestrator(monitoringService, incidentService, thresholdRepository);
-    const analyticsService = new AnalyticsService(checkRepository, incidentRepository);
+    const analyticsService = new AnalyticsService(checkRepository, incidentRepository, thresholdRepository);
 
     /* ========================
        CONTROLLERS

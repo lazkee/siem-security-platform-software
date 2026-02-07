@@ -3,6 +3,7 @@ import { IStatusMonitorAPI } from "./IStatusMonitorAPI";
 import { ServiceStatusDTO } from "../../models/status-monitor/ServiceStatusDTO";
 import { IncidentDTO } from "../../models/status-monitor/IncidentDTO";
 import { ServiceStatsDTO } from "../../models/status-monitor/ServiceStatsDTO";
+import { SystemHealthDTO } from "../../models/status-monitor/SystemHealthDTO";
 
 export class StatusMonitorAPI implements IStatusMonitorAPI {
     private readonly client: AxiosInstance;
@@ -34,4 +35,11 @@ export class StatusMonitorAPI implements IStatusMonitorAPI {
         });
         return response.data;
     }
+
+    async getSystemHealth(token: string): Promise<SystemHealthDTO> {
+    const response = await this.client.get<SystemHealthDTO>("/system-health", {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+}
 }

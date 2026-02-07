@@ -1,10 +1,21 @@
 import { Cell, Pie, PieChart } from "recharts";
+import { MaturityLevel } from "../../enums/MaturityLevel";
 
 type Props = {
     score: number;
+    level: MaturityLevel;
 }
 
-export default function MaturityScoreGauge({score}: Props){
+const colorMap: Record<MaturityLevel, string> = {
+        INITIAL: "#ef4444",
+        MANAGED: "#facc15",
+        DEFINED: "#22c55e",
+        QUANTITATIVELY_MANAGED: "#22c55e",
+        OPTIMIZING: "#22c55e",
+        UNKNOWN: "#9ca3af",
+};
+
+export default function MaturityScoreGauge({score, level}: Props){
     const getColor = (val: number) => {
         if(val >= 70) return "#22c55e";
         if(val >= 40) return "#facc15"
@@ -82,7 +93,18 @@ export default function MaturityScoreGauge({score}: Props){
             <div className={`mt-4 text-6xl font-bold`} style={{ color: activeColor }}>
                 {score}
             </div>
+
+            <div className="mt-5! text-xl uppercase tracking-widest text-gray-500">
+                Maturity Level:{" "}
+                <span
+                    className="font-bold"
+                    style={{ color: colorMap[level] }}
+                >
+                    {level.replace("_", " ")}
+                </span>
+            </div>
         </div>
+
     );
 
 }
