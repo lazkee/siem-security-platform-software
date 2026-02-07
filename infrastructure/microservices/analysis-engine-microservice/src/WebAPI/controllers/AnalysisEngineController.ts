@@ -39,7 +39,7 @@ export class AnalysisEngineController {
             }
             
             const recommendations = await this.llmChatAPIService.sendRecommendationsPrompt(validation.value);
-
+            
             res.status(200).json(recommendations);
         } catch (err) {
             this.loggerService.error("[Controller] getRecommendations failed: " + (err as Error).message);

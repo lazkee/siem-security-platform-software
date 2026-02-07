@@ -1,7 +1,7 @@
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SecurityMaturityTrendDTO } from "../../models/security-maturity/SecurityMaturityTrendDTO";
 import { TrendMetricType } from "../../enums/TrendMetricType";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type TrendPeriod = "24h" | "7d";
 
@@ -42,6 +42,24 @@ export default function SecurityMaturityTrend({data, period, onPeriodChange}: Pr
         return row;
     }) ?? [];
 
+    const formattedData: ChartRow[] = useMemo(() => {
+    return combinedData.map((row) => {
+        const date = new Date(row.bucketStart);
+        const formattedLabel =
+        period === "24h"
+            ? `${date.getUTCHours().toString().padStart(2, "0")}:${date
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, "0")}`
+            : `${date.getUTCMonth() + 1}/${date.getUTCDate()}`;
+
+        return {
+        ...row,
+        bucketStartLabel: formattedLabel,
+        };
+    });
+    }, [combinedData, period]);
+
     return (
         <div className="flex flex-col justify-center w-full min-h-[220px]" style={{marginTop: "30px", marginBottom: "30px"}}>
                 <h3 className="text-center text-sm uppercase tracking-widest text-gray-400 mb-5!">
@@ -67,9 +85,9 @@ export default function SecurityMaturityTrend({data, period, onPeriodChange}: Pr
             
             <div className="h-[350px] p-4!">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={combinedData}>
+                    <AreaChart data={formattedData}>
                         <XAxis
-                        dataKey="bucketStart"
+                        dataKey="bucketStartLabel"
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: "#fff", fontSize: 12, fontWeight: "bold" }}
@@ -84,6 +102,12 @@ export default function SecurityMaturityTrend({data, period, onPeriodChange}: Pr
                             backgroundColor: "#1f2123",
                             border: "1px solid #292a28",
                             borderRadius: "8px",
+                        }}
+                        formatter={(value: any) => {
+                            if (typeof value === "number") {
+                            return value.toFixed(0);
+                            }
+                            return value;
                         }}
                         />
 

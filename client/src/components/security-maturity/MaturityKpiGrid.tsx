@@ -9,8 +9,8 @@ export default function MaturityKpiGrid({
                 Security Metrics
             </h3>
             <div className="grid grid-cols-2 gap-4 w-full">
-                <Kpi label="MTTD (min)" value={data.mttdMinutes} />
-                <Kpi label="MTTR (min)" value={data.mttrMinutes} />
+                <Kpi label="MTTD (min)" value={data.mttdMinutes.toFixed(2)} />
+                <Kpi label="MTTR (min)" value={data.mttrMinutes.toFixed(2)} />
                 <Kpi label="False Alarm Rate" value={`${(data.falseAlarmRate * 100).toFixed(1)}%`} />
                 <Kpi label="Open Alerts" value={data.openAlerts} />
             </div>

@@ -12,7 +12,7 @@ export class SecurityMaturityAPI implements ISecurityMaturityAPI {
     this.axiosInstance = axios.create({
       baseURL: import.meta.env.VITE_FIREWALL_PROXY_URL,
       headers: { "Content-Type": "application/json" },
-      timeout: 30000,
+      timeout: 60000,
     });
   }
 

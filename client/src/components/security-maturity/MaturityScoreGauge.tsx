@@ -91,7 +91,7 @@ export default function MaturityScoreGauge({score, level}: Props){
             </div>
 
             <div className={`mt-4 text-6xl font-bold`} style={{ color: activeColor }}>
-                {score}
+                {score.toFixed(2)}
             </div>
 
             <div className="mt-5! text-xl uppercase tracking-widest text-gray-500">

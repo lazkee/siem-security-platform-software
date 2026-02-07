@@ -80,6 +80,7 @@ export class KpiSnapshotQuery implements IKpiSnapshotQuery {
 
   async getIncidentsByCategory(period: TrendPeriod): Promise<IncidentsByCategoryDto[]> {
     const { from, to } = this.resolvePeriod(period);
+
     const counts = await this.kpiRepository.getCategoryCounts(from, to);
 
     const aggregated: Partial<Record<AlertCategory, number>> = {};
@@ -96,6 +97,7 @@ export class KpiSnapshotQuery implements IKpiSnapshotQuery {
 
   async getTrend(metric: TrendMetricType, period: TrendPeriod): Promise<TrendPointDto[]> {
     const { from, to, bucket } = this.resolvePeriod(period);
+
     const snapshots = await this.kpiRepository.getSnapshots(from, to);
 
     if (bucket === "hour") {
@@ -137,33 +139,22 @@ export class KpiSnapshotQuery implements IKpiSnapshotQuery {
   private resolvePeriod(period: TrendPeriod) {
     const now = new Date();
 
-    const toHour = new Date(Date.UTC(
+    const startOfTodayUtc = new Date(Date.UTC(
       now.getUTCFullYear(),
       now.getUTCMonth(),
       now.getUTCDate(),
-      now.getUTCHours(),
-      0, 0, 0
+      0, 0, 0, 0
     ));
 
     if (period === TrendPeriod.D7) {
-      const toDay = new Date(Date.UTC(
-        toHour.getUTCFullYear(),
-        toHour.getUTCMonth(),
-        toHour.getUTCDate(),
-        0, 0, 0, 0
-      ));
+      const from = new Date(startOfTodayUtc.getTime() - 6 * 24 * 60 * 60 * 1000);
+      const to = new Date(startOfTodayUtc.getTime() + 24 * 60 * 60 * 1000);
 
-      return {
-        from: new Date(toDay.getTime() - 7 * 24 * 60 * 60 * 1000),
-        to: toDay,
-        bucket: "day" as const,
-      };
+      return { from, to, bucket: "day" as const };
     }
 
-    return {
-      from: new Date(toHour.getTime() - 24 * 60 * 60 * 1000),
-      to: toHour,
-      bucket: "hour" as const,
-    };
+    const to = now;
+    const from = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return { from, to, bucket: "hour" as const };
   }
 }

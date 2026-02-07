@@ -20,7 +20,6 @@ export class CalculateHourlyKpiSnapshotJob implements IRecurringJob {
   );
 
   const windowFrom = new Date(windowTo.getTime() - 60 * 60 * 1000);
-  console.log(windowFrom, windowTo)
   return { windowFrom, windowTo };
   }
 }
