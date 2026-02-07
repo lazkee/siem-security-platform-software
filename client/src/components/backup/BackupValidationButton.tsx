@@ -21,17 +21,19 @@ export default function BackupValidationButton({ backupApi, onSuccess}: BackupVa
     };
 
     return(
-        <div className="flex justify-end mb-3">
+        <div className="flex flex-col items-center mb-3">
             <button 
                 onClick={handleRunBackup}
                 disabled={isLoading}
                 className={`m-2! px-4 py-2 rounded-[10px]! text-white font-semibold ${isLoading ? "bg-gray-500 cursor-not-allowed" : "bg-[#007a55] hover:bg-[#059669]"}`}>
                     {isLoading ? "Running..." : "Run Backup"}
-                </button>
+            </button>
 
-                {error && (
-                    <span className="ml-3 text-red-400 text-sm">{error}</span>
-                )}
+            {error && (
+                <div className="mb-2! w-34! px-3 py-2 rounded-md bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.3)] text-[#f87171] text-sm">
+                    {error}
+                </div>
+            )}
         </div>
     )
 }

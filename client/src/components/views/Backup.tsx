@@ -8,8 +8,10 @@ import BackupLogsToolbar from "../backup/BackupLogsToolbar";
 import BackupLogsTable from "../tables/backup/BackupLogsTable";
 import { BackupValidationLogDTO } from "../../models/backup/BackupValidationLogDTO";
 import BackupValidationButton from "../backup/BackupValidationButton";
+import { useAuth } from "../../hooks/useAuthHook";
 
 export default function Backup({ backupApi}: BackupProps) {
+    const { token } = useAuth();
     const [stats, setStats] = useState<BackupValidationResultDTO | null>(null);
 
     const [allLogs, setAllLogs] = useState<BackupValidationLogDTO[]>([]);
@@ -22,12 +24,13 @@ export default function Backup({ backupApi}: BackupProps) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (!token) return;
         const fetchData = async () => {
             try {
                 setIsLoading(true);
 
-                const summary = await backupApi.getSummary();
-                const logsResponse = await backupApi.getAllLogs();
+                const summary = await backupApi.getSummary(token);
+                const logsResponse = await backupApi.getAllLogs(token);
 
                 setStats(summary);
                 setAllLogs(logsResponse ?? []);
@@ -40,7 +43,7 @@ export default function Backup({ backupApi}: BackupProps) {
             }
         };
         fetchData();
-    }, []);
+    }, [token]);
 
     useEffect(() => {
         let result = allLogs;
@@ -84,7 +87,7 @@ export default function Backup({ backupApi}: BackupProps) {
             )}
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                <div className="xl:col-span-2 flex flex-col rounded-lg border-2 border-[#282A28] bg-[#1f2123] p-6">
+                <div className="xl:col-span-2 flex flex-col rounded-lg  p-6">
                     <BackupStats stats={stats ?? emptyBackupStats}/>
                 </div>
                 
@@ -96,8 +99,9 @@ export default function Backup({ backupApi}: BackupProps) {
                     <BackupValidationButton 
                         backupApi={backupApi}
                         onSuccess={async () => {
-                            const summary = await backupApi.getSummary();
-                            const logsResponse = await backupApi.getAllLogs();
+                            if (!token) return;
+                            const summary = await backupApi.getSummary(token);
+                            const logsResponse = await backupApi.getAllLogs(token);
                             setStats(summary);
                             setAllLogs(logsResponse ?? []);
                             setLogs(logsResponse ?? []);
