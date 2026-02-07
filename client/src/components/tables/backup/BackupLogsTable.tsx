@@ -1,14 +1,10 @@
-import { BackupValidationLogDTO } from "../../../models/backup/BackupValidationLogDTO";
+import { BackupLogsTableProps } from "../../../types/props/backup/BackupLogsTableProps";
 import BackupLogsTableRow from "./BackupLogsTableRow";
 
-interface Props {
-    logs: BackupValidationLogDTO[];
-}
-
-export default function BackupLogsTable({ logs }: Props) {
+export default function BackupLogsTable({ logs }: BackupLogsTableProps) {
     const thClass = "px-4! py-3! text-center text-[#d0d0d0] font-semibold text-[13px] border-b border-[#3a3a3a] uppercase tracking-[0.5px]";
     return(
-      <div className="bg-[#1f1f1f] rounded-[10px]! overflow-hidden shadow-md border border-[#333]">
+      <div className="bg-[#1f1f1f] m-2! rounded-[10px]! overflow-hidden shadow-md border border-[#333]">
             <div className="max-h-[320px] overflow-y-auto relative">
                 <table className="w-full border-collapse text-[14px]">
                     <thead className="bg-[#2a2a2a] sticky top-0">

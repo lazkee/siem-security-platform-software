@@ -1,3 +1,4 @@
+import { IAlertAPI } from "../../../api/alerts/IAlertAPI";
 import { AlertQueryDTO } from "../../../models/alerts/AlertQueryDTO";
 
 export interface AlertFiltersProps {
@@ -5,4 +6,5 @@ export interface AlertFiltersProps {
   severity?: string;
   status?: string;
   searchText?: string;
+  alertsApi:IAlertAPI;
 }

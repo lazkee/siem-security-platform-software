@@ -204,6 +204,7 @@ export default function Alerts({ alertsApi }: AlertsProps) {
         severity={severity}
         status={status}
         searchText={source}
+        alertsApi={alertsApi}
       />
 
       {error && !isLoading && (

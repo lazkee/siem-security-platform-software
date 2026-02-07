@@ -70,12 +70,14 @@ export default function Backup({ backupApi }: BackupProps) {
             <h2 className="mt-[3px]! p-[5px]! m-[10px]!">Backup</h2>
 
             <div className="flex justify-end me-[10px]! mb-2!">
-                <div className={`flex w-[180px]! items-center gap-2 px-3! py-1.5! rounded-[8px] text-[12px] font-semibold
-                    ${!isLoading
-                        ? "bg-[rgba(74,222,128,0.15)] text-[$4ade80] border border-[rgba(74,222,128,0.3)]"
+                <div className={`flex w-[150px]! items-center gap-2 px-3! py-1.5! rounded-[8px] text-[12px] font-semibold
+            ${!isLoading
+                        ? "bg-[rgba(74,222,128,0.15)] text-[#4ade80] border border-[rgba(74,222,128,0.3)]"
                         : "bg-[rgba(239,68,68,0.15)] text-[#f87171] border border-[rgba(239,68,68,0.3)]"
                     }`}>
-                    <div className={`w-2 h-2 rounded-[14px]! ${!isLoading ? "bg-[#4ade80] animate-pulse" : "bg-[#f87171] animate-none"}`}></div>
+                    <div
+                        className={`w-2 h-2 rounded-[14px]! ${!isLoading ? "bg-[#4ade80] animate-pulse" : "bg-[#f87171] animate-none"}`}
+                    ></div>
                     {!isLoading ? "Live Updates Active" : "Connecting..."}
                 </div>
             </div>
@@ -86,7 +88,7 @@ export default function Backup({ backupApi }: BackupProps) {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 p-[10px]!">
                 <div className="xl:col-span-2 flex flex-col rounded-lg border-2 border-[#282A28] bg-[#1f2123] p-6">
                     <BackupStats stats={stats ?? emptyBackupStats} />
                 </div>

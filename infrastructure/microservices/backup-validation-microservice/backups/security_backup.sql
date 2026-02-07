@@ -4213,3 +4213,126 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-02-06 19:41:40
+-- MySQL dump 10.13  Distrib 8.4.5, for Win64 (x86_64)
+--
+-- Host: localhost    Database: alert_db
+-- ------------------------------------------------------
+-- Server version	8.4.5
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `alerts`
+--
+
+DROP TABLE IF EXISTS `alerts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `alerts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `severity` enum('LOW','MEDIUM','HIGH','CRITICAL') NOT NULL,
+  `status` enum('ACTIVE','INVESTIGATING','RESOLVED','DISMISSED','ESCALATED','MARKED_FALSE') NOT NULL DEFAULT 'ACTIVE',
+  `correlatedEvents` json NOT NULL,
+  `source` varchar(100) NOT NULL,
+  `detectionRule` text,
+  `category` enum('DDOS','BRUTE_FORCE','MALWARE','PHISHING','EXPLOITATION','DATA_EXFILTRATION','MISCONFIGURATION','POLICY_VIOLATION','OTHER') NOT NULL DEFAULT 'OTHER',
+  `oldestEventTimestamp` datetime NOT NULL,
+  `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `resolvedAt` datetime DEFAULT NULL,
+  `resolvedBy` varchar(100) DEFAULT NULL,
+  `resolutionNotes` text,
+  `ipAddress` varchar(45) DEFAULT NULL,
+  `userId` int DEFAULT NULL,
+  `userRole` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `alerts`
+--
+
+LOCK TABLES `alerts` WRITE;
+/*!40000 ALTER TABLE `alerts` DISABLE KEYS */;
+INSERT INTO `alerts` VALUES (1,'Multiple Failed Login Attempts','Detected repeated failed login attempts from a single IP address.','MEDIUM','ACTIVE','[11, 18, 19]','AUTH-SERVICE','failed_login_attempts > 5 in 10 minutes','BRUTE_FORCE','2026-02-06 19:28:52','2026-02-06 20:28:52.000000',NULL,NULL,NULL,'192.168.1.200',45,'USER'),(2,'Suspicious API Traffic Spike','Unusual increase in API requests detected.','HIGH','INVESTIGATING','[12, 23, 30]','API-GATEWAY','request_rate > baseline * 3','DDOS','2026-02-06 08:28:52','2026-02-06 09:28:52.000000',NULL,NULL,NULL,'203.0.113.99',NULL,NULL),(3,'Payment Processing Failure','Multiple payment failures detected for the same user.','HIGH','ACTIVE','[21, 28]','PAYMENT-SERVICE','payment_failures >= 2','OTHER','2026-02-06 10:28:52','2026-02-06 11:28:52.000000',NULL,NULL,NULL,'172.16.0.20',88,'USER'),(4,'Expired Token Usage','Requests detected using expired JWT tokens.','LOW','RESOLVED','[19]','AUTH-SERVICE','jwt_expired == true','POLICY_VIOLATION','2026-02-06 19:28:52','2026-02-06 20:28:52.000000','2026-02-06 21:28:52','security-admin','User re-authenticated successfully.','192.168.1.40',70,'USER'),(5,'Unauthorized Access Attempt','Unauthorized access attempt blocked by gateway.','MEDIUM','DISMISSED','[18]','API-GATEWAY','unauthorized_request_detected','POLICY_VIOLATION','2026-02-06 20:28:52','2026-02-06 21:28:52.000000','2026-02-06 22:28:52','sec-operator','False positive after review.','203.0.113.50',NULL,NULL),(6,'Database Connection Failure','Repeated database connection timeouts detected.','CRITICAL','ESCALATED','[24]','AUTH-SERVICE','db_connection_timeout','MISCONFIGURATION','2026-02-06 14:28:52','2026-02-06 15:28:52.000000',NULL,NULL,NULL,NULL,4,NULL),(7,'SMTP Server Unreachable','Email delivery failing due to SMTP connectivity issues.','MEDIUM','RESOLVED','[26]','NOTIFICATION-SERVICE','smtp_connection_failed','MISCONFIGURATION','2026-02-06 12:28:52','2026-02-06 13:28:52.000000','2026-02-06 16:28:52','infra-admin','SMTP server restarted.','10.10.0.3',4,NULL),(8,'Disk Usage Threshold Exceeded','Disk usage exceeded 80% on system node.','HIGH','INVESTIGATING','[16]','SYSTEM','disk_usage > 80%','MISCONFIGURATION','2026-02-06 22:28:52','2026-02-06 23:28:52.000000',NULL,NULL,NULL,NULL,4,NULL),(9,'CPU Usage Spike','Sudden CPU usage spike detected.','MEDIUM','RESOLVED','[33]','SYSTEM','cpu_usage > baseline','OTHER','2026-02-06 05:28:52','2026-02-06 06:28:52.000000','2026-02-06 07:28:52','ops-team','Temporary load spike.',NULL,4,NULL),(10,'Suspicious Profile Update','Potentially malicious user profile update attempt.','MEDIUM','ACTIVE','[39]','USER-SERVICE','profile_update_anomaly','POLICY_VIOLATION','2026-02-05 23:28:52','2026-02-06 00:28:52.000000',NULL,NULL,NULL,'192.168.1.120',120,'USER'),(11,'Out of Memory Error','System experienced an out of memory exception.','CRITICAL','ESCALATED','[25]','SYSTEM','oom_detected','MISCONFIGURATION','2026-02-06 13:28:52','2026-02-06 14:28:52.000000',NULL,NULL,NULL,NULL,NULL,NULL),(12,'Flight Creation Failure','Flight creation failed due to validation error.','LOW','RESOLVED','[22]','FLIGHT-SERVICE','flight_creation_failed','OTHER','2026-02-06 16:28:52','2026-02-06 17:28:52.000000','2026-02-06 18:28:52','flight-admin','Invalid payload corrected.','172.16.0.12',4,'ADMIN'),(13,'Rate Limiting Triggered','Client exceeded allowed request rate.','MEDIUM','ACTIVE','[30]','API-GATEWAY','rate_limit_exceeded','DDOS','2026-02-06 08:28:52','2026-02-06 09:28:52.000000',NULL,NULL,NULL,'203.0.113.99',NULL,NULL),(14,'Invalid Credentials Detected','Multiple invalid credential submissions detected.','MEDIUM','ACTIVE','[36]','AUTH-SERVICE','invalid_credentials_attempt','BRUTE_FORCE','2026-02-06 02:28:52','2026-02-06 03:28:52.000000',NULL,NULL,NULL,'192.168.1.100',NULL,NULL),(15,'Payment Token Abuse','Invalid payment tokens repeatedly used.','HIGH','INVESTIGATING','[28]','PAYMENT-SERVICE','invalid_payment_token','DDOS','2026-02-06 10:28:52','2026-02-06 11:28:52.000000',NULL,NULL,NULL,'172.16.0.21',91,'USER'),(16,'Backup Completed','Backup completed successfully.','LOW','RESOLVED','[38]','SYSTEM',NULL,'OTHER','2026-02-06 00:28:52','2026-02-06 01:28:52.000000','2026-02-06 02:28:52','system','Informational alert.',NULL,NULL,NULL),(17,'Service Health Check','Health check passed.','LOW','DISMISSED','[37]','API-GATEWAY',NULL,'OTHER','2026-02-06 01:28:52','2026-02-06 02:28:52.000000','2026-02-06 03:28:52','ops','No action required.',NULL,NULL,NULL),(18,'User Registration Spike','Unusual spike in new registrations.','MEDIUM','INVESTIGATING','[31]','AUTH-SERVICE','registration_rate_anomaly','OTHER','2026-02-06 07:28:52','2026-02-06 08:28:52.000000',NULL,NULL,NULL,NULL,NULL,NULL),(19,'Email Delay Detected','Delayed email delivery detected.','LOW','RESOLVED','[17]','NOTIFICATION-SERVICE','email_delay','MISCONFIGURATION','2026-02-06 21:28:52','2026-02-06 22:28:52.000000','2026-02-06 23:28:52','infra','Queue cleared.','10.10.0.3',NULL,NULL),(20,'Data Access Anomaly','Unusual access pattern detected.','HIGH','ACTIVE','[27]','USER-SERVICE','access_pattern_deviation','DATA_EXFILTRATION','2026-02-06 11:28:52','2026-02-06 12:28:52.000000',NULL,NULL,NULL,'192.168.1.55',91,'USER');
+/*!40000 ALTER TABLE `alerts` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-02-07 19:37:29
+-- MySQL dump 10.13  Distrib 8.4.5, for Win64 (x86_64)
+--
+-- Host: localhost    Database: event_db
+-- ------------------------------------------------------
+-- Server version	8.4.5
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `event`
+--
+
+DROP TABLE IF EXISTS `event`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `event` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `source` varchar(255) NOT NULL,
+  `type` enum('INFO','WARNING','ERROR') NOT NULL DEFAULT 'INFO',
+  `description` varchar(255) NOT NULL,
+  `timestamp` timestamp NOT NULL,
+  `ipAddress` varchar(45) DEFAULT NULL,
+  `userId` int DEFAULT NULL,
+  `userRole` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `event`
+--
+
+LOCK TABLES `event` WRITE;
+/*!40000 ALTER TABLE `event` DISABLE KEYS */;
+INSERT INTO `event` VALUES (1,'AUTH-SERVICE','INFO','User login successful','2026-02-07 12:10:50','192.168.1.10',12,'USER'),(2,'AUTH-SERVICE','INFO','User logout','2026-02-07 15:10:50','192.168.1.10',12,'USER'),(3,'API-GATEWAY','INFO','Request forwarded to user-service','2026-02-07 10:10:50','10.0.0.5',4,'USER'),(4,'USER-SERVICE','INFO','User profile updated','2026-02-07 09:10:50','192.168.1.11',18,'USER'),(5,'SYSTEM','INFO','Scheduled cleanup job executed','2026-02-07 08:10:50','192.168.1.10',4,'USER'),(6,'FLIGHT-SERVICE','INFO','Flight created successfully','2026-02-07 05:10:50','172.16.0.12',4,'USER'),(7,'PAYMENT-SERVICE','INFO','Payment processed successfully','2026-02-07 06:10:50','172.16.0.20',21,'USER'),(8,'NOTIFICATION-SERVICE','INFO','Email sent to user','2026-02-07 05:10:50','10.10.0.3',21,'USER'),(9,'AUTH-SERVICE','INFO','Password changed successfully','2026-02-07 05:10:50','192.168.1.15',33,'USER'),(10,'SYSTEM','INFO','Application started','2026-02-07 03:10:50','192.168.1.10',4,'USER'),(11,'AUTH-SERVICE','WARNING','Multiple failed login attempts','2026-02-07 02:10:50','192.168.1.200',45,'USER'),(12,'API-GATEWAY','WARNING','High response time detected','2026-02-07 01:10:50','10.0.0.5',4,'USER'),(13,'USER-SERVICE','WARNING','Incomplete user profile data','2026-02-07 00:10:50','192.168.1.30',52,'USER'),(14,'PAYMENT-SERVICE','WARNING','Payment retry initiated','2026-02-06 23:10:50','172.16.0.20',61,'USER'),(15,'FLIGHT-SERVICE','WARNING','Seat availability running low','2026-02-06 22:10:50','192.168.1.10',4,'USER'),(16,'SYSTEM','WARNING','Disk usage exceeded 80%','2026-02-06 21:10:50','192.168.1.15',4,'USER'),(17,'NOTIFICATION-SERVICE','WARNING','Email delivery delayed','2026-02-06 20:10:50','10.10.0.3',6,'USER'),(18,'API-GATEWAY','WARNING','Unauthorized access attempt','2026-02-06 19:10:50','203.0.113.50',6,'USER'),(19,'AUTH-SERVICE','WARNING','Expired JWT token used','2026-02-06 18:10:50','192.168.1.40',70,'USER'),(20,'USER-SERVICE','WARNING','User attempted forbidden action','2026-02-06 17:10:50','192.168.1.41',70,'USER'),(21,'PAYMENT-SERVICE','ERROR','Payment processing failed','2026-02-06 16:10:50','172.16.0.20',88,'USER'),(22,'FLIGHT-SERVICE','ERROR','Flight creation failed','2026-02-06 15:10:50','172.16.0.12',4,'ADMIN'),(23,'API-GATEWAY','ERROR','Service unavailable: user-service','2026-02-06 14:10:50','10.0.0.5',NULL,NULL),(24,'AUTH-SERVICE','ERROR','Database connection timeout','2026-02-06 13:10:50','192.168.1.15',NULL,NULL),(25,'SYSTEM','ERROR','Out of memory exception','2026-02-06 12:10:50','192.168.1.15',NULL,NULL),(26,'NOTIFICATION-SERVICE','ERROR','SMTP server not reachable','2026-02-06 11:10:50','10.10.0.3',NULL,NULL),(27,'USER-SERVICE','ERROR','Failed to load user data','2026-02-06 10:10:50','192.168.1.55',91,'USER'),(28,'PAYMENT-SERVICE','ERROR','Invalid payment token','2026-02-06 09:10:50','172.16.0.21',91,'USER'),(29,'FLIGHT-SERVICE','ERROR','Flight not found','2026-02-06 08:10:50','192.168.1.15',3,'USER'),(30,'API-GATEWAY','ERROR','Rate limit exceeded','2026-02-06 07:10:50','203.0.113.99',3,'USER'),(31,'AUTH-SERVICE','INFO','User registered successfully','2026-02-06 06:10:50','192.168.1.90',101,'USER'),(32,'USER-SERVICE','INFO','User role updated','2026-02-06 05:10:50','192.168.1.91',102,'ADMIN'),(33,'SYSTEM','WARNING','CPU usage spike detected','2026-02-06 04:10:50','192.168.1.15',3,'USER'),(34,'PAYMENT-SERVICE','INFO','Refund processed','2026-02-06 03:10:50','172.16.0.25',103,'USER'),(35,'FLIGHT-SERVICE','INFO','Flight approved','2026-02-06 02:10:50','172.16.0.12',4,'ADMIN'),(36,'AUTH-SERVICE','ERROR','Invalid credentials provided','2026-02-06 00:10:50','192.168.1.100',3,'USER'),(37,'API-GATEWAY','INFO','Health check passed','2026-02-06 00:10:50','192.168.1.15',3,'USER'),(38,'SYSTEM','INFO','Backup completed successfully','2026-02-05 23:10:50','192.168.1.15',3,'USER'),(39,'USER-SERVICE','WARNING','Suspicious profile update attempt','2026-02-05 22:10:50','192.168.1.120',120,'USER'),(40,'PAYMENT-SERVICE','ERROR','Currency conversion failed','2026-02-05 21:10:50','172.16.0.30',121,'USER');
+/*!40000 ALTER TABLE `event` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-02-07 19:37:29

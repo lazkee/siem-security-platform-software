@@ -211,9 +211,9 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
                      onMouseEnter={() => setHover(11)}
                      onMouseLeave={() => setHover(null)}
 >
-                     <div className="flex items-center gap-2">
-                    <PiFingerprintFill size={22} className={selectedButton === 11 ? "text-[#00ffa3]" : "text-white"} />
-                     <span className={selectedButton === 11 ? "font-bold text-[#00ffa3]" : ""}>Integrity</span>
+                     <div className="flex items-center gap-5">
+                    <PiFingerprintFill size={22}/>
+                     <span >Integrity</span>
                 </div>
              <MdKeyboardArrowRight size={20} />
             </button>
