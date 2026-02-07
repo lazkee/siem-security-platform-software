@@ -23,6 +23,7 @@ import { InsiderThreatGatewayController } from "./WebAPI/controllers/InsiderThre
 import { RiskScoreGatwayController } from "./WebAPI/controllers/RiskScoreGatewayController";
 import { IntegrityGatewayController } from "./WebAPI/controllers/IntegrityGatewayController";
 import { SecurityMaturityGatewayController } from "./WebAPI/controllers/SecurityMaturityGatewayController";
+import { UEBAGatewayController } from './WebAPI/controllers/UEBAGatewayController';
 
 const app = express();
 
@@ -93,6 +94,7 @@ app.use(
   ).getRouter(),
 );
 
+
 app.use(
   "/api/v1",
   new EventCollectorGatewayController(
@@ -133,5 +135,11 @@ app.use(
     authenticate,
   ).getRouter(),
 );
+
+app.use('/api/v1',
+   new UEBAGatewayController(
+    gatewayService, 
+    authenticate
+  ).getRouter());
 
 export default app;

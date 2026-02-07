@@ -12,12 +12,13 @@ import RiskScore from '../components/views/RiskScore';
 import Firewall from '../components/views/Firewall';
 import Backup from '../components/views/Backup';
 import Integrity from '../components/views/Integrity';
-
+import Ueba from '../components/views/Ueba';
 //interface ExtendedMainLayoutProps extends MainLayoutProps {
   //insiderThreatAPI: InsiderThreatAPI;
 //}
 import SecurityMaturity from '../components/views/SecurityMaturity';
 import StatusDashboard from '../components/views/StatusDashboard';
+
 
 export default function MainLayout({
   alertsAPI,
@@ -32,7 +33,8 @@ export default function MainLayout({
   backupApi,
   securityMaturityApi,
   integrityApi,
-  statusMonitorApi
+  statusMonitorApi,
+  uebaApi
 }: MainLayoutProps) {  
 
   const [sideMenuPage, setSideMenuPage] = useState<number>(0);
@@ -81,6 +83,9 @@ export default function MainLayout({
         )}
         {sideMenuPage === 12 && (
              <StatusDashboard statusApi={statusMonitorApi} />
+        )}
+        {sideMenuPage === 13 && (
+          <Ueba uebaApi={uebaApi} />
         )}
       </div>
     </div>

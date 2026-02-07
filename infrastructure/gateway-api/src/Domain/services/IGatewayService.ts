@@ -33,6 +33,7 @@ import { UserRiskProfileDTO } from "../DTOs/UserRiskProfileDTO";
 import { RiskEntityType } from "../enums/RiskEntityType";
 import { AuthJwtResponse } from "../types/AuthJwtResponse";
 import { AuthResponseType } from "../types/AuthResponse";
+import { AnomalyResultDTO } from "../DTOs/AnomalyResultDTO";
 
 export interface IGatewayService {
   // Auth
@@ -224,4 +225,14 @@ export interface IGatewayService {
   getSecurityMaturityRecommendations(): Promise<
     SecurityMaturityRecommendationDTO[]
   >;
+  //getIntegrityStatus(): Promise<any>;
+  getCompromisedLogs(): Promise<any>;
+ // verifyIntegrity(): Promise<any>;
+
+  // UEBA
+  analyzeUserBehavior(userId: number): Promise<AnomalyResultDTO[]>;
+  analyzeRoleBehavior(userRole: string): Promise<AnomalyResultDTO[]>;
+  getAllAnomalies(): Promise<AnomalyResultDTO[]>;
+  getAllUserIds(): Promise<number[]>;
+  getAllRoles(): Promise<string[]>;
 }

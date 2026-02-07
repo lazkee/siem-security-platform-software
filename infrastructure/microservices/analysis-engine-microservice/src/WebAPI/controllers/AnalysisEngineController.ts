@@ -24,6 +24,8 @@ export class AnalysisEngineController {
         this.router.post("/AnalysisEngine/recommendations", this.getRecommendations.bind(this));
         this.router.post("/AnalysisEngine/generateBusinessInsights", this.generateBusinessInsights.bind(this));
         this.router.post("/AnalysisEngine/scanIncident", this.scanIncident.bind(this));
+        this.router.post("/anomalies/detect-by-user", this.detectAnomaliesByUser.bind(this));
+        this.router.post("/anomalies/detect-by-role", this.detectAnomaliesByRole.bind(this));
     }
 
     private async getRecommendations(req: Request, res: Response): Promise<void> {
@@ -82,6 +84,42 @@ export class AnalysisEngineController {
             res.status(200).json(incident)
         }catch(err){
             this.loggerService.error("[Controller] scanIncident: " + (err as Error).message);
+            res.status(500).json({ error: (err as Error).message });
+        }
+    }
+
+    private async detectAnomaliesByUser(req: Request, res: Response): Promise<void> {
+        try {
+            const suspiciousBehaviorDto = req.body;
+            
+            if (!suspiciousBehaviorDto.userId || !suspiciousBehaviorDto.alerts) {
+                this.loggerService.warn("[Controller] detectAnomaliesByUser called with missing userId or alerts");
+                res.status(400).json({ error: "userId and alerts are required" });
+                return;
+            }
+
+            const anomalies = await this.llmChatAPIService.sendAnomalyDetectionByUserPrompt(suspiciousBehaviorDto);
+            res.status(200).json(anomalies);
+        } catch (err) {
+            this.loggerService.error("[Controller] detectAnomaliesByUser failed: " + (err as Error).message);
+            res.status(500).json({ error: (err as Error).message });
+        }
+    }
+
+    private async detectAnomaliesByRole(req: Request, res: Response): Promise<void> {
+        try {
+            const suspiciousBehaviorDto = req.body;
+            
+            if (!suspiciousBehaviorDto.userRole || !suspiciousBehaviorDto.alerts) {
+                this.loggerService.warn("[Controller] detectAnomaliesByRole called with missing userRole or alerts");
+                res.status(400).json({ error: "userRole and alerts are required" });
+                return;
+            }
+
+            const anomalies = await this.llmChatAPIService.sendAnomalyDetectionByRolePrompt(suspiciousBehaviorDto);
+            res.status(200).json(anomalies);
+        } catch (err) {
+            this.loggerService.error("[Controller] detectAnomaliesByRole failed: " + (err as Error).message);
             res.status(500).json({ error: (err as Error).message });
         }
     }

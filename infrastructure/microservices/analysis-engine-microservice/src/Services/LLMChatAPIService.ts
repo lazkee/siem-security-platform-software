@@ -27,6 +27,12 @@ import { ScanIncidentDto } from "../Domain/types/ScanIncidentDto";
 import { SCAN_INCIDENT_PROMPT } from "../Infrastructure/prompts/scanIncidentPrompt";
 import { ScanIncidentResponse } from "../Domain/types/ScanIncidentResponse";
 import { parseScanIncident } from "../Infrastructure/parsers/ScanIncidentParser";
+import { SuspiciousBehaviorDTO } from "../Domain/types/recommendationContext/SuspiciousBehaviorDTO";
+import { AnomalyResultDTO } from "../Domain/types/recommendationContext/AnomalyResultDTO";
+import { ANOMALY_DETECTION_BY_USER_PROMPT } from "../Infrastructure/prompts/anomalyDetectionByUser.prompt";
+import { ANOMALY_DETECTION_BY_ROLE_PROMPT } from "../Infrastructure/prompts/anomalyDetectionByRole.prompt";
+import { AnomalyResultResponseSchema } from "../Infrastructure/schemas/AnomalyResultResponse.schema";
+import { parseAnomalyResults } from "../Infrastructure/parsers/AnomalyResultParser";
 
 dotenv.config();
 
@@ -244,5 +250,90 @@ export class LLMChatAPIService implements ILLMChatAPIService {
     }
 
     return parseCorrelationCandidates(raw.value);
+  }
+
+  // =========================================================
+  // ANOMALY DETECTION (AnomalyResultDTO[])
+  // =========================================================
+  public async sendAnomalyDetectionByUserPrompt(
+    suspiciousBehavior: SuspiciousBehaviorDTO
+  ): Promise<AnomalyResultDTO[]> {
+    const json = JSON.stringify(suspiciousBehavior);
+    const messages: ChatMessage[] = [
+      {
+        role: "user",
+        content: `${ANOMALY_DETECTION_BY_USER_PROMPT}${json}`.trim(),
+      },
+    ];
+    const raw = await sendChatCompletion(
+      this.apiUrl,
+      this.apiKey,
+      this.recommendationModelId,
+      messages,
+      this.loggerService,
+      this.timeoutMs,
+      this.maxRetries,
+      AnomalyResultResponseSchema as JsonObject
+    );
+
+    if (!raw.ok) {
+      await this.loggerService.warn("[LLM] Anomaly detection (user) failed: LLM request/parse error", {
+        error: raw.error,
+        modelId: this.recommendationModelId,
+      });
+      return [];
+    }
+
+    const parsed = parseAnomalyResults(raw.value);
+
+    if (parsed.length === 0) {
+      await this.loggerService.warn("[LLM] Anomaly detection (user) failed: schema validation returned 0 items", {
+        modelId: this.recommendationModelId,
+        raw: raw.value,
+      });
+    }
+
+    return parsed;
+  }
+
+  public async sendAnomalyDetectionByRolePrompt(
+    suspiciousBehavior: SuspiciousBehaviorDTO
+  ): Promise<AnomalyResultDTO[]> {
+    const json = JSON.stringify(suspiciousBehavior);
+    const messages: ChatMessage[] = [
+      {
+        role: "user",
+        content: `${ANOMALY_DETECTION_BY_ROLE_PROMPT}${json}`.trim(),
+      },
+    ];
+    const raw = await sendChatCompletion(
+      this.apiUrl,
+      this.apiKey,
+      this.recommendationModelId,
+      messages,
+      this.loggerService,
+      this.timeoutMs,
+      this.maxRetries,
+      AnomalyResultResponseSchema as JsonObject
+    );
+
+    if (!raw.ok) {
+      await this.loggerService.warn("[LLM] Anomaly detection (role) failed: LLM request/parse error", {
+        error: raw.error,
+        modelId: this.recommendationModelId,
+      });
+      return [];
+    }
+
+    const parsed = parseAnomalyResults(raw.value);
+
+    if (parsed.length === 0) {
+      await this.loggerService.warn("[LLM] Anomaly detection (role) failed: schema validation returned 0 items", {
+        modelId: this.recommendationModelId,
+        raw: raw.value,
+      });
+    }
+
+    return parsed;
   }
 }

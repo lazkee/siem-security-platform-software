@@ -49,6 +49,8 @@ import { SecuirtyMaturityCurrentDTO } from "../../Domain/DTOs/SecurityMaturityCu
 import { SecurityMaturityTrendDTO } from "../../Domain/DTOs/SecurityMaturityTrendDTO";
 import { SecuirtyMaturityIncidentsByCategoryDTO } from "../../Domain/DTOs/SecurityMaturityIncidentsByCategoryDTO";
 import { SecurityMaturityRecommendationDTO } from "../../Domain/DTOs/SecurityMaturityRecommendationDTO";
+import { IUEBAGatewayService } from "../../Domain/services/IUEBAGatewayService";
+import { AnomalyResultDTO } from "../../Domain/DTOs/AnomalyResultDTO";
 
 /**
  * Facade that delegates to domain-specific gateway services.
@@ -68,7 +70,9 @@ export class GatewayService implements IGatewayService {
     private readonly riskScoreService: IRiskScoreGatewayService,
     private readonly integrityService: IIntegrityGatewayService,
     private readonly securityMaturityService: ISecurityMaturityGatewayService,
-  ) {}
+    private readonly uebaService: IUEBAGatewayService
+  ) { }
+  
 
   // Event Collector
   async createEvent(event: EventDTO): Promise<EventDTO> {
@@ -524,4 +528,26 @@ export class GatewayService implements IGatewayService {
   > {
     return this.securityMaturityService.getRecommendations();
   }
+
+
+// UEBA
+async analyzeUserBehavior(userId: number): Promise<AnomalyResultDTO[]> {
+  return await this.uebaService.analyzeUserBehavior(userId);
+}
+
+async analyzeRoleBehavior(userRole: string): Promise<AnomalyResultDTO[]> {
+  return await this.uebaService.analyzeRoleBehavior(userRole);
+}
+
+async getAllAnomalies(): Promise<AnomalyResultDTO[]> {
+  return await this.uebaService.getAllAnomalies();
+}
+
+async getAllUserIds(): Promise<number[]> {
+  return await this.uebaService.getAllUserIds();
+}
+
+async getAllRoles(): Promise<string[]> {
+  return await this.uebaService.getAllRoles();
+}
 }

@@ -13,4 +13,5 @@ export const serviceConfig = {
   riskScore: process.env.RISK_SCORE_API!,
   integrity: process.env.INTEGRITY_SERVICE_API!,
   securityMaturity: process.env.SECURITY_MATURITY_SERVICE_API!,
+  ueba: process.env.UEBA_SERVICE_API!,
 } as const;
