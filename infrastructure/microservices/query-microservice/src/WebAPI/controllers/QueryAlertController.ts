@@ -17,6 +17,10 @@ export class QueryAlertContoller{
         this.router.get("/query/alerts", this.getAllAlerts.bind(this));
         this.router.post("/query/searchAlerts", this.searchAlerts.bind(this));
         this.router.get("/query/alertsCount", this.getAlertsCount.bind(this));
+        this.router.get("/query/alerts/user/:userId", this.getAlertsByUserId.bind(this));
+        this.router.get("/query/alerts/role/:userRole", this.getAlertsByUserRole.bind(this));
+        this.router.get("/query/userIds", this.getAllUserIds.bind(this));
+        this.router.get("/query/roles", this.getAllRoles.bind(this));
     }
     private async getOldAlerts(req: Request, res: Response): Promise<void>{
         try {
@@ -57,6 +61,53 @@ export class QueryAlertContoller{
             res.status(500).json({ message: "Error while retrieving events count." });
         }
     }
+
+    private async getAlertsByUserId(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = Number(req.params.userId);
+            if (isNaN(userId) || userId <= 0) {
+                res.status(400).json({ message: "Invalid userId parameter." });
+                return;
+            }
+            const alerts = await this.queryAlertRepositoryService.getAlertsByUserId(userId);
+            res.status(200).json(alerts);
+        } catch (err) {
+            res.status(500).json({ message: "Error while retrieving alerts by user ID." });
+        }
+    }
+
+    private async getAlertsByUserRole(req: Request, res: Response): Promise<void> {
+        try {
+            const userRole = req.params.userRole as string;
+            if (!userRole || userRole.trim().length === 0) {
+                res.status(400).json({ message: "Invalid userRole parameter." });
+                return;
+            }
+            const alerts = await this.queryAlertRepositoryService.getAlertsByUserRole(userRole);
+            res.status(200).json(alerts);
+        } catch (err) {
+            res.status(500).json({ message: "Error while retrieving alerts by user role." });
+        }
+    }
+
+    private async getAllUserIds(req: Request, res: Response): Promise<void> {
+        try {
+            const userIds = await this.queryAlertRepositoryService.getAllUserIds();
+            res.status(200).json({ userIds });
+        } catch (err) {
+            res.status(500).json({ message: "Error while retrieving user IDs." });
+        }
+    }
+
+    private async getAllRoles(req: Request, res: Response): Promise<void> {
+        try {
+            const roles = await this.queryAlertRepositoryService.getAllRoles();
+            res.status(200).json({ roles });
+        } catch (err) {
+            res.status(500).json({ message: "Error while retrieving user roles." });
+        }
+    }
+
     public getRouter(): Router {
         return this.router;
     }

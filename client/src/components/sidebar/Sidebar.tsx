@@ -13,6 +13,7 @@ import { TbSquareLetterE } from "react-icons/tb";
 import { TbSquareLetterM } from "react-icons/tb";
 import { SidebarProps } from "../../types/props/dashboard/SiedbarProps";
 import { PiShieldStarFill } from "react-icons/pi";
+import { MdOutlineAnalytics } from "react-icons/md";
 
 
 export default function Sidebar({ setSideMenuPage }: SidebarProps) {
@@ -219,7 +220,12 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
 
                     <button
                         className={itemClass(12)}
-                        style={{ marginLeft: '20px', borderRadius: '0.75rem' }}
+                        style={{ 
+                            marginLeft: "20px", 
+                            borderRadius: "0.75rem",
+                            border: selectedButton === 12 ? "1px solid #00ffaa" : "none",
+                            boxShadow: selectedButton === 12 ? "0px 0px 10px rgba(0, 255, 170, 0.2)" : "none"
+                        }}
                         onClick={() => {
                             setSideMenuPage(12);
                             setSelectedButton(12);
@@ -231,6 +237,21 @@ export default function Sidebar({ setSideMenuPage }: SidebarProps) {
                             <MdMonitorHeart size={22} />
                             <span>System Status</span>
                         </div>
+                        <MdKeyboardArrowRight size={20} />
+                    </button>
+
+                    <button
+                        className={itemClass(13)}
+                        style={{ marginLeft: "20px", borderRadius: "0.75rem" }}
+                        onClick={() => {
+                            setSideMenuPage(13);
+                            setSelectedButton(13);
+                        }}
+                        onMouseEnter={() => setHover(13)}
+                        onMouseLeave={() => setHover(null)}
+                    >
+                        <MdOutlineAnalytics size={22} />
+                        UEBA
                         <MdKeyboardArrowRight size={20} />
                     </button>
                     

@@ -8,10 +8,29 @@ import { IRiskScoreAPI } from "../../../api/risk-score/IRiskScoreAPI";
 import { IFirewallAPI } from "../../../api/firewall/IFirewallAPI";
 import { IBackupValidationAPI } from "../../../api/backup/IBackupValdationAPI";
 import { IIntegrityAPI } from "../../../api/integrity/IIntegrityAPI";
-import { IStatusMonitorAPI } from "../../../api/status-monitor/IStatusMonitorAPI";
+import { IUebaAPI } from "../../../api/ueba/IUebaAPI";
 import { IInsiderThreatAPI } from "../../../api/insider-threat/IInsiderThreatAPI";
 import { ISecurityMaturityAPI } from "../../../api/security-maturity/ISecurityMaturityAPI";
-//import { IInsiderThreatAPI } from "../../../api/insider-threat/IInsiderThreatAPI";
+import { IStatusMonitorAPI } from "../../../api/status-monitor/IStatusMonitorAPI";
+
+export interface MainLayoutProps {
+    alertsAPI: IAlertAPI;
+    parserAPI: IParserAPI;
+    queryAPI: IQueryAPI;
+    storageAPI: IStorageAPI;
+    simulatorAPI: ISimulatorAPI;
+    insiderThreatApi: IInsiderThreatAPI;
+    desktopNotification: DesktopNotificationService;
+    riskScoreApi: IRiskScoreAPI;
+    firewallApi: IFirewallAPI;
+    backupApi: IBackupValidationAPI;
+    securityMaturityApi: ISecurityMaturityAPI;
+    integrityApi: IIntegrityAPI;
+    statusMonitorApi: IStatusMonitorAPI;
+    uebaApi: IUebaAPI;
+}
+/*
+import { ISecurityMaturityAPI } from "../../../api/security-maturity/ISecurityMaturityAPI";
 
 export interface MainLayoutProps {
   alertsAPI: IAlertAPI;
@@ -27,4 +46,4 @@ export interface MainLayoutProps {
   securityMaturityApi: ISecurityMaturityAPI;
   integrityApi: IIntegrityAPI;
   statusMonitorApi: IStatusMonitorAPI;
-}
+}*/

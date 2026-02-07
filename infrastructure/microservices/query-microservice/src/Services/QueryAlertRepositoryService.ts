@@ -158,5 +158,41 @@ export class QueryAlertRepositoryService implements IQueryAlertRepositoryService
 
     return await queryBuilder.orderBy("alert.createdAt", "DESC").getMany();
 }
+
+async getAlertsByUserId(userId: number): Promise<Alert[]> {
+    return await this.alertRepository.find({
+        where: { userId: userId },
+        order: { createdAt: "DESC" }
+    });
+}
+
+async getAlertsByUserRole(userRole: string): Promise<Alert[]> {
+    return await this.alertRepository.find({
+        where: { userRole: userRole },
+        order: { createdAt: "DESC" }
+    });
+}
+
+async getAllUserIds(): Promise<number[]> {
+    const alerts = await this.alertRepository
+        .createQueryBuilder("alert")
+        .select("alert.userId")
+        .where("alert.userId IS NOT NULL")
+        .getMany();
+
+    const uniqueIds = [...new Set(alerts.map(a => a.userId).filter((id): id is number => id !== null && id !== undefined))];
+    return uniqueIds.sort((a, b) => a - b);
+}
+
+async getAllRoles(): Promise<string[]> {
+    const alerts = await this.alertRepository
+        .createQueryBuilder("alert")
+        .select("alert.userRole")
+        .where("alert.userRole IS NOT NULL")
+        .getMany();
+
+    const uniqueRoles = [...new Set(alerts.map(a => a.userRole).filter((role): role is string => role !== null && role !== undefined))];
+    return uniqueRoles.sort();
+}
     
 }   

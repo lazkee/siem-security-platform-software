@@ -23,5 +23,9 @@ export interface IQueryAlertRepositoryService {
         dateTo?: string
     ): Promise<Alert[]>;
     getHourlyAlertStatistics(): Promise<HourlyStatisticsDTO[]>;
+    getAlertsByUserId(userId : number): Promise<Alert[]>;
+    getAlertsByUserRole(userRole : string) : Promise<Alert[]>;
+    getAllUserIds(): Promise<number[]>;
+    getAllRoles(): Promise<string[]>;
 
 }

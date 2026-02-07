@@ -12,6 +12,7 @@ import { InsiderThreatGatewayService } from "../domains/InsiderThreatGatewayServ
 import { RiskScoreGatewayService } from "../domains/RiskScoreGatewayService";
 import { IntegrityGatewayService } from "../domains/IntegrityGatewayService";
 import { SecurityMaturityGatewayService } from "../domains/SecurityMaturityGatewayService";
+import { UEBAGatewayService } from "../domains/UEBAGatewayService";
 /**
  * Factory for creating GatewayService instances with all dependencies.
  * Centralizes object creation and dependency wiring.
@@ -31,6 +32,7 @@ export class GatewayServiceFactory {
       new RiskScoreGatewayService(),
       new IntegrityGatewayService(),
       new SecurityMaturityGatewayService(),
+      new UEBAGatewayService()
     );
   }
 }

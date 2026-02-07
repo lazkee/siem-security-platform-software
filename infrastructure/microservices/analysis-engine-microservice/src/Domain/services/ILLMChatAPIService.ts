@@ -6,6 +6,8 @@ import { Recommendation } from "../types/Recommendation";
 import { RecommendationContextDto } from "../types/recommendationContext/RecommendationContext";
 import { ScanIncidentDto } from "../types/ScanIncidentDto";
 import { ScanIncidentResponse } from "../types/ScanIncidentResponse";
+import { SuspiciousBehaviorDTO } from "../types/recommendationContext/SuspiciousBehaviorDTO";
+import { AnomalyResultDTO } from "../types/recommendationContext/AnomalyResultDTO";
 
 export interface ILLMChatAPIService {
   sendNormalizationPrompt(rawMessage: string): Promise<EventDTO>;
@@ -13,4 +15,6 @@ export interface ILLMChatAPIService {
   sendRecommendationsPrompt(context: RecommendationContextDto): Promise<Recommendation[]>;
   sendBusinessInsightsPrompt(businessData: BusinessLLMInputDto): Promise<BusinessResponseDto>;
   sendScanIncidentPrompt(incidentData: ScanIncidentDto): Promise<ScanIncidentResponse>;
+  sendAnomalyDetectionByUserPrompt(suspiciousBehavior: SuspiciousBehaviorDTO): Promise<AnomalyResultDTO[]>;
+  sendAnomalyDetectionByRolePrompt(suspiciousBehavior: SuspiciousBehaviorDTO): Promise<AnomalyResultDTO[]>;
 }
