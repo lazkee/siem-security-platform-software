@@ -24,13 +24,12 @@ export class EventsController {
         this.router.get("/events/sortedEventsByDate", this.getSortedEventsByDate.bind(this))
         this.router.get("/events/percentages", this.getEventPercentagesByEvent.bind(this))
         this.router.get("/events/topSource", this.getTopSourceEvent.bind(this))
+        this.router.get("/events/correlation", this.getFilteredEventsForCorrelation.bind(this));
         this.router.get("/events/:id", this.getEventById.bind(this));
         this.router.get("/events/from/:fromId/to/:toId", this.getEventsFromId1ToId2.bind(this))
         this.router.post("/events", this.createEvent.bind(this));
         this.router.delete("/events/old", this.deleteOldEvents.bind(this));
         this.router.delete("/events/:id", this.deleteEvent.bind(this));
-        this.router.get("/events/correlation", this.getFilteredEventsForCorrelation.bind(this));
-
     }
 
     private async healthCheck(req: Request, res: Response): Promise<void> {
@@ -119,7 +118,6 @@ export class EventsController {
 
     private async deleteEvent(req: Request, res: Response): Promise<void> {
         try {
-            console.log("I am in here");
             const id = Number(req.params.id);
 
             const validate = validateEventId(id);
@@ -226,9 +224,7 @@ export class EventsController {
         const startTime = new Date(req.query.startTime as string);
         const limit = Number(req.query.limit) || 50;
         
-        const severities = Array.isArray(req.query.severity) 
-            ? (req.query.severity as string[]) 
-            : [req.query.severity as string];
+        const severities = (req.query.severity as string).split(',').map(s => s.trim());
 
         if (!serviceName || isNaN(startTime.getTime())) {
             res.status(400).json({ message: "Invalid parameters" });

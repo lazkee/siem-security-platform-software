@@ -45,11 +45,16 @@ export class IncidentService implements IIncidentService {
       const downs = recentChecks.slice(0, threshold.maxConsecutiveDown).every(c => c.status === ServiceStatus.DOWN);
 
       if (downs) {
-        let summary = this.runHeuristicAnalysis(recentChecks.slice(0, threshold.maxConsecutiveDown), totalChecksInDb);
 
-        if (!summary) {
+        //let summary = this.runHeuristicAnalysis(recentChecks.slice(0, threshold.maxConsecutiveDown), totalChecksInDb);
+
+        /*if (!summary) {
            summary = await this.runDeepAnalysis(serviceName);
-        }
+        }*/
+
+        let summary = await this.runDeepAnalysis(serviceName);
+
+        console.log(summary);
 
         await this.incidentRepo.save({
           serviceName,
@@ -88,38 +93,49 @@ export class IncidentService implements IIncidentService {
     return null; // saljemo llmu
   }
 
-  private async runDeepAnalysis(serviceName: string): Promise<string> {
+    private async runDeepAnalysis(serviceName: string): Promise<string> {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+    let logs;
+
     try {
-      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
       const eventUrl = `${process.env.EVENT_SERVICE_API}/events/correlation`;
 
       const eventResponse = await axios.get(eventUrl, {
-        params: { 
-          serviceName: serviceName, 
+        params: {
+          serviceName,
           startTime: tenMinutesAgo,
-          severity: ['ERROR', 'WARNING'], 
-          limit: 50 
+          severity: 'ERROR,WARNING',
+          limit: 50
         }
       });
 
-      const logs = eventResponse.data;
+      logs = eventResponse.data;
 
-      if (!logs || logs.length === 0) {
-        return "Correlation: No Error or Warning events are recorded in the critical time window (10min).";
-      }
+    } catch (e) {
+      console.error("Event service error:", e);
+      return "Correlation: Failed to retrieve recent error events.";
+    }
 
-      // 2. Slanje LLM-u
-      const analysisUrl = `${process.env.ANALYSIS_ENGINE_SERVICE_API}/analyze`;
-      const llmResponse = await axios.post(analysisUrl, {
-        service: serviceName,
-        logs: logs, 
-        // context: `Servis ${serviceName} je pao. Analiziraj priloženih ${logs.length} logova i daj mi kratku dijagnozu uzroka na srpskom jeziku (maksimalno 2 rečenice). Fokusiraj se na bezbednosne pretnje ili kritične sistemske greške.`
-      });
+    if (!logs || logs.length === 0) {
+      return "Correlation: No Error or Warning events are recorded in the critical time window (10min).";
+    }
+
+    try {
+      const analysisUrl = `${process.env.ANALYSIS_ENGINE_SERVICE_API}/AnalysisEngine/scanIncident`;
+
+      const llmResponse = await axios.post(
+        analysisUrl,
+        { service: serviceName, logs },
+        { timeout: 30_000 }
+      );
 
       return `AI analyze: ${llmResponse.data.summary}`;
 
     } catch (e) {
-      return "Correlation: Deep analysis failed due to communication errors with service.";
+      console.error("LLM service error:", e);
+      return "Correlation: Event analysis service is temporarily unavailable.";
     }
   }
+  
 }
