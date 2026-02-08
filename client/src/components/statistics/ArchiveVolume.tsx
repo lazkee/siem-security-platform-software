@@ -25,7 +25,7 @@ export default function ArchiveVolume({ data, period, onPeriodChange }: ArchiveV
         <div className="flex flex-col gap-4 w-full p-4!">
             <div className="flex justify-between items-center">
                 <span className="text-white text-lg font-semibold">
-                    Daily Archive Volume (in bytes)
+                    Daily Archive Volume
                 </span>
 
                 <div className="flex gap-2">

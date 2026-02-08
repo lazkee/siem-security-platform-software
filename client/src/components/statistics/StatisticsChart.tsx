@@ -3,6 +3,7 @@ import {
     Area,
     AreaChart,
     ResponsiveContainer,
+    Tooltip,
     XAxis,
     YAxis,
 } from "recharts";
@@ -38,31 +39,81 @@ export default function StatisticsChart({
     const handleDownload = async () => {
         if (!printRef.current) return;
 
-        const bg =
-            window.getComputedStyle(printRef.current).backgroundColor || "#ffffff";
-
         const canvas = await html2canvas(printRef.current, {
-            scale: 2,
-            backgroundColor: bg,
+            scale: 3, 
+            backgroundColor: "#1f2123",
         });
 
         const imgData = canvas.toDataURL("image/png");
-        const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
+        const doc = new jsPDF({ unit: "mm", format: "a4" });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
 
-        const margin = 10;
-        let cursorY = margin;
+        doc.setFillColor(31, 33, 35); 
+        doc.rect(0, 0, pageWidth, 25, 'F');
 
+        doc.setTextColor(156, 163, 175);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.text("STATISTICS", margin, 15); 
+
+        doc.setDrawColor(100, 100, 100); 
+        doc.line(margin, 25, pageWidth - margin, 25);
+
+        
+        let cursorY = 40;
+
+        doc.setTextColor(100, 100, 100);
         doc.setFontSize(14);
-        doc.text("Events per hour", margin, cursorY + 6);
+        doc.text("Events and Alerts Per Hour Report", margin, cursorY);
+        cursorY += 8;
+
+        doc.setTextColor(156, 163, 175); 
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Metric: Hourly Data Analysis (${showEvents ? "Events" : ""} ${showAlerts ? "Alerts" : ""})`, margin, cursorY);
         cursorY += 10;
 
-        const imgProps = (doc as any).getImageProperties(imgData);
-        const pdfImgW = doc.internal.pageSize.getWidth() - margin * 2;
+        const imgProps = doc.getImageProperties(imgData);
+        const pdfImgW = pageWidth - margin * 2;
         const pdfImgH = (imgProps.height * pdfImgW) / imgProps.width;
-
+        
+        doc.setDrawColor(51, 51, 51);
+        doc.rect(margin - 0.5, cursorY - 0.5, pdfImgW + 1, pdfImgH + 1);
         doc.addImage(imgData, "PNG", margin, cursorY, pdfImgW, pdfImgH);
-        doc.save("statistics-chart.pdf");
+        
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        const dateStr = `${new Date().toLocaleString()}`;
+        doc.text(dateStr, margin, doc.internal.pageSize.getHeight() - 10);
+
+        const randomId = Math.floor(Math.random() * 1000);
+        doc.save(`security-event-report-${randomId}.pdf`);
     };
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-[#1e1f22] border border-[#313338] rounded-[10px] p-3! text-white">
+                    <p className="m-0! text-sm font-semibold">
+                        Hour: {label}:00
+                    </p>
+                    {payload.map((entry: any, index: number) => (
+                        <div key={index} className="flex justify-between gap-4 items-center mt-1!">
+                            <span className="text-sm font-semibold" style={{ color: entry.color }}>
+                                {entry.name}:
+                            </span>
+                            <span className="text-sm font-bold text-white">
+                                {entry.value}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
+
     /* =======================
        RENDER
        ======================= */
@@ -108,7 +159,7 @@ export default function StatisticsChart({
                 ref={printRef}
                 className="bg-[#1f1f1f] border-2 border-[#333] rounded-[10px]! shadow-md overflow-hidden m-2!"
             >
-                <div className="h-[350px] p-4">
+                <div className="h-[350px] p-4!">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={combinedData} margin={{ bottom: 20, right: 30 }}>
                             <defs>
@@ -137,6 +188,8 @@ export default function StatisticsChart({
                                 tick={{ fill: "#ffffff", fontSize: 13, fontWeight: "bold" }}
                                 tickMargin={10}
                             />
+
+                            <Tooltip content={<CustomTooltip />} />
 
                             {showEvents && (
                                 <Area
